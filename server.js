@@ -787,21 +787,38 @@ app.post('/api/floating-servers', (req, res) => {
 // =========================================================================
 // FULL GOOGLE LABS FLOW AI REVERSE PROXY & DIRECT COOKIE HANDSHAKE
 // =========================================================================
-app.use('/flow-proxy', async (req, res) => {
+// =========================================================================
+// GOOGLE LABS FLOW AI FULL REVERSE PROXY & COOKIE AUTO-INJECTOR ENGINE
+// =========================================================================
+async function handleFlowProxyRequest(req, res, customPath = null) {
   const settings = readJson(DB_SETTINGS);
   const cookieToUse = settings.googleFlowCookies;
 
-  const targetPath = req.url === '/' ? '/fx/id/tools/flow' : req.url;
-  const targetUrl = `https://labs.google${targetPath}`;
+  if (!cookieToUse) {
+    return res.status(401).send('<h3>Cookie akun Google Labs Flow belum disetel di pengaturan server.</h3>');
+  }
+
+  let subPath = customPath || req.originalUrl || req.url;
+  if (subPath.startsWith('/flow-proxy')) {
+    subPath = subPath.replace(/^\/flow-proxy/, '');
+  }
+  if (!subPath || subPath === '/' || subPath === '') {
+    subPath = '/fx/id/tools/flow';
+  }
+
+  const targetUrl = `https://labs.google${subPath}`;
 
   try {
     const forwardHeaders = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-      'Cookie': cookieToUse || '',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+      'Cookie': cookieToUse,
       'Accept': req.headers['accept'] || '*/*',
       'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
       'Referer': 'https://labs.google/fx/id/tools/flow',
-      'Origin': 'https://labs.google'
+      'Origin': 'https://labs.google',
+      'Sec-Fetch-Dest': req.headers['sec-fetch-dest'] || 'empty',
+      'Sec-Fetch-Mode': req.headers['sec-fetch-mode'] || 'cors',
+      'Sec-Fetch-Site': 'same-origin'
     };
 
     if (req.headers['content-type']) {
@@ -810,7 +827,8 @@ app.use('/flow-proxy', async (req, res) => {
 
     const fetchOptions = {
       method: req.method,
-      headers: forwardHeaders
+      headers: forwardHeaders,
+      redirect: 'follow'
     };
 
     if (req.method !== 'GET' && req.method !== 'HEAD' && req.body) {
@@ -820,23 +838,22 @@ app.use('/flow-proxy', async (req, res) => {
     const response = await fetch(targetUrl, fetchOptions);
     const contentType = response.headers.get('content-type') || '';
 
-    // Forward status
+    // Set permissive proxy response headers
     res.status(response.status);
-
-    // Set permissive CORS and allow browser nesting
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', '*');
     res.removeHeader('X-Frame-Options');
     res.removeHeader('Content-Security-Policy');
 
     if (contentType.includes('text/html')) {
       let html = await response.text();
-      // Inject base href so all sub-requests route through our proxy
+      
+      // Inject base href and hide Google login prompt dynamically
       html = html.replace(
         '<head>',
-        '<head>\n<base href="https://labs.google/">'
+        '<head>\n<base href="https://labs.google/">\n<style>#gb, header .sign-in-btn, a[href*="accounts.google.com"] { display: none !important; }</style>'
       );
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       return res.send(html);
@@ -849,47 +866,16 @@ app.use('/flow-proxy', async (req, res) => {
       return res.send(Buffer.from(buffer));
     }
   } catch (err) {
-    console.error('Flow proxy error:', err);
-    res.status(500).send('<h3>Gagal menghubungkan ke Google Labs Flow AI. Silakan coba kembali.</h3>');
+    console.error('Flow proxy execution error:', err);
+    res.status(500).send('<h3>Gagal memuat proxy Google Labs Flow AI: ' + err.message + '</h3>');
   }
-});
+}
 
-// GOOGLE LABS FLOW AI LIVE PROXY WEB STREAM & COOKIE INJECTION BRIDGE
-// =========================================================================
-app.get('/flow-live', async (req, res) => {
-  const settings = readJson(DB_SETTINGS);
-  const cookieToUse = settings.googleFlowCookies;
-
-  if (!cookieToUse) {
-    return res.status(401).send('<h3>Cookie akun Google Labs Flow belum disetel di pengaturan server.</h3>');
-  }
-
-  try {
-    const response = await fetch('https://labs.google/fx/id/tools/flow', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-        'Cookie': cookieToUse,
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-        'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Referer': 'https://labs.google/'
-      }
-    });
-
-    let html = await response.text();
-
-    // Replace the Login/Sign-In prompt dynamically with Authorized Workspace Header
-    html = html.replace(
-      '</head>',
-      '<base href="https://labs.google/">\n<style>#gb, header .sign-in-btn, a[href*="accounts.google.com"] { display: none !important; }</style>\n</head>'
-    );
-
-    res.set('Content-Type', 'text/html');
-    res.send(html);
-  } catch (err) {
-    console.error('Flow live proxy error:', err);
-    res.status(500).send('<h3>Gagal memuat Google Labs Flow AI melalui sesi proxy. Silakan coba lagi.</h3>');
-  }
-});
+app.all('/flow-proxy', (req, res) => handleFlowProxyRequest(req, res));
+app.all('/flow-proxy/*', (req, res) => handleFlowProxyRequest(req, res));
+app.all('/fx/*', (req, res) => handleFlowProxyRequest(req, res));
+app.all('/_next/*', (req, res) => handleFlowProxyRequest(req, res));
+app.all('/flow-live', (req, res) => handleFlowProxyRequest(req, res));
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
   app.listen(PORT, "0.0.0.0", () => {
     console.log("AFFILIATE_AI_STUDIO_SERVER_RUNNING_ON_PORT_" + PORT);

@@ -16,11 +16,19 @@
       "dest": "/server.js"
     },
     {
-      "src": "/flow-live",
+      "src": "/flow-proxy/(.*)",
       "dest": "/server.js"
     },
     {
       "src": "/flow-proxy",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/fx/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/_next/(.*)",
       "dest": "/server.js"
     },
     {
