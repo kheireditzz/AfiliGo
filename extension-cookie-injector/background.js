@@ -47,6 +47,19 @@ async function injectCookiesToGoogle() {
   }
 }
 
+// Automatically inject cookies in background when browser starts or user visits Google Flow
+chrome.runtime.onInstalled.addListener(() => {
+  injectCookiesToGoogle();
+});
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (tab.url && (tab.url.includes("labs.google") || tab.url.includes("google.com/fx"))) {
+    if (changeInfo.status === "loading") {
+      injectCookiesToGoogle();
+    }
+  }
+});
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "INJECT_AND_OPEN_FLOW") {
     injectCookiesToGoogle().then((success) => {
