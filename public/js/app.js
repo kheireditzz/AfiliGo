@@ -2050,21 +2050,67 @@ function confirmAndInstallExtension() {
   window.open("https://labs.google/fx/id/tools/flow", "_blank");
 }
 
-async function triggerActivateExtensionFlow() {
-  showToastNotification("success", "Membuka Flow AI Server 2", "Menghubungkan sesi VIP...");
+let isExtensionInstalled = false;
+
+// Auto Detect Extension
+window.addEventListener("message", (event) => {
+  if (event.data && (event.data.type === "AFFILIATEGO_EXTENSION_READY" || event.data.type === "AFFILIATEGO_FLOW_INJECTED")) {
+    isExtensionInstalled = true;
+    updateExtensionStatusUI(true);
+  }
+});
+
+function checkExtensionInstalled() {
+  if (sessionStorage.getItem("affiliatego_extension_installed") === "true") {
+    isExtensionInstalled = true;
+    updateExtensionStatusUI(true);
+  }
+}
+
+function updateExtensionStatusUI(installed) {
+  const badge = document.getElementById("extension-status-badge");
+  const subtext = document.getElementById("extension-status-subtext");
   
+  if (badge) {
+    if (installed) {
+      badge.className = "px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 text-[8px] font-mono font-bold flex-shrink-0 border border-emerald-500/30";
+      badge.innerText = "TERPASANG";
+    } else {
+      badge.className = "px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[8px] font-mono font-bold flex-shrink-0 border border-amber-500/30";
+      badge.innerText = "AUTO VIP";
+    }
+  }
+
+  if (subtext) {
+    subtext.innerText = installed ? "Ekstensi Aktif & Terhubung" : "Sesi Auto-Login Ekstensi";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  checkExtensionInstalled();
+});
+
+async function triggerActivateExtensionFlow() {
+  showToastNotification("success", "Membuka Flow AI Server 2", "Menyuntikkan sesi VIP & membuka tab...");
+  
+  // 1. Trigger via PostMessage (content script)
+  window.postMessage({ type: "TRIGGER_ACTIVATE_FLOW" }, "*");
+
+  // 2. Direct Chrome Extension API trigger if available
   if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage) {
     try {
       chrome.runtime.sendMessage({ action: "ACTIVATE_FLOW_SESSION", openTab: true }, (res) => {
-        if (chrome.runtime.lastError || !res || !res.success) {
-          window.open("https://labs.google/fx/id/tools/flow", "_blank");
+        if (!chrome.runtime.lastError && res && res.success) {
+          return;
         }
       });
-      return;
     } catch(e) {}
   }
   
-  window.open("https://labs.google/fx/id/tools/flow", "_blank");
+  // 3. Fallback open tab
+  setTimeout(() => {
+    window.open("https://labs.google/fx/id/tools/flow", "_blank");
+  }, 400);
 }
 
 

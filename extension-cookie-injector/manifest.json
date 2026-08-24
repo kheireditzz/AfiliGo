@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AffiliateGo - Google Flow Auto Session Injector",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Auto injects active VIP Google Flow sessions for AffiliateGo creators.",
   "permissions": [
     "cookies",
@@ -14,13 +14,17 @@
     "*://*.vercel.app/*",
     "*://localhost/*"
   ],
-  "externally_connectable": {
-    "matches": [
-      "https://affiliatego.vercel.app/*",
-      "https://*.vercel.app/*",
-      "http://localhost:*/*"
-    ]
-  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://affiliatego.vercel.app/*",
+        "https://*.vercel.app/*",
+        "http://localhost:*/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_title": "AffiliateGo Flow Injector"
