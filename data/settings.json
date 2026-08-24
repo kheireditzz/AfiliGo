@@ -1,0 +1,69 @@
+{
+  "geminiApiKey": "YOUR_GEMINI_API_KEY",
+  "huggingFaceKey": "",
+  "adminUsername": "admin",
+  "adminPassword": "Admin@123",
+  "adminName": "Kheir Editz (Super Admin)",
+  "vipActive": false,
+  "role": "SUPER_ADMIN",
+  "vipExpiresAt": null,
+  "featureConfig": {
+    "product-db": {
+      "name": "Database Produk",
+      "isVip": true,
+      "isError": false,
+      "errorMsg": "Fitur sedang dalam pemeliharaan server."
+    },
+    "prompt-library": {
+      "name": "Prompt Library",
+      "isVip": true,
+      "isError": false,
+      "errorMsg": "Fitur sedang dalam pemeliharaan server."
+    },
+    "ai-photo-generator": {
+      "name": "Studio Foto AI",
+      "isVip": true,
+      "isError": false,
+      "errorMsg": "Engine Flux sedang mengalami antrean render tinggi."
+    },
+    "storyboard-creator": {
+      "name": "AI Storyboard & Foto",
+      "isVip": false,
+      "isError": false,
+      "errorMsg": "Fitur sedang dalam pemeliharaan."
+    },
+    "storyboard-list": {
+      "name": "Galeri Storyboard",
+      "isVip": false,
+      "isError": false,
+      "errorMsg": "Fitur sedang dalam pemeliharaan."
+    }
+  },
+  "adminEmail": "kheireditz@gmail.com",
+  "aiStudioProKey": "YOUR_GEMINI_API_KEY",
+  "googleFlowCookies": "SID=g.a000BwnG1-bTB2u2qBbOJW32VMmj8k860-MK9A6P7D46QcvOPI9QmWBj_SPt3QT-tK1EbWnT5QACgYKAYESARISFQHGX2Mit4wtvpjPdFJh-XzM-ulEBRoVAUF8yKqJdAyiB6L0G7heeHsQ8iN50076; __Secure-1PSID=g.a000BwnG1-bTB2u2qBbOJW32VMmj8k860-MK9A6P7D46QcvOPI9QmWBj_SPt3QT-tK1EbWnT5QACgYKAYESARISFQHGX2Mit4wtvpjPdFJh-XzM-ulEBRoVAUF8yKqJdAyiB6L0G7heeHsQ8iN50076; __Secure-3PSID=g.a000BwnG1-bTB2u2qBbOJW32VMmj8k860-MK9A6P7D46QcvOPI9QmWBj_SPt3QT-tK1EbWnT5QACgYKAYESARISFQHGX2Mit4wtvpjPdFJh-XzM-ulEBRoVAUF8yKqJdAyiB6L0G7heeHsQ8iN50076; __Secure-3PSIDTS=AKEyXzV--udVHs3xd3EFgmqqEXgng2oUTwWGUaUKQoufA0H28GWcccE3e1ETnKny9EYpGs0b; __Secure-1PSIDTS=AKEyXzV--udVHs3xd3EFgmqqEXgng2oUTwWGUaUKQoufA0H28GWcccE3e1ETnKny9EYpGs0b; SSID=AqDRs-AHIWBNtU06r; HSID=AqDRs-AHIWBNtU06r; SAPISID=B4DqedTKzNzBNr0C/A7HYeMcBZTWviJetR; APISID=B4DqedTKzNzBNr0C/A7HYeMcBZTWviJetR; __Secure-1PAPISID=B4DqedTKzNzBNr0C/A7HYeMcBZTWviJetR; __Secure-3PAPISID=B4DqedTKzNzBNr0C/A7HYeMcBZTWviJetR; SIDCC=AKEyXzViE6pWfevgXMrcPQTUJGejf_4pNbznw91w7qP3kCGrgD04AoYV9JPb-BI1yw8S_w7k; __Secure-1PSIDCC=AKEyXzViE6pWfevgXMrcPQTUJGejf_4pNbznw91w7qP3kCGrgD04AoYV9JPb-BI1yw8S_w7k; __Secure-3PSIDCC=AKEyXzViE6pWfevgXMrcPQTUJGejf_4pNbznw91w7qP3kCGrgD04AoYV9JPb-BI1yw8S_w7k; AEC=AdJVEavk7ZGXLNiAVrKDeuD0Z34Hu_0WaiBDD9YLm5R1Tx7Rs91u6fvwoA; NID=534=SNrc5JwG5Na1IUjI0Y2FBr7Mb-FcNI4FaOApnyc6kM567C8v-aXX56FUKQXOa_YSN4nAS-0zV6X96CfCoDt-IQO8jBGPH9ay2KUIsAhFFnA8kV6-Y9LBJq5xnkb-bXX3deM0ee7vKJD8Y3Zjm61IEMKsylKPrEq4b6FN1QmSOBiV3hyY5uBqSZCSE3RQC4_iPzsddrzwnKAZLFHL1u4WgBsQI6Axb4pTiM5-vGY7Fg52cjpX-Gmy_8DOkxVXWXtXHt7czqjba8HphSyhnscnHBU_z-xa5tXEalbu-LPrOZv-tZ-yB4QHilwPIDITfLAzdnMBU9S2mURhPgEIT3KYtvg4skWNmzh5qfffeEEXyuGDZthQDV7_GpXX8sleHH07uO0Vzfg72wgyZ-qfX3hYs-4q1tsExW6RcRP1V0o70bAj8-RDm6DMy2W94Ti2csUUpe-Hba8AhjShMOFMuaGiPPOxOY7NVBF5-03Pjq0lxkDaX3s3DIbzLzICPloH3r5L3lwvF9MPe7egJ5LVXvXcMhyYMt_nj-tJEmpB3WABKj3KsdvRSnN4OanZqeBFG-hD_09B2EyLmXkG8V83PnvaDiU5ILQuHKi-MnkG3ugP0Jiz8LEaj36-Kwt8fh_zNHy6Zes4eoEu_h9dpE2mcFOt5Xem66le3aAq8IOIKceySROwcprhcuJFrhZfNwu2zoG6acqz7E91EgwX0tAYzbLfNQ",
+  "googleFlowActive": true,
+  "customServers": [
+    {
+      "id": "srv-1",
+      "name": "Server 1: Google Labs Flow AI",
+      "url": "https://labs.google/fx/id/tools/flow",
+      "description": "Video & Storytelling Generative (Login Aktif)",
+      "status": "ON"
+    },
+    {
+      "id": "srv-2",
+      "name": "Server 2: Google Gemini AI Studio Pro",
+      "url": "https://aistudio.google.com/",
+      "description": "Multimodal Prompt & Script Generation",
+      "status": "ON"
+    },
+    {
+      "id": "srv-3",
+      "name": "Server 3: Flux 8K Ultra Studio",
+      "url": "https://pollinations.ai/",
+      "description": "Mesin Render Visual 8K Hyperrealistic",
+      "status": "ON"
+    }
+  ]
+}

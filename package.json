@@ -1,0 +1,18 @@
+{
+  "name": "affiliate-ai-suite",
+  "version": "1.0.0",
+  "description": "All-in-One Affiliate AI Studio & Storyboard Creator with Database",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.4",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.2",
+    "pg": "^8.23.0",
+    "sqlite3": "^5.1.7"
+  }
+}

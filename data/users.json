@@ -1,0 +1,23 @@
+[
+  {
+    "id": "usr-admin-1",
+    "name": "Kheir Editz (Super Admin)",
+    "email": "kheireditz@gmail.com",
+    "username": "kheireditz@gmail.com",
+    "password": "Admin@123",
+    "role": "SUPER_ADMIN",
+    "vipActive": true,
+    "createdAt": "2026-08-24T14:12:01.756Z"
+  },
+  {
+    "id": "usr-1787581188468",
+    "name": "User Tester",
+    "email": "tester_1787581188160@gmail.com",
+    "username": "tester_1787581188160@gmail.com",
+    "password": "password123",
+    "role": "USER",
+    "vipActive": false,
+    "vipExpiresAt": null,
+    "createdAt": "2026-08-24T14:19:48.468Z"
+  }
+]

@@ -1,0 +1,1931 @@
+
+// ================================================================
+// DRAGGABLE & EDGE-DOCKING FLOATING HUB CONTROLLER
+// ================================================================
+let isFloatingHubActive = localStorage.getItem('affiliate_floating_user_enabled') === 'true';
+let isFloatingWindowOpen = false;
+let isDockedOnLeft = false;
+let isDockedOnRight = false;
+let activeServerList = [
+  { id: 'srv-1', name: 'Server 1 (Flow AI)', url: 'https://labs.google/fx/id/tools/flow', description: 'Google Labs Flow AI - Sesi login aktif', status: 'ON' },
+  { id: 'srv-2', name: 'Server 2 (Studio Pro)', url: 'https://aistudio.google.com/', description: 'Google AI Studio Pro Cloud Workspace', status: 'ON' },
+  { id: 'srv-3', name: 'Server 3 (Flux Video)', url: 'https://pollinations.ai/', description: 'High-Performance 8K Visual Engine', status: 'ON' }
+];
+let currentSelectedServerIndex = 0;
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadFloatingServersState();
+  initDraggableFloatingWidget();
+});
+
+async function loadFloatingServersState() {
+  try {
+    const res = await fetch('/api/floating-servers');
+    const data = await res.json();
+    if (data) {
+      // Respect user's local activation toggle or server settings
+      if (localStorage.getItem('affiliate_floating_user_enabled') !== null) {
+        isFloatingHubActive = localStorage.getItem('affiliate_floating_user_enabled') === 'true';
+      } else {
+        isFloatingHubActive = data.enabled || false;
+      }
+
+      if (data.servers && data.servers.length > 0) {
+        activeServerList = data.servers.map(s => ({ ...s, status: s.status || 'ON' }));
+      }
+
+      syncActivationSwitchesUI();
+      applyFloatingHubVisibility();
+      renderFloatingServerTabs();
+      renderSettingsServerTable();
+      updateFloatingVipBadge();
+    }
+  } catch (e) {
+    console.error('Error loading floating servers:', e);
+  }
+}
+
+function syncActivationSwitchesUI() {
+  const drawerToggle = document.getElementById('drawer-floating-toggle');
+  const settingsToggle = document.getElementById('setting-floating-enabled');
+  const dashToggle = document.getElementById('dashboard-floating-toggle');
+  const dashBadge = document.getElementById('dash-floating-status-badge');
+
+  if (drawerToggle) drawerToggle.checked = isFloatingHubActive;
+  if (settingsToggle) settingsToggle.checked = isFloatingHubActive;
+  if (dashToggle) dashToggle.checked = isFloatingHubActive;
+
+  if (dashBadge) {
+    if (isFloatingHubActive) {
+      dashBadge.className = 'px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold border border-emerald-500/40';
+      dashBadge.innerText = 'AKTIF';
+    } else {
+      dashBadge.className = 'px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[9px] font-mono font-bold border border-slate-700';
+      dashBadge.innerText = 'OFF';
+    }
+  }
+}
+
+function applyFloatingHubVisibility() {
+  const fab = document.getElementById('floating-hub-fab');
+  const win = document.getElementById('floating-hub-window');
+
+  if (isFloatingHubActive) {
+    if (fab) {
+      fab.classList.remove('hidden');
+      if (!fab.style.top || fab.style.top === '70px') {
+        fab.style.top = '70px';
+        fab.style.left = '50%';
+        fab.style.transform = 'translateX(-50%)';
+      }
+    }
+  } else {
+    if (fab) fab.classList.add('hidden');
+    if (win) {
+      win.classList.remove('opacity-100', 'pointer-events-auto', 'scale-100', 'flex');
+      win.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+    }
+    isFloatingWindowOpen = false;
+  }
+  updateFloatingVipBadge();
+}
+
+function updateFloatingVipBadge() {
+  const lockBadge = document.getElementById('floating-vip-lock-badge');
+  const statusPill = document.getElementById('floating-server-status-pill');
+  const liveDot = document.getElementById('floating-live-dot');
+
+  const isAdmin = currentUser && (currentUser.role === 'SUPER_ADMIN' || currentUser.username === 'admin' || currentUser.email === 'kheireditz@gmail.com');
+  const hasVipAccess = isVipUser || isAdmin;
+
+  if (lockBadge) {
+    if (hasVipAccess) {
+      lockBadge.className = 'px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 text-[8px] font-mono font-bold border border-emerald-500/30 flex items-center gap-0.5';
+      lockBadge.innerHTML = '<i class="fa-solid fa-unlock text-[7px]"></i> VIP UNLOCKED';
+    } else {
+      lockBadge.className = 'px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 text-[8px] font-mono font-bold border border-amber-500/30 flex items-center gap-0.5';
+      lockBadge.innerHTML = '<i class="fa-solid fa-lock text-[7px]"></i> VIP LOCKED';
+    }
+  }
+
+  const currentSrv = activeServerList[currentSelectedServerIndex];
+  const isServerOn = currentSrv ? currentSrv.status !== 'OFF' : true;
+
+  if (statusPill) {
+    if (isServerOn) {
+      statusPill.className = 'px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 text-[8px] font-mono font-bold border border-emerald-500/30';
+      statusPill.innerText = 'ONLINE';
+    } else {
+      statusPill.className = 'px-1.5 py-0.2 rounded-full bg-rose-500/20 text-rose-300 text-[8px] font-mono font-bold border border-rose-500/30';
+      statusPill.innerText = 'OFFLINE';
+    }
+  }
+
+  if (liveDot) {
+    liveDot.className = isServerOn ? 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse' : 'w-2 h-2 rounded-full bg-rose-500';
+  }
+}
+
+// Action 1: Click Body = Open Server Dropdown Window
+// Action: Click Pill = Open / Close Server Window
+function handleFloatingHubBodyClick(e) {
+  if (e) e.stopPropagation();
+
+  const isAdmin = currentUser && (currentUser.role === 'SUPER_ADMIN' || currentUser.username === 'admin' || currentUser.email === 'kheireditz@gmail.com');
+  const hasVipAccess = isVipUser || isAdmin;
+
+  if (!hasVipAccess) {
+    openVipPaymentModal();
+    return;
+  }
+
+  toggleFloatingHub();
+}
+
+// DRAGGABLE WITHOUT AUTO-DOCKING (STABLE DI MANA PUN DITINGGALKAN)
+// DRAGGABLE WITHOUT JUMP/BOUNCE GLITCH
+function initDraggableFloatingWidget() {
+  const fab = document.getElementById('floating-hub-fab');
+  if (!fab) return;
+
+  let isPointerDown = false;
+  let isActuallyDragging = false;
+  let startX = 0, startY = 0;
+  let initialLeft = 0, initialTop = 0;
+
+  const onStart = (e) => {
+    // If clicked on an interactive element (link / button), do not initiate drag
+    if (e.target.closest('a') || e.target.closest('button')) {
+      return;
+    }
+
+    isPointerDown = true;
+    isActuallyDragging = false;
+
+    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+    startX = clientX;
+    startY = clientY;
+
+    const rect = fab.getBoundingClientRect();
+    initialLeft = rect.left;
+    initialTop = rect.top;
+  };
+
+  const onMove = (e) => {
+    if (!isPointerDown) return;
+
+    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+    const deltaX = clientX - startX;
+    const deltaY = clientY - startY;
+
+    // Only start dragging if moved more than 6px threshold (distinguishing click vs drag)
+    if (!isActuallyDragging && (Math.abs(deltaX) > 6 || Math.abs(deltaY) > 6)) {
+      isActuallyDragging = true;
+      fab.style.transition = 'none';
+      fab.style.transform = 'none';
+    }
+
+    if (isActuallyDragging) {
+      e.preventDefault();
+
+      let newLeft = initialLeft + deltaX;
+      let newTop = initialTop + deltaY;
+
+      // Constrain inside viewport
+      const minLeft = 10;
+      const maxLeft = window.innerWidth - fab.offsetWidth - 10;
+      const minTop = 60;
+      const maxTop = window.innerHeight - fab.offsetHeight - 10;
+
+      newLeft = Math.max(minLeft, Math.min(maxLeft, newLeft));
+      newTop = Math.max(minTop, Math.min(maxTop, newTop));
+
+      fab.style.left = newLeft + 'px';
+      fab.style.top = newTop + 'px';
+    }
+  };
+
+  const onEnd = () => {
+    isPointerDown = false;
+    isActuallyDragging = false;
+  };
+
+  fab.addEventListener('mousedown', onStart);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onEnd);
+
+  fab.addEventListener('touchstart', onStart, { passive: true });
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('touchend', onEnd);
+}
+
+function renderSettingsServerTable() {
+  const tbody = document.getElementById('settings-server-tbody');
+  if (!tbody) return;
+
+  if (activeServerList.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-500">Belum ada server ditambahkan.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = activeServerList.map((srv, idx) => {
+    const isServerOn = srv.status !== 'OFF';
+    return `
+      <tr class="hover:bg-slate-900/60 transition">
+        <td class="px-3 py-2.5 font-bold text-white flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full ${isServerOn ? 'bg-emerald-400' : 'bg-rose-500'}"></span>
+          <span>${srv.name}</span>
+        </td>
+        <td class="px-3 py-2.5">
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" onchange="toggleServerStatus(${idx}, this.checked)" ${isServerOn ? 'checked' : ''} class="sr-only peer">
+            <div class="w-7 h-3.5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1.5px] after:left-[2px] after:bg-white after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-emerald-500"></div>
+            <span class="ml-1.5 text-[9px] font-mono font-bold ${isServerOn ? 'text-emerald-400' : 'text-slate-500'}">${isServerOn ? 'ON' : 'OFF'}</span>
+          </label>
+        </td>
+        <td class="px-3 py-2.5 text-slate-400 font-mono text-[11px] max-w-[130px] truncate" title="${srv.url}">${srv.url}</td>
+        <td class="px-3 py-2.5 text-slate-400 text-[11px] max-w-[150px] truncate" title="${srv.description || ''}">${srv.description || '-'}</td>
+        <td class="px-3 py-2.5 text-right">
+          <button onclick="deleteCustomServer(${idx})" class="p-1.5 rounded-lg bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white text-xs transition" title="Hapus Server">
+            <i class="fa-solid fa-trash text-[10px]"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function toggleServerStatus(index, isChecked) {
+  if (activeServerList[index]) {
+    activeServerList[index].status = isChecked ? 'ON' : 'OFF';
+    renderFloatingServerTabs();
+    renderSettingsServerTable();
+    updateFloatingVipBadge();
+
+    try {
+      await fetch('/api/floating-servers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: isFloatingHubActive, servers: activeServerList })
+      });
+    } catch (err) {
+      console.error('Error updating server status:', err);
+    }
+  }
+}
+
+// AFFILIATE AI STUDIO - MAIN APPLICATION CONTROLLER
+// ================================================================
+
+let currentUser = null;
+let isVipUser = false;
+let isSidebarOpen = false;
+let autoSaveTimer = null;
+let currentCropTarget = null;
+let activeCropper = null;
+let currentActiveHistoryType = null;
+let currentInvoiceId = null;
+let invoicePollInterval = null;
+let vipTimerInterval = null;
+let vipExpiryTimestamp = null;
+let isCtaActive = true;
+
+let productsCache = [];
+let storyboardsCache = [];
+let promptsCache = [];
+let standaloneRendersCache = JSON.parse(localStorage.getItem("affiliate_ai_renders_history") || "[]");
+
+let uploadedImages = { product: null, model: null, location: null };
+let rawImages = { product: null, model: null, location: null };
+
+let currentStoryboard = {
+  id: null,
+  title: "Affiliate Campaign Blueprint",
+  platform: "TikTok / Reels (9:16)",
+  totalDuration: 15,
+  modelDescription: "Indonesian Female Content Creator, 22 years old",
+  locationSetting: "Modern Aesthetic Coffee Shop with warm lighting",
+  hook: "Jangan beli sebelum nonton ini sampai habis!",
+  cta: "Klik keranjang kuning sekarang mumpung diskon 50%!",
+  scenes: []
+};
+
+let currentFeaturesConfig = {
+  "storyboard-creator": { name: "AI Storyboard & Foto", isVip: false, isError: false, errorMsg: "Fitur sedang dalam perbaikan server." },
+  "storyboard-list": { name: "Galeri Storyboard", isVip: false, isError: false, errorMsg: "Fitur sedang dalam pemeliharaan." },
+  "product-db": { name: "Database Produk", isVip: true, isError: false, errorMsg: "Fitur sedang dalam pemeliharaan server." },
+  "prompt-library": { name: "Prompt Library", isVip: true, isError: false, errorMsg: "Fitur sedang dalam pemeliharaan server." },
+  "ai-photo-generator": { name: "Studio Foto AI", isVip: true, isError: false, errorMsg: "Engine Flux sedang mengalami antrean render tinggi." }
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  checkAuthSession();
+});
+
+function checkAuthSession() {
+  const savedToken = localStorage.getItem("affiliate_ai_auth_token");
+  const savedUser = localStorage.getItem("affiliate_ai_user");
+
+  if (savedToken && savedUser) {
+    try {
+      currentUser = JSON.parse(savedUser);
+      showMainApp();
+      return;
+    } catch (e) {
+      showLoginScreen();
+    }
+  } else {
+    showLoginScreen();
+  }
+}
+
+function showLoginScreen() {
+  const loginOverlay = document.getElementById("login-overlay");
+  const mainApp = document.getElementById("main-app");
+  if (loginOverlay) loginOverlay.classList.remove("hidden");
+  if (mainApp) mainApp.classList.add("hidden");
+}
+
+function showMainApp() {
+  const loginOverlay = document.getElementById("login-overlay");
+  const mainApp = document.getElementById("main-app");
+  if (loginOverlay) loginOverlay.classList.add("hidden");
+  if (mainApp) mainApp.classList.remove("hidden");
+
+  if (currentUser && currentUser.name) {
+    const adminInput = document.getElementById("setting-admin-name");
+    if (adminInput) adminInput.value = currentUser.name;
+    const drawerAdminName = document.getElementById("drawer-admin-name");
+    if (drawerAdminName) drawerAdminName.innerText = currentUser.name;
+  }
+
+  openTab("dashboard");
+  loadDashboardData();
+  loadProducts();
+  loadStoryboards();
+  loadPrompts();
+  loadSettings();
+  checkVipStatus();
+  loadFeaturesConfig(); loadFloatingServersState();
+}
+
+function switchAuthMode(mode) {
+  const loginForm = document.getElementById("form-login");
+  const regForm = document.getElementById("form-register");
+  const tabLogin = document.getElementById("tab-auth-login");
+  const tabReg = document.getElementById("tab-auth-register");
+  const errorMsg = document.getElementById("login-error-msg");
+  const successMsg = document.getElementById("login-success-msg");
+
+  if (errorMsg) errorMsg.classList.add("hidden");
+  if (successMsg) successMsg.classList.add("hidden");
+
+  if (mode === "login") {
+    if (loginForm) loginForm.classList.remove("hidden");
+    if (regForm) regForm.classList.add("hidden");
+    if (tabLogin) tabLogin.className = "py-2 rounded-xl font-bold text-xs transition bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow";
+    if (tabReg) tabReg.className = "py-2 rounded-xl font-bold text-xs text-slate-400 hover:text-white transition";
+  } else {
+    if (loginForm) loginForm.classList.add("hidden");
+    if (regForm) regForm.classList.remove("hidden");
+    if (tabReg) tabReg.className = "py-2 rounded-xl font-bold text-xs transition bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow";
+    if (tabLogin) tabLogin.className = "py-2 rounded-xl font-bold text-xs text-slate-400 hover:text-white transition";
+  }
+}
+
+async function handleRegister(e) {
+  if (e) e.preventDefault();
+  
+  const nameEl = document.getElementById("reg-name");
+  const emailEl = document.getElementById("reg-email");
+  const passEl = document.getElementById("reg-password");
+  const errorMsg = document.getElementById("login-error-msg");
+  const btn = document.getElementById("btn-register");
+
+  const name = nameEl ? nameEl.value.trim() : "";
+  const email = emailEl ? emailEl.value.trim() : "";
+  const password = passEl ? passEl.value.trim() : "";
+
+  if (errorMsg) errorMsg.classList.add("hidden");
+
+  if (!name || !email || !password) {
+    if (errorMsg) {
+      errorMsg.innerText = "Harap isi nama, email, dan password secara lengkap!";
+      errorMsg.classList.remove("hidden");
+    }
+    return;
+  }
+
+  if (password.length < 6) {
+    if (errorMsg) {
+      errorMsg.innerText = "Password minimal 6 karakter!";
+      errorMsg.classList.remove("hidden");
+    }
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = "<i class=\"fa-solid fa-spinner fa-spin\"></i> Mendaftarkan Akun...";
+  }
+
+  try {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password })
+    });
+
+    const data = await res.json();
+    if (res.ok && data.success) {
+      localStorage.setItem("affiliate_ai_auth_token", data.token);
+      localStorage.setItem("affiliate_ai_user", JSON.stringify(data.user));
+      currentUser = data.user;
+      showMainApp();
+    } else {
+      if (errorMsg) {
+        errorMsg.innerText = data.message || "Gagal mendaftar. Email mungkin sudah terdaftar.";
+        errorMsg.classList.remove("hidden");
+      }
+    }
+  } catch (err) {
+    console.error("Register error:", err);
+    if (errorMsg) {
+      errorMsg.innerText = "Gagal terhubung ke server. Periksa koneksi internet Anda.";
+      errorMsg.classList.remove("hidden");
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = "<i class=\"fa-solid fa-user-plus\"></i><span>Daftar Akun Sekarang</span>";
+    }
+  }
+}
+
+async function handleLogin(e) {
+  if (e) e.preventDefault();
+  const usernameInput = document.getElementById("login-username");
+  const passwordInput = document.getElementById("login-password");
+  const errorMsg = document.getElementById("login-error-msg");
+  const btn = document.getElementById("btn-login");
+
+  const username = usernameInput ? usernameInput.value.trim() : "";
+  const password = passwordInput ? passwordInput.value.trim() : "";
+
+  if (errorMsg) errorMsg.classList.add("hidden");
+
+  if (!username || !password) {
+    if (errorMsg) {
+      errorMsg.innerText = "Harap masukkan email dan password!";
+      errorMsg.classList.remove("hidden");
+    }
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = "<i class=\"fa-solid fa-spinner fa-spin\"></i> Memverifikasi...";
+  }
+
+  try {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+    if (res.ok && data.success) {
+      localStorage.setItem("affiliate_ai_auth_token", data.token);
+      localStorage.setItem("affiliate_ai_user", JSON.stringify(data.user));
+      currentUser = data.user;
+      showMainApp();
+    } else {
+      if (errorMsg) {
+        errorMsg.innerText = data.message || "Email atau password salah!";
+        errorMsg.classList.remove("hidden");
+      }
+    }
+  } catch (err) {
+    console.error("Login error:", err);
+    if (errorMsg) {
+      errorMsg.innerText = "Gagal terhubung ke server autentikasi.";
+      errorMsg.classList.remove("hidden");
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = "<i class=\"fa-solid fa-right-to-bracket\"></i><span>Masuk ke Dashboard</span>";
+    }
+  }
+}
+
+function handleLogout() {
+  if (!confirm("Apakah Anda yakin ingin keluar dari akun?")) return;
+  localStorage.removeItem("affiliate_ai_auth_token");
+  localStorage.removeItem("affiliate_ai_user");
+  currentUser = null;
+  toggleSidebar(false);
+  showLoginScreen();
+}
+
+async function updateAdminProfile() {
+  const name = document.getElementById("setting-admin-name").value.trim();
+  const currentPassword = document.getElementById("setting-current-pass").value.trim();
+  const newPassword = document.getElementById("setting-new-pass").value.trim();
+
+  if (!currentPassword) {
+    alert("Harap masukkan password saat ini untuk memverifikasi perubahan!");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/auth/update-profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, currentPassword, newPassword })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert("Tersimpan!");
+      if (name && currentUser) {
+        currentUser.name = name;
+        localStorage.setItem("affiliate_ai_user", JSON.stringify(currentUser));
+        const drawerAdminName = document.getElementById("drawer-admin-name");
+        if (drawerAdminName) drawerAdminName.innerText = name;
+      }
+      document.getElementById("setting-current-pass").value = "";
+      document.getElementById("setting-new-pass").value = "";
+    } else {
+      alert(data.error || "Gagal memperbarui profil");
+    }
+  } catch (err) {
+    console.error("Update profile error:", err);
+    alert("Terjadi kesalahan saat memperbarui akun.");
+  }
+}
+
+function toggleSidebar(forceState) {
+  const sidebar = document.getElementById("sidebar");
+  const backdrop = document.getElementById("sidebar-backdrop");
+  const contentContainer = document.getElementById("content-scroll-container");
+  
+  if (typeof forceState === "boolean") {
+    isSidebarOpen = forceState;
+  } else {
+    isSidebarOpen = !isSidebarOpen;
+  }
+
+  if (isSidebarOpen) {
+    sidebar.classList.remove("-translate-x-full");
+    sidebar.classList.add("translate-x-0");
+    backdrop.classList.remove("hidden");
+    if (contentContainer) contentContainer.style.overflowY = "hidden";
+  } else {
+    sidebar.classList.add("-translate-x-full");
+    sidebar.classList.remove("translate-x-0");
+    backdrop.classList.add("hidden");
+    if (contentContainer) contentContainer.style.overflowY = "auto";
+  }
+}
+
+function selectMenu(tabId) {
+  openTab(tabId);
+  toggleSidebar(false);
+}
+
+function openTab(tabId) {
+  document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+  document.querySelectorAll(".nav-item").forEach(btn => {
+    btn.classList.remove("bg-orange-600/20", "text-amber-300", "font-bold", "border", "border-orange-500/40");
+    btn.classList.add("text-slate-400");
+  });
+
+  const target = document.getElementById("tab-" + tabId);
+  if (target) {
+    target.classList.remove("hidden");
+  }
+
+  const activeNav = document.getElementById("nav-" + tabId);
+  if (activeNav) {
+    activeNav.classList.remove("text-slate-400");
+    activeNav.classList.add("bg-orange-600/20", "text-amber-300", "font-bold", "border", "border-orange-500/40");
+  }
+
+  const contentContainer = document.getElementById("content-scroll-container");
+  if (contentContainer) contentContainer.scrollTop = 0;
+}
+
+async function checkVipStatus() {
+  try {
+    const res = await fetch("/api/vip/status");
+    const data = await res.json();
+    isVipUser = data.vipActive || false;
+    
+    if (isVipUser && data.expiresAt) {
+      startVipCountdownClock(data.expiresAt);
+    }
+    updateVipUiState(data); updateFloatingVipBadge();
+  } catch (e) {
+    console.error("Error checking VIP status:", e);
+  }
+}
+
+function startVipCountdownClock(expiresAt) {
+  if (!expiresAt) return;
+  vipExpiryTimestamp = new Date(expiresAt).getTime();
+
+  if (vipTimerInterval) clearInterval(vipTimerInterval);
+
+  const updateClock = () => {
+    const now = Date.now();
+    const distance = vipExpiryTimestamp - now;
+
+    if (distance <= 0) {
+      clearInterval(vipTimerInterval);
+      isVipUser = false;
+      updateVipUiState();
+      return;
+    }
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    const clockEl = document.getElementById("vip-timer-clock");
+    const badgeEl = document.getElementById("vip-timer-days-badge");
+    
+    if (clockEl) clockEl.innerText = days + " Hari " + hours + " Jam " + minutes + " Menit " + seconds + " Detik";
+    if (badgeEl) badgeEl.innerText = days + " Hari Lagi";
+  };
+
+  updateClock();
+  vipTimerInterval = setInterval(updateClock, 1000);
+}
+
+function updateVipUiState(vipData) {
+  const drawerVipBadge = document.getElementById("drawer-vip-badge");
+  const drawerUpgradeBtn = document.getElementById("btn-drawer-upgrade-vip");
+  const countdownContainer = document.getElementById("vip-countdown-container");
+  const drawerVipDesc = document.getElementById("drawer-vip-desc");
+
+  if (isVipUser) {
+    if (drawerVipBadge) {
+      drawerVipBadge.innerText = "VIP AKTIF";
+      drawerVipBadge.className = "px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-extrabold font-mono border border-emerald-500/40";
+    }
+    if (countdownContainer) countdownContainer.classList.remove("hidden");
+    if (drawerVipDesc) drawerVipDesc.innerText = "Akses seluruh fitur premium aktif tanpa batasan selama masa langganan.";
+    if (drawerUpgradeBtn) {
+      drawerUpgradeBtn.innerHTML = "<i class=\"fa-solid fa-crown text-[10px]\"></i><span>Langganan VIP Aktif</span>";
+      drawerUpgradeBtn.className = "w-full py-2.5 rounded-xl bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-extrabold text-[11px] font-display flex items-center justify-center gap-1.5 cursor-default";
+    }
+  } else {
+    if (drawerVipBadge) {
+      drawerVipBadge.innerText = "Rp 25.000";
+      drawerVipBadge.className = "px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[9px] font-extrabold font-mono border border-amber-500/40";
+    }
+    if (countdownContainer) countdownContainer.classList.add("hidden");
+    if (drawerVipDesc) drawerVipDesc.innerText = "Buka semua fitur Studio Foto AI, Database Produk & Prompt Library tanpa batas selama 30 Hari.";
+    if (drawerUpgradeBtn) {
+      drawerUpgradeBtn.innerHTML = "<i class=\"fa-solid fa-qrcode text-[10px]\"></i><span>Upgrade VIP (Rp 25.000)</span>";
+      drawerUpgradeBtn.className = "w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-extrabold text-[11px] font-display shadow flex items-center justify-center gap-1.5 transition";
+    }
+  }
+}
+
+async function loadFeaturesConfig() {
+  try {
+    const res = await fetch("/api/admin/features-config");
+    const data = await res.json();
+    if (data && data.featureConfig) {
+      currentFeaturesConfig = { ...currentFeaturesConfig, ...data.featureConfig };
+      renderFeaturesConfigTable();
+      applyFeatureLockAndErrorState();
+    }
+  } catch (e) {
+    console.error("Error loading feature configs:", e);
+  }
+}
+
+function renderFeaturesConfigTable() {
+  const tbody = document.getElementById("features-config-tbody");
+  if (!tbody) return;
+
+  tbody.innerHTML = Object.keys(currentFeaturesConfig).map(key => {
+    const feat = currentFeaturesConfig[key];
+    return "<tr class=\"hover:bg-slate-900/60 transition\">" +
+      "<td class=\"px-3 py-2.5 font-bold text-white flex items-center gap-1.5\">" +
+        "<span>" + feat.name + "</span>" +
+        "<span class=\"text-[9px] font-mono text-slate-500\">(" + key + ")</span>" +
+      "</td>" +
+      "<td class=\"px-3 py-2.5 text-center\">" +
+        "<label class=\"relative inline-flex items-center cursor-pointer\">" +
+          "<input type=\"checkbox\" id=\"cfg-vip-" + key + "\" " + (feat.isVip ? "checked" : "") + " class=\"sr-only peer\">" +
+          "<div class=\"w-8 h-4 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-500\"></div>" +
+        "</label>" +
+      "</td>" +
+      "<td class=\"px-3 py-2.5 text-center\">" +
+        "<label class=\"relative inline-flex items-center cursor-pointer\">" +
+          "<input type=\"checkbox\" id=\"cfg-err-" + key + "\" " + (feat.isError ? "checked" : "") + " class=\"sr-only peer\">" +
+          "<div class=\"w-8 h-4 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-rose-600\"></div>" +
+        "</label>" +
+      "</td>" +
+      "<td class=\"px-3 py-2.5\">" +
+        "<input type=\"text\" id=\"cfg-msg-" + key + "\" value=\"" + (feat.errorMsg || "") + "\" placeholder=\"Pesan saat error...\" class=\"w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-[11px] text-slate-200 focus:outline-none focus:border-amber-400\">" +
+      "</td>" +
+    "</tr>";
+  }).join("");
+}
+
+async function saveFeatureConfigFromAdmin() {
+  Object.keys(currentFeaturesConfig).forEach(key => {
+    const vipEl = document.getElementById("cfg-vip-" + key);
+    const errEl = document.getElementById("cfg-err-" + key);
+    const msgEl = document.getElementById("cfg-msg-" + key);
+
+    if (vipEl) currentFeaturesConfig[key].isVip = vipEl.checked;
+    if (errEl) currentFeaturesConfig[key].isError = errEl.checked;
+    if (msgEl) currentFeaturesConfig[key].errorMsg = msgEl.value.trim();
+  });
+
+  try {
+    const res = await fetch("/api/admin/features-config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ featureConfig: currentFeaturesConfig })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert("Tersimpan! Konfigurasi fitur berhasil diperbarui.");
+      applyFeatureLockAndErrorState();
+    }
+  } catch (e) {
+    console.error("Save feature config error:", e);
+    alert("Gagal menyimpan konfigurasi.");
+  }
+}
+
+function applyFeatureLockAndErrorState() {
+  Object.keys(currentFeaturesConfig).forEach(key => {
+    const feat = currentFeaturesConfig[key];
+    const badge = document.getElementById("lock-badge-" + key);
+
+    if (badge) {
+      if (feat.isError) {
+        badge.className = "px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 text-[9px] font-black font-mono border border-rose-500/30 flex items-center gap-1";
+        badge.innerHTML = "<i class=\"fa-solid fa-triangle-exclamation text-[8px]\"></i> Maintenance";
+      } else if (feat.isVip) {
+        if (isVipUser) {
+          badge.className = "px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[9px] font-black font-mono border border-emerald-500/30 flex items-center gap-1";
+          badge.innerHTML = "<i class=\"fa-solid fa-unlock text-[8px]\"></i> Unlocked";
+        } else {
+          badge.className = "px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[9px] font-black font-mono border border-amber-500/30 flex items-center gap-1";
+          badge.innerHTML = "<i class=\"fa-solid fa-lock text-[8px]\"></i> VIP";
+        }
+      } else {
+        badge.className = "px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 text-[9px] font-mono border border-slate-700 flex items-center gap-1";
+        badge.innerHTML = "Free";
+      }
+    }
+  });
+}
+
+function checkAndOpenVipMenu(tabId) {
+  const feat = currentFeaturesConfig[tabId];
+
+  if (feat && feat.isError) {
+    alert("PERINGATAN SISTEM: " + feat.name + " sedang dinonaktifkan sementara.\n\nPesan: " + (feat.errorMsg || "Dalam pemeliharaan server."));
+    return;
+  }
+
+  if (currentUser && (currentUser.role === "SUPER_ADMIN" || currentUser.username === "admin" || currentUser.email === "kheireditz@gmail.com")) {
+    selectMenu(tabId);
+    return;
+  }
+
+  if (feat && feat.isVip && !isVipUser) {
+    openVipPaymentModal();
+    return;
+  }
+
+  selectMenu(tabId);
+}
+
+function openVipPaymentModal() {
+  const modal = document.getElementById("vip-payment-modal");
+  if (modal) {
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  }
+
+  document.getElementById("vip-step-generate").classList.remove("hidden");
+  document.getElementById("vip-step-qris").classList.add("hidden");
+  document.getElementById("vip-step-success").classList.add("hidden");
+}
+
+function closeVipPaymentModal() {
+  const modal = document.getElementById("vip-payment-modal");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
+  if (invoicePollInterval) {
+    clearInterval(invoicePollInterval);
+    invoicePollInterval = null;
+  }
+}
+
+async function requestDongtubeInvoice() {
+  const btn = document.getElementById("btn-request-qris");
+  const originalHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = "<i class=\"fa-solid fa-spinner fa-spin\"></i> Menghubungkan ke Dongtube...";
+
+  try {
+    const res = await fetch("/api/vip/create-invoice", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+
+    const data = await res.json();
+    if (data.success && data.qris_image) {
+      currentInvoiceId = data.invoice_id;
+
+      document.getElementById("dongtube-qris-img").src = data.qris_image;
+      document.getElementById("dongtube-inv-id").innerText = data.invoice_id;
+
+      document.getElementById("vip-step-generate").classList.add("hidden");
+      document.getElementById("vip-step-qris").classList.remove("hidden");
+
+      startInvoicePolling(data.invoice_id);
+    } else {
+      alert(data.message || "Gagal membuat QRIS Dongtube.");
+    }
+  } catch (err) {
+    console.error("Request Dongtube error:", err);
+    alert("Terjadi kesalahan saat memproses QRIS.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+  }
+}
+
+function startInvoicePolling(invoiceId) {
+  if (invoicePollInterval) clearInterval(invoicePollInterval);
+  invoicePollInterval = setInterval(() => {
+    checkInvoiceStatusRealtime(invoiceId);
+  }, 3500);
+}
+
+async function checkInvoiceStatusRealtime(invoiceId) {
+  if (!invoiceId) return;
+  try {
+    const res = await fetch("/api/vip/check-status/" + invoiceId);
+    const data = await res.json();
+
+    if (data.status === "paid") {
+      if (invoicePollInterval) clearInterval(invoicePollInterval);
+      isVipUser = true;
+      checkVipStatus();
+
+      document.getElementById("vip-step-qris").classList.add("hidden");
+      document.getElementById("vip-step-success").classList.remove("hidden");
+    } else if (data.status === "expired") {
+      if (invoicePollInterval) clearInterval(invoicePollInterval);
+      alert("Invoice QRIS telah kadaluarsa. Silakan buat QRIS baru.");
+      closeVipPaymentModal();
+    }
+  } catch (e) {
+    console.error("Poll status error:", e);
+  }
+}
+
+function manualCheckPaymentStatus() {
+  if (currentInvoiceId) {
+    checkInvoiceStatusRealtime(currentInvoiceId);
+  }
+}
+
+function triggerUpload(type) {
+  const fileInput = document.getElementById("file-input-" + type);
+  if (fileInput) fileInput.click();
+}
+
+function handleFileSelect(e, type) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    rawImages[type] = event.target.result;
+    openCropperModal(type, event.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function reCropImage(type) {
+  if (rawImages[type]) {
+    openCropperModal(type, rawImages[type]);
+  }
+}
+
+function openCropperModal(type, imageSrc) {
+  currentCropTarget = type;
+  const modal = document.getElementById("cropper-modal");
+  const cropperImg = document.getElementById("cropper-image");
+  const title = document.getElementById("cropper-modal-title");
+
+  const titleMap = {
+    product: "Edit & Crop Foto Produk",
+    model: "Edit & Crop Foto Model / Talent",
+    location: "Edit & Crop Foto Tempat / Setting"
+  };
+  if (title) title.innerText = titleMap[type] || "Edit & Crop Foto";
+
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+
+  cropperImg.src = imageSrc;
+
+  if (activeCropper) {
+    activeCropper.destroy();
+  }
+
+  activeCropper = new Cropper(cropperImg, {
+    aspectRatio: type === "location" ? 16 / 9 : (type === "model" ? 9 / 16 : 1),
+    viewMode: 1,
+    autoCropArea: 0.85,
+    responsive: true,
+    background: false
+  });
+}
+
+function setCropRatio(ratio) {
+  if (activeCropper) activeCropper.setAspectRatio(ratio);
+}
+
+function rotateCropper(degree) {
+  if (activeCropper) activeCropper.rotate(degree);
+}
+
+function closeCropperModal() {
+  const modal = document.getElementById("cropper-modal");
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+  if (activeCropper) {
+    activeCropper.destroy();
+    activeCropper = null;
+  }
+}
+
+function applyCrop() {
+  if (!activeCropper || !currentCropTarget) return;
+
+  const canvas = activeCropper.getCroppedCanvas({
+    maxWidth: 1024,
+    maxHeight: 1024,
+    imageSmoothingEnabled: true,
+    imageSmoothingQuality: "high"
+  });
+
+  const croppedDataUrl = canvas.toDataURL("image/jpeg", 0.9);
+  uploadedImages[currentCropTarget] = croppedDataUrl;
+
+  const thumb = document.getElementById("img-thumb-" + currentCropTarget);
+  const placeholder = document.getElementById("placeholder-" + currentCropTarget);
+  const cropBtn = document.getElementById("btn-crop-" + currentCropTarget);
+  const badge = document.getElementById("badge-has-" + currentCropTarget);
+
+  if (thumb) {
+    thumb.src = croppedDataUrl;
+    thumb.classList.remove("hidden");
+  }
+  if (placeholder) placeholder.classList.add("hidden");
+  if (cropBtn) cropBtn.classList.remove("hidden");
+  if (badge) {
+    badge.classList.remove("bg-slate-800", "text-slate-500");
+    badge.classList.add("bg-emerald-950/80", "text-emerald-300", "border-emerald-500/50");
+    badge.innerHTML = "<i class=\"fa-solid fa-check text-[8px]\"></i> " + (currentCropTarget.charAt(0).toUpperCase() + currentCropTarget.slice(1)) + " Ready";
+  }
+
+  closeCropperModal();
+  triggerVisionAnalysis();
+  triggerAutoSave();
+}
+
+async function triggerVisionAnalysis() {
+  const badge = document.getElementById("autosave-status-badge");
+  if (badge) {
+    badge.innerHTML = "<i class=\"fa-solid fa-wand-magic-sparkles text-amber-400 fa-spin\"></i> Google AI Menganalisa Foto...";
+    badge.classList.remove("hidden");
+  }
+
+  const currentTitle = document.getElementById("sb-product-title")?.value.trim() || "";
+
+  try {
+    const res = await fetch("/api/analyze-uploaded-visuals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        productImgBase64: uploadedImages.product || null,
+        modelImgBase64: uploadedImages.model || null,
+        locationImgBase64: uploadedImages.location || null,
+        currentTitle: currentTitle
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      const uspEl = document.getElementById("sb-product-usp");
+      const modelEl = document.getElementById("sb-model-desc");
+      const locationEl = document.getElementById("sb-location-setting");
+      const titleEl = document.getElementById("sb-product-title");
+
+      if (uspEl && (!uspEl.value.trim() || uspEl.value.length < 15)) {
+        uspEl.value = data.suggestedUsp;
+      }
+      if (modelEl && uploadedImages.model && data.suggestedModel) {
+        modelEl.value = data.suggestedModel;
+      }
+      if (locationEl && uploadedImages.location && data.suggestedLocation) {
+        locationEl.value = data.suggestedLocation;
+      }
+      if (titleEl && !titleEl.value.trim() && data.suggestedTitle) {
+        titleEl.value = data.suggestedTitle;
+      }
+
+      if (badge) {
+        badge.innerHTML = "<i class=\"fa-solid fa-check text-emerald-400\"></i> Google AI Selesai Menganalisa";
+        setTimeout(() => badge.classList.add("hidden"), 2500);
+      }
+
+      triggerAutoSave();
+    }
+  } catch (err) {
+    console.error("Vision analysis error:", err);
+    if (badge) badge.classList.add("hidden");
+  }
+}
+
+function triggerAutoSave() {
+  const statusBadge = document.getElementById("autosave-status-badge");
+  if (statusBadge) {
+    statusBadge.innerHTML = "<i class=\"fa-solid fa-spinner fa-spin text-amber-400\"></i> Menyimpan...";
+    statusBadge.classList.remove("hidden");
+  }
+
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    saveCurrentStoryboardSilently();
+  }, 800);
+}
+
+async function saveCurrentStoryboardSilently() {
+  const titleInput = document.getElementById("sb-product-title");
+  if (!titleInput || !titleInput.value.trim() || !currentStoryboard.scenes || currentStoryboard.scenes.length === 0) {
+    const statusBadge = document.getElementById("autosave-status-badge");
+    if (statusBadge) statusBadge.classList.add("hidden");
+    return;
+  }
+
+  currentStoryboard.title = "Affiliate: " + titleInput.value.trim();
+  currentStoryboard.modelDescription = document.getElementById("sb-model-desc")?.value || currentStoryboard.modelDescription;
+  currentStoryboard.locationSetting = document.getElementById("sb-location-setting")?.value || currentStoryboard.locationSetting;
+  currentStoryboard.totalDuration = document.getElementById("sb-duration-select")?.value || currentStoryboard.totalDuration;
+
+  try {
+    const res = await fetch("/api/storyboards", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(currentStoryboard)
+    });
+    const saved = await res.json();
+    if (saved && saved.id) currentStoryboard.id = saved.id;
+
+    const statusBadge = document.getElementById("autosave-status-badge");
+    if (statusBadge) {
+      statusBadge.innerHTML = "<i class=\"fa-solid fa-check text-emerald-400\"></i> Otomatis Tersimpan";
+      setTimeout(() => {
+        statusBadge.classList.add("hidden");
+      }, 2500);
+    }
+    loadStoryboards();
+    loadDashboardData();
+  } catch (err) {
+    console.error("AutoSave Error:", err);
+    const statusBadge = document.getElementById("autosave-status-badge");
+    if (statusBadge) statusBadge.classList.add("hidden");
+  }
+}
+
+async function generateStoryboardWithAI() {
+  const title = document.getElementById("sb-product-title").value.trim();
+  const usp = document.getElementById("sb-product-usp").value.trim();
+  const modelDescription = document.getElementById("sb-model-desc").value.trim();
+  const locationSetting = document.getElementById("sb-location-setting").value.trim();
+  const numScenes = document.getElementById("sb-scene-count").value;
+  const promptsPerScene = document.getElementById("sb-prompt-count").value;
+  const duration = document.getElementById("sb-duration-select").value;
+  const platform = document.getElementById("sb-platform").value;
+
+  if (!title) {
+    alert("Harap isi nama produk terlebih dahulu!");
+    return;
+  }
+
+  const btn = document.getElementById("btn-generate-sb");
+  const icon = document.getElementById("btn-gen-icon");
+  const text = document.getElementById("btn-gen-text");
+
+  btn.disabled = true;
+  btn.classList.add("laser-btn-active");
+  icon.className = "fa-solid fa-circle-notch fa-spin text-[12px] text-amber-200";
+  text.innerText = "Sedang Merancang AI...";
+
+  try {
+    const res = await fetch("/api/generate-storyboard-ai", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        productTitle: title, 
+        usp, 
+        modelDescription,
+        locationSetting,
+        numScenes,
+        promptsPerScene,
+        duration,
+        platform 
+      })
+    });
+
+    const data = await res.json();
+    currentStoryboard = {
+      id: "sb-" + Date.now(),
+      title: data.title,
+      platform: data.platform,
+      totalDuration: data.totalDuration || duration,
+      modelDescription: data.modelDescription,
+      locationSetting: data.locationSetting,
+      hook: data.hook,
+      cta: data.cta,
+      scenes: data.scenes || []
+    };
+
+    renderStoryboardPreview();
+    triggerAutoSave();
+  } catch (err) {
+    console.error("Generate Storyboard Error:", err);
+    alert("Gagal membuat storyboard.");
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove("laser-btn-active");
+    icon.className = "fa-solid fa-wand-magic-sparkles text-[11px]";
+    text.innerText = "Generate";
+  }
+}
+
+function renderStoryboardPreview() {
+  const container = document.getElementById("scenes-container");
+  if (!currentStoryboard.scenes || currentStoryboard.scenes.length === 0) {
+    container.innerHTML = "<div class=\"text-slate-500 text-xs py-10 text-center font-medium\">Klik tombol Generate di samping untuk merancang skenario.</div>";
+    return;
+  }
+
+  container.innerHTML = currentStoryboard.scenes.map((scene, idx) => {
+    const hasMultiplePrompts = scene.promptsList && scene.promptsList.length > 1;
+    const promptButtons = hasMultiplePrompts ? 
+      "<div class=\"flex items-center gap-1.5 mb-1\">" +
+        scene.promptsList.map((p, pIdx) => 
+          "<button onclick=\"switchScenePrompt(" + idx + ", " + pIdx + ")\" class=\"px-2 py-0.5 rounded-md text-[9px] font-bold " + (scene.prompt === p ? "bg-orange-500 text-white" : "bg-slate-900 text-slate-400 hover:text-white") + " border border-slate-700 font-mono transition\">" +
+            "Var " + (pIdx + 1) +
+          "</button>"
+        ).join("") +
+      "</div>" : "";
+
+    return "<div class=\"rounded-3xl bg-[#0f121d] border border-slate-800/90 hover:border-orange-500/40 p-3.5 sm:p-4 space-y-3 shadow-xl transition\">" +
+      "<div class=\"flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2\">" +
+        "<div class=\"flex items-center gap-2 min-w-0 flex-1\">" +
+          "<span class=\"px-2.5 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black text-[10px] font-display shadow-sm flex-shrink-0\">" +
+            "SCENE " + (idx + 1) +
+          "</span>" +
+          "<input type=\"text\" value=\"" + (scene.shotType || "Medium Shot") + "\" oninput=\"updateSceneShotType(" + idx + ", this.value)\" class=\"w-full max-w-[200px] bg-slate-950/80 border border-slate-800 rounded-lg px-2 py-0.5 text-xs font-bold text-amber-300 focus:outline-none focus:border-amber-400 font-mono truncate\" placeholder=\"Shot Type\">" +
+          "<span class=\"px-2 py-0.5 rounded-md bg-slate-950 text-[10px] font-mono text-slate-400 border border-slate-800 flex-shrink-0\">" + (scene.durationSeconds || 3) + "s</span>" +
+        "</div>" +
+        "<div class=\"flex items-center gap-1.5 flex-shrink-0\">" +
+          "<button onclick=\"copyEntireScene(" + idx + ")\" class=\"px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-300 hover:text-white text-xs font-bold border border-slate-700/80 transition flex items-center gap-1 shadow-sm\" title=\"Salin Seluruh Konten Scene " + (idx + 1) + "\">" +
+            "<i class=\"fa-solid fa-copy text-[10px]\"></i>" +
+            "<span class=\"text-[11px] hidden sm:inline\">Salin</span>" +
+          "</button>" +
+          "<button onclick=\"removeScene(" + idx + ")\" class=\"w-7 h-7 rounded-xl bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white text-xs transition flex items-center justify-center border border-slate-800\" title=\"Hapus Scene\">" +
+            "<i class=\"fa-solid fa-trash text-[10px]\"></i>" +
+          "</button>" +
+        "</div>" +
+      "</div>" +
+      "<div class=\"grid grid-cols-1 md:grid-cols-12 gap-3.5 items-center\">" +
+        "<div class=\"md:col-span-4 w-full\">" +
+          "<div class=\"relative w-full rounded-2xl overflow-hidden bg-black aspect-[9/16] max-h-60 sm:max-h-64 border border-slate-800/90 shadow-inner flex items-center justify-center mx-auto group\">" +
+            "<img id=\"scene-img-" + idx + "\" src=\"" + (scene.imageUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400") + "\" class=\"w-full h-full object-cover\" alt=\"Scene Visual\" onerror=\"this.src=https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400\">" +
+            "<div class=\"absolute top-2 left-2 px-1.5 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[8px] font-mono text-amber-300 border border-white/10 shadow\">" +
+              "FLUX 8K" +
+            "</div>" +
+            "<div class=\"absolute inset-x-2 bottom-2 p-1 rounded-xl bg-black/85 backdrop-blur-md border border-white/15 shadow-2xl flex items-center gap-1 z-10\">" +
+              "<select id=\"select-ratio-" + idx + "\" class=\"flex-1 bg-slate-900/90 border border-slate-700/80 text-amber-300 rounded-lg px-1.5 py-1 text-[9px] font-mono focus:outline-none focus:border-orange-500\">" +
+                "<option value=\"9:16\" selected>9:16 (Story)</option>" +
+                "<option value=\"1:1\">1:1 (Square)</option>" +
+                "<option value=\"16:9\">16:9 (Landscape)</option>" +
+                "<option value=\"4:5\">4:5 (Portrait)</option>" +
+              "</select>" +
+              "<button onclick=\"downloadSceneWithCustomSize( + (scene.imageUrl || ) + , document.getElementById(select-ratio- + idx + ).value, " + (idx + 1) + ")\" class=\"px-2 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] shadow flex items-center gap-1 transition flex-shrink-0\" title=\"Unduh Foto\">" +
+                "<i class=\"fa-solid fa-download text-[9px]\"></i>" +
+                "<span>Unduh</span>" +
+              "</button>" +
+            "</div>" +
+          "</div>" +
+        "</div>" +
+        "<div class=\"md:col-span-8 space-y-2.5\">" +
+          "<div class=\"p-2.5 rounded-2xl bg-orange-950/20 border border-orange-500/30 space-y-1.5\">" +
+            "<div class=\"flex items-center justify-between\">" +
+              "<span class=\"text-[10px] font-bold text-amber-300 font-display flex items-center gap-1.5\">" +
+                "<i class=\"fa-solid fa-wand-magic-sparkles text-orange-400\"></i> Prompt Foto AI" +
+              "</span>" +
+              "<button onclick=\"copyPromptText( + encodeURIComponent(scene.prompt || ) + )\" class=\"text-[9px] text-slate-400 hover:text-amber-300 transition flex items-center gap-1 font-mono\">" +
+                "<i class=\"fa-solid fa-copy text-[8px]\"></i> Salin" +
+              "</button>" +
+            "</div>" +
+            promptButtons +
+            "<div class=\"flex gap-1.5 items-stretch\">" +
+              "<textarea id=\"scene-prompt-input-" + idx + "\" rows=\"2\" oninput=\"updateScenePrompt(" + idx + ", this.value)\" class=\"flex-1 bg-slate-950/90 border border-slate-800 focus:border-amber-400 rounded-xl p-2 text-[10px] text-amber-200 font-mono focus:outline-none leading-relaxed transition\" placeholder=\"Instruksi prompt foto...\">" + (scene.prompt || "") + "</textarea>" +
+              "<button onclick=\"regenerateSceneImage(" + idx + ")\" id=\"btn-gen-scene-" + idx + "\" class=\"px-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] shadow flex flex-col items-center justify-center gap-1 transition flex-shrink-0\" title=\"Generate & Ubah Foto\">" +
+                "<i class=\"fa-solid fa-wand-magic-sparkles text-xs\"></i>" +
+                "<span>Ubah</span>" +
+              "</button>" +
+            "</div>" +
+          "</div>" +
+          "<div class=\"space-y-0.5\">" +
+            "<span class=\"text-[9px] font-bold text-slate-400 uppercase font-mono flex items-center gap-1\">" +
+              "<i class=\"fa-solid fa-video text-amber-400\"></i> Prompt Video (Aksi & Gerakan)" +
+            "</span>" +
+            "<input type=\"text\" value=\"" + (scene.visualDescription || "") + "\" oninput=\"updateSceneVisualDesc(" + idx + ", this.value)\" class=\"w-full bg-slate-950/80 border border-slate-800/80 focus:border-amber-500 rounded-xl px-2.5 py-1.5 text-[11px] text-white placeholder-slate-500 focus:outline-none transition\" placeholder=\"Deskripsi aksi kamera dan talent...\">" +
+          "</div>" +
+          "<div class=\"space-y-0.5\">" +
+            "<span class=\"text-[9px] font-bold text-slate-400 uppercase font-mono flex items-center gap-1\">" +
+              "<i class=\"fa-solid fa-microphone text-orange-400\"></i> Narasi Voiceover / Audio" +
+            "</span>" +
+            "<textarea rows=\"2\" oninput=\"updateSceneVoiceover(" + idx + ", this.value)\" class=\"w-full bg-slate-950/80 border border-slate-800/80 focus:border-amber-500 rounded-xl p-2 text-[11px] text-white placeholder-slate-500 focus:outline-none leading-relaxed transition\" placeholder=\"Tuliskan naskah audio yang diucapkan...\">" + (scene.voiceover || "") + "</textarea>" +
+          "</div>" +
+        "</div>" +
+      "</div>" +
+    "</div>";
+  }).join("");
+}
+
+function copyEntireScene(idx) {
+  const scene = currentStoryboard.scenes[idx];
+  if (!scene) return;
+
+  const textToCopy = "[SCENE " + (idx + 1) + " - " + (scene.shotType || "Shot") + "] (" + (scene.durationSeconds || 3) + "s)\n" +
+    "🎙️ VOICEOVER / AUDIO:\n\"" + (scene.voiceover || "") + "\"\n\n" +
+    "🎬 PROMPT VIDEO (DESKRIPSI AKSI):\n" + (scene.visualDescription || "") + "\n\n" +
+    "🖼️ PROMPT FOTO AI:\n" + (scene.prompt || "");
+
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    alert("Tersalin! Semua konten Scene " + (idx + 1) + " berhasil disalin.");
+  }).catch(err => {
+    console.error("Copy scene failed", err);
+  });
+}
+
+function switchScenePrompt(sceneIdx, promptIdx) {
+  const scene = currentStoryboard.scenes[sceneIdx];
+  if (scene && scene.promptsList && scene.promptsList[promptIdx]) {
+    scene.prompt = scene.promptsList[promptIdx];
+    renderStoryboardPreview();
+    triggerAutoSave();
+  }
+}
+
+function updateSceneShotType(idx, val) { if (currentStoryboard.scenes[idx]) { currentStoryboard.scenes[idx].shotType = val; triggerAutoSave(); } }
+function updateSceneVoiceover(idx, val) { if (currentStoryboard.scenes[idx]) { currentStoryboard.scenes[idx].voiceover = val; triggerAutoSave(); } }
+function updateSceneVisualDesc(idx, val) { if (currentStoryboard.scenes[idx]) { currentStoryboard.scenes[idx].visualDescription = val; triggerAutoSave(); } }
+function updateScenePrompt(idx, val) { if (currentStoryboard.scenes[idx]) { currentStoryboard.scenes[idx].prompt = val; triggerAutoSave(); } }
+
+function addNewBlankScene() {
+  const nextNum = (currentStoryboard.scenes.length || 0) + 1;
+  const prompt = "Hyperrealistic aesthetic commercial photography of product with model, 8k resolution";
+  currentStoryboard.scenes.push({
+    sceneNumber: nextNum,
+    shotType: "Close-Up Shot",
+    durationSeconds: 3,
+    visualDescription: "Deskripsi adegan produk...",
+    voiceover: "Tuliskan kata-kata yang diucapkan di adegan ini...",
+    prompt: prompt,
+    promptsList: [prompt],
+    imageUrl: "https://image.pollinations.ai/prompt/" + encodeURIComponent(prompt) + "?width=768&height=1344&seed=" + Math.floor(Math.random() * 99999) + "&model=flux&nologo=true"
+  });
+  renderStoryboardPreview();
+  triggerAutoSave();
+}
+
+function removeScene(idx) {
+  currentStoryboard.scenes.splice(idx, 1);
+  renderStoryboardPreview();
+  triggerAutoSave();
+}
+
+async function regenerateSceneImage(idx) {
+  const scene = currentStoryboard.scenes[idx];
+  if (!scene) return;
+
+  const promptInput = document.getElementById("scene-prompt-input-" + idx);
+  if (promptInput && promptInput.value.trim()) {
+    scene.prompt = promptInput.value.trim();
+  }
+
+  const imgEl = document.getElementById("scene-img-" + idx);
+  const btnEl = document.getElementById("btn-gen-scene-" + idx);
+
+  if (imgEl) imgEl.classList.add("opacity-30", "animate-pulse");
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = "<i class=\"fa-solid fa-spinner fa-spin text-[10px]\"></i><span>Mengubah...</span>";
+  }
+
+  const newUrl = "https://image.pollinations.ai/prompt/" + encodeURIComponent(scene.prompt) + "?width=768&height=1344&seed=" + Math.floor(Math.random() * 9999999) + "&model=flux&nologo=true";
+  
+  const preload = new Image();
+  preload.src = newUrl;
+  preload.onload = () => {
+    scene.imageUrl = newUrl;
+    if (imgEl) {
+      imgEl.src = newUrl;
+      imgEl.classList.remove("opacity-30", "animate-pulse");
+    }
+    if (btnEl) {
+      btnEl.disabled = false;
+      btnEl.innerHTML = "<i class=\"fa-solid fa-wand-magic-sparkles text-xs\"></i><span>Ubah</span>";
+    }
+    triggerAutoSave();
+  };
+}
+
+async function renderAllSceneImages() {
+  currentStoryboard.scenes.forEach((_, idx) => regenerateSceneImage(idx));
+}
+
+function toggleCtaStatus(checked) {
+  isCtaActive = checked;
+  const label = document.getElementById("cta-status-label");
+  if (label) {
+    label.innerText = checked ? "(ON)" : "(OFF)";
+    label.className = checked ? "text-emerald-400 font-extrabold text-[10px]" : "text-slate-500 font-extrabold text-[10px]";
+  }
+}
+
+async function downloadSceneWithCustomSize(imageUrl, ratio, sceneNum) {
+  if (!imageUrl) return;
+  
+  let targetWidth = 1080;
+  let targetHeight = 1920;
+  
+  if (ratio === "1:1") { targetWidth = 1080; targetHeight = 1080; }
+  else if (ratio === "16:9") { targetWidth = 1920; targetHeight = 1080; }
+  else if (ratio === "4:5") { targetWidth = 1080; targetHeight = 1350; }
+  else if (ratio === "9:16") { targetWidth = 1080; targetHeight = 1920; }
+
+  try {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = imageUrl;
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const ctx = canvas.getContext("2d");
+
+      const hRatio = canvas.width / img.width;
+      const vRatio = canvas.height / img.height;
+      const r = Math.max(hRatio, vRatio);
+      const centerShift_x = (canvas.width - img.width * r) / 2;
+      const centerShift_y = (canvas.height - img.height * r) / 2;
+
+      ctx.drawImage(img, 0, 0, img.width, img.height, centerShift_x, centerShift_y, img.width * r, img.height * r);
+
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "scene-" + sceneNum + "_" + targetWidth + "x" + targetHeight + ".jpg";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, "image/jpeg", 0.95);
+    };
+  } catch (err) {
+    downloadImageDirectly(imageUrl, "scene-" + sceneNum + ".jpg");
+  }
+}
+
+async function downloadImageDirectly(imageUrl, filename) {
+  try {
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = filename || "scene-image.jpg";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  } catch (e) {
+    window.open(imageUrl, "_blank");
+  }
+}
+
+async function loadDashboardData() {
+  try {
+    const res = await fetch("/api/dashboard/stats");
+    const data = await res.json();
+
+    document.getElementById("stat-products").innerText = data.totalProducts || 0;
+    document.getElementById("stat-storyboards").innerText = data.totalStoryboards || 0;
+    document.getElementById("stat-scenes").innerText = data.totalScenes || 0;
+    document.getElementById("stat-prompts").innerText = data.totalPrompts || 0;
+
+    const recentContainer = document.getElementById("dashboard-recent-storyboards");
+    if (!data.recentStoryboards || data.recentStoryboards.length === 0) {
+      recentContainer.innerHTML = "<div class=\"text-slate-500 text-xs py-6 text-center\">Belum ada storyboard.</div>";
+    } else {
+      recentContainer.innerHTML = data.recentStoryboards.map(sb => {
+        const coverImg = (sb.scenes && sb.scenes[0] && sb.scenes[0].imageUrl) ? sb.scenes[0].imageUrl : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400";
+        return "<div class=\"p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between hover:border-orange-500/50 transition\">" +
+          "<div class=\"flex items-center gap-3.5 min-w-0\">" +
+            "<div class=\"w-11 h-11 rounded-xl overflow-hidden bg-slate-900 border border-slate-700/60 flex-shrink-0 relative\">" +
+              "<img src=\"" + coverImg + "\" class=\"w-full h-full object-cover\" alt=\"Thumb\" onerror=\"this.src=https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400\">" +
+            "</div>" +
+            "<div class=\"min-w-0 truncate\">" +
+              "<h4 class=\"font-bold text-white text-xs font-display truncate\">" + sb.title + "</h4>" +
+              "<div class=\"flex items-center gap-2 mt-0.5\">" +
+                "<span class=\"text-[10px] font-bold text-amber-400\">" + (sb.scenes ? sb.scenes.length : 0) + " Scenes</span>" +
+                "<span class=\"text-slate-600\">&bull;</span>" +
+                "<span class=\"text-[10px] text-slate-400\">" + (sb.totalDuration || 15) + "s</span>" +
+              "</div>" +
+            "</div>" +
+          "</div>" +
+          "<button onclick=\"loadAndEditStoryboard( + sb.id + )\" class=\"px-3 py-1.5 rounded-xl bg-orange-600/20 hover:bg-orange-600/40 text-amber-300 border border-orange-500/30 font-bold text-xs transition flex-shrink-0\">" +
+            "Buka" +
+          "</button>" +
+        "</div>";
+      }).join("");
+    }
+  } catch (err) {
+    console.error("Error loading dashboard stats:", err);
+  }
+}
+
+async function loadProducts() {
+  try {
+    const res = await fetch("/api/products");
+    productsCache = await res.json();
+
+    const tbody = document.getElementById("products-table-body");
+    if (!tbody) return;
+    if (productsCache.length === 0) {
+      tbody.innerHTML = "<tr><td colspan=\"6\" class=\"text-center py-8 text-slate-500\">Belum ada produk.</td></tr>";
+    } else {
+      tbody.innerHTML = productsCache.map(p => 
+        "<tr class=\"hover:bg-slate-900/60 transition\">" +
+          "<td class=\"px-4 py-3 font-bold text-white\">" + p.title + "</td>" +
+          "<td class=\"px-4 py-3\"><span class=\"px-2 py-0.5 rounded-full bg-orange-500/10 text-[10px] font-bold text-amber-300 border border-orange-500/20\">" + p.category + "</span></td>" +
+          "<td class=\"px-4 py-3 text-slate-200 font-mono\">Rp " + Number(p.price).toLocaleString("id-ID") + "</td>" +
+          "<td class=\"px-4 py-3 text-emerald-400 font-extrabold font-mono\">" + p.commissionRate + "%</td>" +
+          "<td class=\"px-4 py-3 max-w-xs truncate text-slate-400 text-[11px]\" title=\"" + p.usp + "\">" + (p.usp || "-") + "</td>" +
+          "<td class=\"px-4 py-3 text-right space-x-1.5 flex-shrink-0\">" +
+            "<button onclick=\"useProductInStoryboard( + p.id + )\" class=\"px-2.5 py-1 rounded-lg bg-orange-600/20 hover:bg-orange-600/40 text-amber-300 text-xs font-bold\" title=\"Buat Storyboard\"><i class=\"fa-solid fa-wand-magic-sparkles\"></i></button>" +
+            "<button onclick=\"deleteProduct( + p.id + )\" class=\"px-2.5 py-1 rounded-lg bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 text-xs font-bold\" title=\"Hapus\"><i class=\"fa-solid fa-trash\"></i></button>" +
+          "</td>" +
+        "</tr>"
+      ).join("");
+    }
+  } catch (err) {
+    console.error("Error loading products:", err);
+  }
+}
+
+function useProductInStoryboard(productId) {
+  selectMenu("storyboard-creator");
+  const prod = productsCache.find(p => p.id === productId);
+  if (prod) {
+    document.getElementById("sb-product-title").value = prod.title;
+    document.getElementById("sb-product-usp").value = prod.usp;
+    triggerAutoSave();
+  }
+}
+
+async function loadStoryboards() {
+  try {
+    const res = await fetch("/api/storyboards");
+    storyboardsCache = await res.json();
+
+    const grid = document.getElementById("saved-storyboards-grid");
+    if (!grid) return;
+    if (storyboardsCache.length === 0) {
+      grid.innerHTML = "<div class=\"col-span-3 text-center py-12 text-slate-500\">Belum ada storyboard tersimpan.</div>";
+    } else {
+      grid.innerHTML = storyboardsCache.map(sb => {
+        const coverImg = (sb.scenes && sb.scenes[0] && sb.scenes[0].imageUrl) ? sb.scenes[0].imageUrl : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600";
+        return "<div class=\"ultra-glass-card rounded-3xl overflow-hidden flex flex-col justify-between group\">" +
+          "<div>" +
+            "<div class=\"relative h-48 overflow-hidden bg-slate-950\">" +
+              "<img src=\"" + coverImg + "\" class=\"w-full h-full object-cover group-hover:scale-105 transition duration-500\" alt=\"Cover\" onerror=\"this.src=https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600\">" +
+              "<div class=\"absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent\"></div>" +
+              "<span class=\"absolute top-3 left-3 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md text-[10px] font-black uppercase text-amber-300 border border-white/10 font-mono\">" + (sb.totalDuration || 15) + "s</span>" +
+              "<span class=\"absolute bottom-3 left-3 px-2.5 py-1 rounded-xl bg-orange-600/90 backdrop-blur-sm text-white text-[11px] font-bold font-display\">" + (sb.scenes ? sb.scenes.length : 0) + " Scenes</span>" +
+            "</div>" +
+            "<div class=\"p-4 space-y-2\">" +
+              "<h3 class=\"font-black text-white text-sm font-display line-clamp-1\">" + sb.title + "</h3>" +
+              "<p class=\"text-slate-400 text-xs line-clamp-2 italic leading-relaxed\">\"" + (sb.hook || "-") + "\"</p>" +
+            "</div>" +
+          "</div>" +
+          "<div class=\"p-4 pt-0 flex items-center justify-between gap-2 border-t border-slate-800/80 mt-2\">" +
+            "<button onclick=\"loadAndEditStoryboard( + sb.id + )\" class=\"flex-1 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 text-white text-xs font-bold font-display transition flex items-center justify-center gap-1.5\">" +
+              "<i class=\"fa-solid fa-pen-to-square\"></i> Buka" +
+            "</button>" +
+            "<button onclick=\"deleteStoryboard( + sb.id + )\" class=\"p-2 rounded-xl bg-slate-900 hover:bg-rose-600/30 text-slate-400 hover:text-rose-300 text-xs transition border border-slate-800\">" +
+              "<i class=\"fa-solid fa-trash\"></i>" +
+            "</button>" +
+          "</div>" +
+        "</div>";
+      }).join("");
+    }
+  } catch (err) {
+    console.error("Error loading storyboards:", err);
+  }
+}
+
+function loadAndEditStoryboard(id) {
+  const sb = storyboardsCache.find(s => s.id === id);
+  if (sb) {
+    currentStoryboard = JSON.parse(JSON.stringify(sb));
+    selectMenu("storyboard-creator");
+    if (sb.title) document.getElementById("sb-product-title").value = sb.title.replace("Affiliate Campaign: ", "").replace("Affiliate: ", "");
+    if (sb.modelDescription) document.getElementById("sb-model-desc").value = sb.modelDescription;
+    if (sb.locationSetting) document.getElementById("sb-location-setting").value = sb.locationSetting;
+    if (sb.totalDuration) document.getElementById("sb-duration-select").value = sb.totalDuration;
+    renderStoryboardPreview();
+  }
+}
+
+async function deleteStoryboard(id) {
+  if (!confirm("Yakin ingin menghapus storyboard ini?")) return;
+  try {
+    await fetch("/api/storyboards/" + id, { method: "DELETE" });
+    loadStoryboards();
+    loadDashboardData();
+  } catch (err) {
+    console.error("Delete Storyboard Error:", err);
+  }
+}
+
+function openProductModal() {
+  document.getElementById("product-modal").classList.remove("hidden");
+  document.getElementById("product-modal").classList.add("flex");
+}
+function closeProductModal() {
+  document.getElementById("product-modal").classList.add("hidden");
+  document.getElementById("product-modal").classList.remove("flex");
+}
+async function saveProductFromModal() {
+  const title = document.getElementById("modal-p-title").value.trim();
+  const category = document.getElementById("modal-p-cat").value.trim();
+  const price = document.getElementById("modal-p-price").value;
+  const commissionRate = document.getElementById("modal-p-commission").value;
+  const targetMarket = document.getElementById("modal-p-target").value.trim();
+  const usp = document.getElementById("modal-p-usp").value.trim();
+  const affiliateLink = document.getElementById("modal-p-link").value.trim();
+
+  if (!title) { alert("Nama produk wajib diisi!"); return; }
+  try {
+    await fetch("/api/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, category, price, commissionRate, targetMarket, usp, affiliateLink })
+    });
+    closeProductModal();
+    loadProducts();
+    loadDashboardData();
+  } catch (err) { console.error("Save Product Error:", err); }
+}
+async function deleteProduct(id) {
+  if (!confirm("Hapus produk ini?")) return;
+  try {
+    await fetch("/api/products/" + id, { method: "DELETE" });
+    loadProducts();
+    loadDashboardData();
+  } catch (err) { console.error("Delete Product Error:", err); }
+}
+
+async function loadPrompts() {
+  try {
+    const res = await fetch("/api/prompts");
+    promptsCache = await res.json();
+    const grid = document.getElementById("prompt-library-grid");
+    if (!grid) return;
+    grid.innerHTML = promptsCache.map(p => 
+      "<div class=\"ultra-glass-card rounded-3xl p-4 sm:p-5 space-y-3 flex flex-col justify-between\">" +
+        "<div class=\"space-y-2\">" +
+          "<div class=\"flex items-center justify-between\">" +
+            "<span class=\"px-2.5 py-0.5 rounded-full bg-orange-500/10 text-amber-300 text-[10px] font-black uppercase tracking-wider border border-orange-500/20 font-mono\">" + p.category + "</span>" +
+            "<span class=\"text-[10px] font-mono text-slate-500\">" + p.aspectRatio + "</span>" +
+          "</div>" +
+          "<h3 class=\"font-bold text-white text-sm font-display\">" + p.title + "</h3>" +
+          "<div class=\"p-2.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-slate-300 text-xs font-mono break-words leading-relaxed\">" +
+            p.prompt +
+          "</div>" +
+        "</div>" +
+        "<div class=\"pt-2.5 border-t border-slate-800/80 flex items-center justify-between\">" +
+          "<button onclick=\"copyPromptText( + encodeURIComponent(p.prompt) + )\" class=\"px-3 py-1.5 rounded-xl bg-orange-600/20 hover:bg-orange-600/40 text-amber-300 text-xs font-bold transition flex items-center gap-1.5\">" +
+            "<i class=\"fa-solid fa-copy\"></i> Salin" +
+          "</button>" +
+          "<button onclick=\"useInStandalone( + encodeURIComponent(p.prompt) + )\" class=\"px-3 py-1.5 rounded-xl bg-amber-600/20 hover:bg-amber-600/40 text-amber-300 text-xs font-bold transition flex items-center gap-1.5\">" +
+            "<i class=\"fa-solid fa-camera\"></i> Render" +
+          "</button>" +
+        "</div>" +
+      "</div>"
+    ).join("");
+  } catch (err) { console.error("Error loading prompts:", err); }
+}
+
+function openNewPromptModal() {
+  document.getElementById("prompt-modal").classList.remove("hidden");
+  document.getElementById("prompt-modal").classList.add("flex");
+}
+function closePromptModal() {
+  document.getElementById("prompt-modal").classList.add("hidden");
+  document.getElementById("prompt-modal").classList.remove("flex");
+}
+async function savePromptFromModal() {
+  const title = document.getElementById("modal-prompt-title").value.trim();
+  const category = document.getElementById("modal-prompt-cat").value.trim();
+  const aspectRatio = document.getElementById("modal-prompt-ratio").value;
+  const prompt = document.getElementById("modal-prompt-text").value.trim();
+
+  if (!title || !prompt) { alert("Judul dan template prompt wajib diisi!"); return; }
+  try {
+    await fetch("/api/prompts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, category, aspectRatio, prompt })
+    });
+    closePromptModal();
+    loadPrompts();
+    loadDashboardData();
+  } catch (err) { console.error("Save Prompt Error:", err); }
+}
+
+async function generateStandalonePhoto() {
+  const prompt = document.getElementById("standalone-prompt").value.trim();
+  const ratio = document.getElementById("standalone-ratio").value;
+  const model = document.getElementById("standalone-model").value;
+
+  if (!prompt) { alert("Harap masukkan prompt terlebih dahulu!"); return; }
+
+  let width = 768; let height = 1344;
+  if (ratio === "1:1") { width = 1024; height = 1024; }
+  else if (ratio === "16:9") { width = 1344; height = 768; }
+
+  const btn = document.getElementById("btn-standalone-gen");
+  const originalHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = "<i class=\"fa-solid fa-spinner fa-spin text-amber-200\"></i> Me-render...";
+
+  const container = document.getElementById("standalone-result-container");
+  container.innerHTML = "<div class=\"flex flex-col items-center justify-center p-8 space-y-3\">" +
+    "<div class=\"w-10 h-10 border-3 border-amber-500 border-t-transparent rounded-full animate-spin\"></div>" +
+    "<p class=\"text-xs font-bold text-white font-display\">Me-render foto AI...</p>" +
+  "</div>";
+
+  try {
+    const res = await fetch("/api/generate-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt, width, height, model })
+    });
+    const data = await res.json();
+
+    standaloneRendersCache.unshift({
+      imageUrl: data.imageUrl,
+      prompt: prompt,
+      time: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+    });
+    localStorage.setItem("affiliate_ai_renders_history", JSON.stringify(standaloneRendersCache.slice(0, 30)));
+
+    container.innerHTML = "<div class=\"w-full h-full flex flex-col items-center space-y-3\">" +
+      "<div class=\"relative max-h-[480px] overflow-hidden rounded-2xl border border-slate-700 shadow-2xl\">" +
+        "<img src=\"" + data.imageUrl + "\" class=\"w-full h-full object-contain max-h-[460px] rounded-2xl\" alt=\"Rendered AI\">" +
+      "</div>" +
+      "<div class=\"flex items-center gap-2.5\">" +
+        "<button onclick=\"downloadImageDirectly( + data.imageUrl + , affiliate-photo.jpg)\" class=\"px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs font-bold transition flex items-center gap-1.5 font-display\">" +
+          "<i class=\"fa-solid fa-download\"></i> Unduh" +
+        "</button>" +
+        "<button onclick=\"copyPromptText( + encodeURIComponent(data.prompt) + )\" class=\"px-3.5 py-2 rounded-xl bg-slate-900 text-slate-200 text-xs font-bold transition flex items-center gap-1 border border-slate-700 font-mono\">" +
+          "<i class=\"fa-solid fa-copy\"></i> Salin" +
+        "</button>" +
+      "</div>" +
+    "</div>";
+  } catch (err) {
+    console.error("Standalone gen error:", err);
+    container.innerHTML = "<p class=\"text-rose-400 text-xs\">Gagal me-render gambar.</p>";
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+  }
+}
+
+function useInStandalone(encodedPrompt) {
+  selectMenu("ai-photo-generator");
+  document.getElementById("standalone-prompt").value = decodeURIComponent(encodedPrompt);
+}
+
+function openHistoryModal(type) {
+  currentActiveHistoryType = type;
+  const modal = document.getElementById("history-modal");
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+  renderHistoryItems(type);
+}
+function closeHistoryModal() {
+  const modal = document.getElementById("history-modal");
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+}
+function renderHistoryItems(type) {
+  const titleEl = document.getElementById("history-modal-title");
+  const listEl = document.getElementById("history-modal-list");
+  const countLabel = document.getElementById("history-count-label");
+
+  if (type === "storyboards") {
+    titleEl.innerText = "Riwayat Storyboard AI";
+    countLabel.innerText = storyboardsCache.length + " Storyboard tersimpan";
+    if (storyboardsCache.length === 0) {
+      listEl.innerHTML = "<div class=\"text-center py-10 text-slate-500 text-xs\">Belum ada riwayat storyboard.</div>";
+      return;
+    }
+    listEl.innerHTML = storyboardsCache.map(sb => {
+      const coverImg = (sb.scenes && sb.scenes[0] && sb.scenes[0].imageUrl) ? sb.scenes[0].imageUrl : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200";
+      return "<div class=\"p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 hover:border-orange-500/40 transition\">" +
+        "<div class=\"flex items-center gap-2.5 min-w-0 cursor-pointer\" onclick=\"viewHistoryItem(storyboard,  + sb.id + )\">" +
+          "<img src=\"" + coverImg + "\" class=\"w-10 h-10 rounded-xl object-cover border border-slate-700 flex-shrink-0\" onerror=\"this.src=https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200\">" +
+          "<div class=\"min-w-0 truncate\">" +
+            "<h4 class=\"font-bold text-white text-xs truncate hover:text-amber-300 transition\">" + sb.title + "</h4>" +
+            "<p class=\"text-[10px] text-slate-400 font-mono\">" + (sb.scenes ? sb.scenes.length : 0) + " Scenes &bull; " + (sb.totalDuration || 15) + "s</p>" +
+          "</div>" +
+        "</div>" +
+        "<div class=\"flex items-center gap-1.5 flex-shrink-0\">" +
+          "<button onclick=\"viewHistoryItem(storyboard,  + sb.id + )\" class=\"px-2.5 py-1 rounded-lg bg-orange-600/20 hover:bg-orange-600 text-amber-300 hover:text-white text-xs font-bold transition\">Lihat</button>" +
+          "<button onclick=\"deleteHistoryItem(storyboard,  + sb.id + )\" class=\"p-1.5 rounded-lg bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white text-xs transition\"><i class=\"fa-solid fa-trash\"></i></button>" +
+        "</div>" +
+      "</div>";
+    }).join("");
+  } else if (type === "products") {
+    titleEl.innerText = "Riwayat Database Produk";
+    countLabel.innerText = productsCache.length + " Produk tersimpan";
+    if (productsCache.length === 0) {
+      listEl.innerHTML = "<div class=\"text-center py-10 text-slate-500 text-xs\">Belum ada riwayat produk.</div>";
+      return;
+    }
+    listEl.innerHTML = productsCache.map(p => 
+      "<div class=\"p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 hover:border-emerald-500/40 transition\">" +
+        "<div class=\"min-w-0 truncate cursor-pointer\" onclick=\"viewHistoryItem(product,  + p.id + )\">" +
+          "<h4 class=\"font-bold text-white text-xs truncate hover:text-emerald-300 transition\">" + p.title + "</h4>" +
+          "<p class=\"text-[10px] text-slate-400 font-mono\">Rp " + Number(p.price).toLocaleString("id-ID") + " &bull; Komisi " + p.commissionRate + "%</p>" +
+        "</div>" +
+        "<div class=\"flex items-center gap-1.5 flex-shrink-0\">" +
+          "<button onclick=\"viewHistoryItem(product,  + p.id + )\" class=\"px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-bold transition\">Pilih</button>" +
+          "<button onclick=\"deleteHistoryItem(product,  + p.id + )\" class=\"p-1.5 rounded-lg bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white text-xs transition\"><i class=\"fa-solid fa-trash\"></i></button>" +
+        "</div>" +
+      "</div>"
+    ).join("");
+  } else if (type === "prompts") {
+    titleEl.innerText = "Riwayat Prompt Library";
+    countLabel.innerText = promptsCache.length + " Prompt tersimpan";
+    if (promptsCache.length === 0) {
+      listEl.innerHTML = "<div class=\"text-center py-10 text-slate-500 text-xs\">Belum ada riwayat prompt.</div>";
+      return;
+    }
+    listEl.innerHTML = promptsCache.map(p => 
+      "<div class=\"p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 hover:border-amber-500/40 transition\">" +
+        "<div class=\"min-w-0 truncate cursor-pointer\" onclick=\"viewHistoryItem(prompt,  + p.id + )\">" +
+          "<h4 class=\"font-bold text-white text-xs truncate hover:text-amber-300 transition\">" + p.title + "</h4>" +
+          "<p class=\"text-[10px] text-slate-400 font-mono truncate\">" + p.prompt + "</p>" +
+        "</div>" +
+        "<div class=\"flex items-center gap-1.5 flex-shrink-0\">" +
+          "<button onclick=\"viewHistoryItem(prompt,  + p.id + )\" class=\"px-2.5 py-1 rounded-lg bg-amber-600/20 hover:bg-amber-600 text-amber-300 hover:text-white text-xs font-bold transition\">Salin</button>" +
+          "<button onclick=\"deleteHistoryItem(prompt,  + p.id + )\" class=\"p-1.5 rounded-lg bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white text-xs transition\"><i class=\"fa-solid fa-trash\"></i></button>" +
+        "</div>" +
+      "</div>"
+    ).join("");
+  } else if (type === "standalone_renders") {
+    titleEl.innerText = "Riwayat Render Studio Foto";
+    countLabel.innerText = standaloneRendersCache.length + " Render tersimpan";
+    if (standaloneRendersCache.length === 0) {
+      listEl.innerHTML = "<div class=\"text-center py-10 text-slate-500 text-xs\">Belum ada riwayat render foto.</div>";
+      return;
+    }
+    listEl.innerHTML = standaloneRendersCache.map((r, idx) => 
+      "<div class=\"p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 hover:border-amber-500/40 transition\">" +
+        "<div class=\"flex items-center gap-2.5 min-w-0 cursor-pointer\" onclick=\"viewHistoryItem(render, " + idx + ")\">" +
+          "<img src=\"" + r.imageUrl + "\" class=\"w-10 h-10 rounded-xl object-cover border border-slate-700 flex-shrink-0\">" +
+          "<div class=\"min-w-0 truncate\">" +
+            "<h4 class=\"font-bold text-white text-xs truncate hover:text-amber-300 transition\">" + r.prompt + "</h4>" +
+            "<p class=\"text-[10px] text-slate-400 font-mono\">" + (r.time || "Baru saja") + "</p>" +
+          "</div>" +
+        "</div>" +
+        "<div class=\"flex items-center gap-1.5 flex-shrink-0\">" +
+          "<button onclick=\"downloadImageDirectly( + r.imageUrl + , render- + (idx + 1) + .jpg)\" class=\"p-1.5 rounded-lg bg-orange-600/20 hover:bg-orange-600 text-amber-300 hover:text-white text-xs transition\"><i class=\"fa-solid fa-download\"></i></button>" +
+          "<button onclick=\"deleteHistoryItem(render, " + idx + ")\" class=\"p-1.5 rounded-lg bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white text-xs transition\"><i class=\"fa-solid fa-trash\"></i></button>" +
+        "</div>" +
+      "</div>"
+    ).join("");
+  }
+}
+
+function viewHistoryItem(type, id) {
+  closeHistoryModal();
+  if (type === "storyboard") {
+    loadAndEditStoryboard(id);
+  } else if (type === "product") {
+    useProductInStoryboard(id);
+  } else if (type === "prompt") {
+    const p = promptsCache.find(item => item.id === id);
+    if (p) copyPromptText(encodeURIComponent(p.prompt));
+  } else if (type === "render") {
+    const r = standaloneRendersCache[id];
+    if (r) {
+      selectMenu("ai-photo-generator");
+      document.getElementById("standalone-prompt").value = r.prompt;
+    }
+  }
+}
+
+async function deleteHistoryItem(type, id) {
+  if (!confirm("Hapus item ini dari riwayat?")) return;
+  if (type === "storyboard") {
+    await deleteStoryboard(id);
+    renderHistoryItems("storyboards");
+  } else if (type === "product") {
+    await deleteProduct(id);
+    renderHistoryItems("products");
+  } else if (type === "prompt") {
+    await fetch("/api/prompts/" + id, { method: "DELETE" });
+    await loadPrompts();
+    renderHistoryItems("prompts");
+  } else if (type === "render") {
+    standaloneRendersCache.splice(id, 1);
+    localStorage.setItem("affiliate_ai_renders_history", JSON.stringify(standaloneRendersCache));
+    renderHistoryItems("standalone_renders");
+  }
+}
+
+async function loadSettings() {
+  try {
+    const res = await fetch("/api/settings");
+    const settings = await res.json();
+    if (settings.geminiApiKey) document.getElementById("setting-gemini-key").value = settings.geminiApiKey;
+    if (settings.huggingFaceKey) document.getElementById("setting-hf-key").value = settings.huggingFaceKey;
+  } catch (err) { console.error("Error loading settings:", err); }
+}
+
+async function saveSettings() {
+  const geminiApiKey = document.getElementById("setting-gemini-key").value.trim();
+  const huggingFaceKey = document.getElementById("setting-hf-key").value.trim();
+  try {
+    await fetch("/api/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ geminiApiKey, huggingFaceKey })
+    });
+    alert("Tersimpan!");
+  } catch (err) { console.error("Error saving settings:", err); }
+}
+
+function copyPromptText(encodedText) {
+  const text = decodeURIComponent(encodedText);
+  navigator.clipboard.writeText(text).then(() => {
+    alert("Tersalin!");
+  }).catch(err => {
+    console.error("Copy failed", err);
+  });
+}
+
+
+// ================================================================
