@@ -525,12 +525,12 @@ async function handleLogin(e) {
 }
 
 function handleLogout() {
-  if (!confirm("Apakah Anda yakin ingin keluar dari akun?")) return;
   localStorage.removeItem("affiliate_ai_auth_token");
   localStorage.removeItem("affiliate_ai_user");
   currentUser = null;
   toggleSidebar(false);
   showLoginScreen();
+  showToastNotification("success", "Logout Berhasil", "Anda telah keluar dari akun dengan aman.");
 }
 
 async function updateAdminProfile() {
@@ -539,7 +539,7 @@ async function updateAdminProfile() {
   const newPassword = document.getElementById("setting-new-pass").value.trim();
 
   if (!currentPassword) {
-    alert("Harap masukkan password saat ini untuk memverifikasi perubahan!");
+    showToastNotification("error", "Simpan Gagal", "Harap masukkan password saat ini untuk verifikasi!");
     return;
   }
 
@@ -552,7 +552,7 @@ async function updateAdminProfile() {
 
     const data = await res.json();
     if (res.ok) {
-      alert("Tersimpan!");
+      showToastNotification("success", "Simpan Sukses", "Profil dan password admin berhasil diperbarui.");
       if (name && currentUser) {
         currentUser.name = name;
         localStorage.setItem("affiliate_ai_user", JSON.stringify(currentUser));
@@ -562,11 +562,11 @@ async function updateAdminProfile() {
       document.getElementById("setting-current-pass").value = "";
       document.getElementById("setting-new-pass").value = "";
     } else {
-      alert(data.error || "Gagal memperbarui profil");
+      showToastNotification("error", "Simpan Gagal", data.error || "Gagal memperbarui profil.");
     }
   } catch (err) {
     console.error("Update profile error:", err);
-    alert("Terjadi kesalahan saat memperbarui akun.");
+    showToastNotification("error", "Simpan Gagal", "Terjadi kesalahan koneksi saat memperbarui akun.");
   }
 }
 
@@ -1626,25 +1626,39 @@ async function saveProductFromModal() {
   const usp = document.getElementById("modal-p-usp").value.trim();
   const affiliateLink = document.getElementById("modal-p-link").value.trim();
 
-  if (!title) { alert("Nama produk wajib diisi!"); return; }
+  if (!title) { 
+    showToastNotification("error", "Simpan Gagal", "Nama produk wajib diisi!"); 
+    return; 
+  }
   try {
-    await fetch("/api/products", {
+    const res = await fetch("/api/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, category, price, commissionRate, targetMarket, usp, affiliateLink })
     });
-    closeProductModal();
-    loadProducts();
-    loadDashboardData();
-  } catch (err) { console.error("Save Product Error:", err); }
+    if (res.ok) {
+      showToastNotification("success", "Simpan Sukses", "Produk berhasil ditambahkan ke database.");
+      closeProductModal();
+      loadProducts();
+      loadDashboardData();
+    } else {
+      showToastNotification("error", "Simpan Gagal", "Gagal menyimpan produk ke database.");
+    }
+  } catch (err) { 
+    console.error("Save Product Error:", err); 
+    showToastNotification("error", "Simpan Gagal", "Terjadi kesalahan koneksi.");
+  }
 }
 async function deleteProduct(id) {
-  if (!confirm("Hapus produk ini?")) return;
   try {
     await fetch("/api/products/" + id, { method: "DELETE" });
+    showToastNotification("success", "Terhapus", "Produk berhasil dihapus.");
     loadProducts();
     loadDashboardData();
-  } catch (err) { console.error("Delete Product Error:", err); }
+  } catch (err) { 
+    console.error("Delete Product Error:", err); 
+    showToastNotification("error", "Hapus Gagal", "Gagal menghapus produk.");
+  }
 }
 
 async function loadPrompts() {
@@ -1692,17 +1706,28 @@ async function savePromptFromModal() {
   const aspectRatio = document.getElementById("modal-prompt-ratio").value;
   const prompt = document.getElementById("modal-prompt-text").value.trim();
 
-  if (!title || !prompt) { alert("Judul dan template prompt wajib diisi!"); return; }
+  if (!title || !prompt) { 
+    showToastNotification("error", "Simpan Gagal", "Judul dan prompt wajib diisi!"); 
+    return; 
+  }
   try {
-    await fetch("/api/prompts", {
+    const res = await fetch("/api/prompts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, category, aspectRatio, prompt })
     });
-    closePromptModal();
-    loadPrompts();
-    loadDashboardData();
-  } catch (err) { console.error("Save Prompt Error:", err); }
+    if (res.ok) {
+      showToastNotification("success", "Simpan Sukses", "Prompt berhasil ditambahkan ke library.");
+      closePromptModal();
+      loadPrompts();
+      loadDashboardData();
+    } else {
+      showToastNotification("error", "Simpan Gagal", "Gagal menyimpan prompt.");
+    }
+  } catch (err) { 
+    console.error("Save Prompt Error:", err); 
+    showToastNotification("error", "Simpan Gagal", "Terjadi kesalahan koneksi.");
+  }
 }
 
 async function generateStandalonePhoto() {
@@ -1710,7 +1735,10 @@ async function generateStandalonePhoto() {
   const ratio = document.getElementById("standalone-ratio").value;
   const model = document.getElementById("standalone-model").value;
 
-  if (!prompt) { alert("Harap masukkan prompt terlebih dahulu!"); return; }
+  if (!prompt) { 
+    showToastNotification("error", "Gagal Render", "Harap masukkan prompt terlebih dahulu!"); 
+    return; 
+  }
 
   let width = 768; let height = 1344;
   if (ratio === "1:1") { width = 1024; height = 1024; }
@@ -1922,13 +1950,20 @@ async function saveSettings() {
   const geminiApiKey = document.getElementById("setting-gemini-key").value.trim();
   const huggingFaceKey = document.getElementById("setting-hf-key").value.trim();
   try {
-    await fetch("/api/settings", {
+    const res = await fetch("/api/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ geminiApiKey, huggingFaceKey })
     });
-    alert("Tersimpan!");
-  } catch (err) { console.error("Error saving settings:", err); }
+    if (res.ok) {
+      showToastNotification("success", "Simpan Sukses", "Pengaturan API Key berhasil disimpan.");
+    } else {
+      showToastNotification("error", "Simpan Gagal", "Gagal menyimpan pengaturan API Key.");
+    }
+  } catch (err) {
+    console.error("Error saving settings:", err);
+    showToastNotification("error", "Simpan Gagal", "Terjadi kesalahan koneksi saat menyimpan pengaturan.");
+  }
 }
 
 function copyPromptText(encodedText) {
