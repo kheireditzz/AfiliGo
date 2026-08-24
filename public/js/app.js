@@ -1927,5 +1927,43 @@ function copyPromptText(encodedText) {
   });
 }
 
+// =========================================================================
+// ONE-CLICK BROWSER EXTENSION ACTIVATION BRIDGE
+// =========================================================================
+async function triggerActivateExtensionFlow() {
+  const statusEl = document.getElementById("ext-status-toast");
+  const btn = document.getElementById("btn-activate-ext");
+  
+  if (btn) {
+    btn.innerHTML = "<i class=\"fa-solid fa-spinner fa-spin\"></i> Mengaktifkan...";
+  }
+
+  // Attempt communication with chrome extension if supported
+  if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage) {
+    try {
+      chrome.runtime.sendMessage({ action: "ACTIVATE_FLOW_SESSION", openTab: true }, (res) => {
+        if (chrome.runtime.lastError) {
+          // Extension not installed or external ID mismatch, open official Flow tab directly
+          window.open("https://labs.google/fx/id/tools/flow", "_blank");
+        } else if (res && res.success) {
+          alert("Ekstensi Aktif! Sesi VIP Google Flow berhasil disuntikkan & tab dibuka.");
+        }
+      });
+    } catch(e) {
+      window.open("https://labs.google/fx/id/tools/flow", "_blank");
+    }
+  } else {
+    // Standard direct browser redirect
+    window.open("https://labs.google/fx/id/tools/flow", "_blank");
+  }
+
+  setTimeout(() => {
+    if (btn) {
+      btn.innerHTML = "<i class=\"fa-solid fa-bolt text-amber-400\"></i> Aktifkan Ekstensi & Buka Flow";
+    }
+  }, 1500);
+}
+
+
 
 // ================================================================

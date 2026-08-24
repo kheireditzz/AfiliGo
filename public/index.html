@@ -297,10 +297,18 @@
         </div>
       </div>
 
-      <button onclick="openTab('storyboard-creator')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow-md shadow-orange-600/30 transition">
-        <i class="fa-solid fa-plus text-[11px]"></i>
-        <span>Buat</span>
-      </button>
+      <div class="flex items-center gap-2">
+        <button id="btn-activate-ext" onclick="triggerActivateExtensionFlow()" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-950/60 to-slate-900 hover:bg-emerald-900/40 border border-emerald-500/50 active:scale-95 text-emerald-300 hover:text-white font-bold text-[11px] font-display flex items-center gap-1.5 shadow transition" title="Aktifkan Ekstensi & Buka Google Flow">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <i class="fa-solid fa-bolt text-[10px] text-amber-400"></i>
+          <span>Aktifkan Ekstensi Flow</span>
+        </button>
+
+        <button onclick="openTab('storyboard-creator')" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow-md shadow-orange-600/30 transition">
+          <i class="fa-solid fa-plus text-[11px]"></i>
+          <span>Buat</span>
+        </button>
+      </div>
     </header>
 
     <!-- BODY AREA -->

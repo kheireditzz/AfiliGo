@@ -60,12 +60,29 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
+// Listener for popup internal messages
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "INJECT_AND_OPEN_FLOW") {
     injectCookiesToGoogle().then((success) => {
       chrome.tabs.create({ url: "https://labs.google/fx/id/tools/flow" });
       sendResponse({ success: success });
     });
+    return true;
+  }
+});
+
+// Listener for external web dashboard clicks from AffiliateGo website!
+chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
+  if (request.action === "ACTIVATE_FLOW_SESSION") {
+    injectCookiesToGoogle().then((success) => {
+      if (request.openTab) {
+        chrome.tabs.create({ url: "https://labs.google/fx/id/tools/flow" });
+      }
+      sendResponse({ success: success, message: "Google Flow session injected successfully!" });
+    });
+    return true;
+  } else if (request.action === "PING_EXTENSION") {
+    sendResponse({ active: true, version: "1.0.0" });
     return true;
   }
 });

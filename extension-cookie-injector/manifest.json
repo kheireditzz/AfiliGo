@@ -10,8 +10,17 @@
   ],
   "host_permissions": [
     "*://labs.google/*",
-    "*://*.google.com/*"
+    "*://*.google.com/*",
+    "*://*.vercel.app/*",
+    "*://localhost/*"
   ],
+  "externally_connectable": {
+    "matches": [
+      "https://affiliatego.vercel.app/*",
+      "https://*.vercel.app/*",
+      "http://localhost:*/*"
+    ]
+  },
   "action": {
     "default_popup": "popup.html",
     "default_title": "AffiliateGo Flow Injector"
