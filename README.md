@@ -1,4 +1,4 @@
-# AfiliGo - Platform AI Konten Affiliate & Storyboard 8K
+# AffiliateGo - Platform AI Konten Affiliate & Storyboard 8K
 
 Platform generator naskah affiliate, visual AI storyboard realistis, dan multi-server AI generation hub.
 
@@ -12,7 +12,7 @@ Platform generator naskah affiliate, visual AI storyboard realistis, dan multi-s
 ## 📦 Deployment ke Vercel
 
 1. Buka [Vercel Dashboard](https://vercel.com/new).
-2. Import repository GitHub **AfiliGo**.
+2. Import repository GitHub **AffiliateGo**.
 3. Masukkan Environment Variables:
    - `SUPABASE_URL`: `https://bvmmshskoqylzptoyuxf.supabase.co`
    - `SUPABASE_ANON_KEY`: `<anon_key>`

@@ -1,7 +1,7 @@
 {
-  "name": "affiliate-ai-suite",
+  "name": "affiliatego",
   "version": "1.0.0",
-  "description": "All-in-One Affiliate AI Studio & Storyboard Creator with Database",
+  "description": "AffiliateGo - All-in-One Affiliate AI Studio & Storyboard Creator",
   "main": "server.js",
   "type": "module",
   "scripts": {
