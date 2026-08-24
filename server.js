@@ -515,13 +515,14 @@ app.post('/api/settings', (req, res) => {
 });
 
 // ==========================================
-// DONGTUBE VIP PAYMENT GATEWAY (RP 25.000)
+// DONGTUBE VIP PAYMENT GATEWAY & WEBHOOK ENGINE
 // ==========================================
 const DONGTUBE_API_KEY = 'DONGTUBE_20a06f2ab35b44ac';
 const DONGTUBE_BASE_URL = 'https://payment.dongtube.cyou';
 const VIP_PRICE = 25000;
 
 app.post('/api/vip/create-invoice', async (req, res) => {
+  const { userId, email } = req.body;
   try {
     const url = `${DONGTUBE_BASE_URL}/api/v1/invoice?apikey=${DONGTUBE_API_KEY}&amount=${VIP_PRICE}`;
     const response = await fetch(url);
@@ -531,6 +532,19 @@ app.post('/api/vip/create-invoice', async (req, res) => {
       let qrisImg = data.qris_image;
       if (qrisImg && qrisImg.startsWith('/')) {
         qrisImg = DONGTUBE_BASE_URL + qrisImg;
+      }
+
+      // Record invoice to Supabase
+      try {
+        await supabase.from('invoices').insert([{
+          invoice_id: data.invoice_id,
+          amount: data.amount || VIP_PRICE,
+          status: 'pending',
+          qris_image: qrisImg,
+          user_id: userId || null
+        }]);
+      } catch (dbErr) {
+        console.error('Supabase invoice insert error:', dbErr);
       }
 
       res.json({
@@ -551,6 +565,57 @@ app.post('/api/vip/create-invoice', async (req, res) => {
   }
 });
 
+// OFFICIAL PAYMENT WEBHOOK HANDLER
+// Receives instant payment callback from payment gateway
+// URL: https://affiliatego.vercel.app/api/vip/webhook
+app.post('/api/vip/webhook', async (req, res) => {
+  console.log('PAYMENT_WEBHOOK_RECEIVED:', req.body);
+  const { invoice_id, status, amount, signature, user_email, user_id } = req.body;
+
+  if (!invoice_id) {
+    return res.status(400).json({ success: false, message: 'Invoice ID is required' });
+  }
+
+  const isPaid = status === 'paid' || status === 'SUCCESS' || status === 'settlement' || status === 'PAID';
+
+  if (isPaid) {
+    const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    // 1. Update invoice in Supabase
+    try {
+      await supabase.from('invoices').update({
+        status: 'paid',
+        paid_at: new Date().toISOString()
+      }).eq('invoice_id', invoice_id);
+    } catch (err) {
+      console.error('Supabase webhook invoice update error:', err);
+    }
+
+    // 2. Activate VIP user in Supabase
+    if (user_id || user_email) {
+      try {
+        const query = user_id 
+          ? supabase.from('users').update({ vip_active: true, vip_expires_at: thirtyDaysFromNow }).eq('id', user_id)
+          : supabase.from('users').update({ vip_active: true, vip_expires_at: thirtyDaysFromNow }).eq('email', user_email.toLowerCase());
+        await query;
+      } catch (err) {
+        console.error('Supabase user VIP activation error:', err);
+      }
+    }
+
+    // 3. Update global settings fallback
+    const settings = readJson(DB_SETTINGS);
+    settings.vipActive = true;
+    settings.vipExpiresAt = thirtyDaysFromNow;
+    writeJson(DB_SETTINGS, settings);
+
+    console.log(`VIP_ACTIVATED_SUCCESSFULLY for invoice: ${invoice_id}`);
+    return res.json({ success: true, message: 'Payment webhook processed and VIP activated!' });
+  }
+
+  res.json({ success: true, message: 'Webhook received but payment is not in paid state.' });
+});
+
 app.get('/api/vip/check-status/:invoiceId', async (req, res) => {
   const { invoiceId } = req.params;
   try {
@@ -560,10 +625,16 @@ app.get('/api/vip/check-status/:invoiceId', async (req, res) => {
 
     if (data && data.status) {
       if (data.status === 'paid') {
+        const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        
+        // Supabase sync
+        try {
+          await supabase.from('invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('invoice_id', invoiceId);
+        } catch(e) {}
+
         const settings = readJson(DB_SETTINGS);
         settings.vipActive = true;
-        // Sets dynamic 30-day expiry date
-        settings.vipExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        settings.vipExpiresAt = thirtyDaysFromNow;
         writeJson(DB_SETTINGS, settings);
       }
       res.json({
