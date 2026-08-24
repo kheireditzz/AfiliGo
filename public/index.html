@@ -1401,6 +1401,59 @@
         
 
       </div>
+    </div>
+  </div>
+
+  <!-- ONE-CLICK EXTENSION INSTALLER MODAL -->
+  <div id="modal-install-extension" class="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="w-full max-w-md bg-gradient-to-b from-[#141b2d] to-[#0b0e17] border border-amber-500/30 rounded-3xl p-5 sm:p-6 shadow-2xl shadow-black relative text-white space-y-4">
+      
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white shadow">
+            <i class="fa-solid fa-puzzle-piece text-base"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm font-display text-white">Pasang Ekstensi Flow AI</h3>
+            <p class="text-[10px] text-amber-300 font-mono">Bypass Login Otomatis Google Labs</p>
+          </div>
+        </div>
+        <button onclick="closeExtensionInstallModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-xs transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-slate-300 space-y-2">
+        <p class="font-semibold text-white">Konfirmasi Pemasangan Ekstensi:</p>
+        <p class="text-[11px] leading-relaxed text-slate-300">
+          Ekstensi ini akan mengaktifkan sesi login VIP Google Flow secara otomatis sehingga Anda tidak perlu mengetik password lagi.
+        </p>
+      </div>
+
+      <div class="space-y-2 text-xs">
+        <div class="flex items-center gap-2 text-slate-300">
+          <span class="w-5 h-5 rounded-full bg-slate-800 border border-amber-500/40 text-amber-400 font-bold text-[10px] flex items-center justify-center">1</span>
+          <span>Klik tombol <b class="text-white">"Pasang Sekarang"</b> di bawah.</span>
+        </div>
+        <div class="flex items-center gap-2 text-slate-300">
+          <span class="w-5 h-5 rounded-full bg-slate-800 border border-amber-500/40 text-amber-400 font-bold text-[10px] flex items-center justify-center">2</span>
+          <span>Browser akan membuka tab <b>chrome://extensions</b> untuk verifikasi.</span>
+        </div>
+        <div class="flex items-center gap-2 text-slate-300">
+          <span class="w-5 h-5 rounded-full bg-slate-800 border border-amber-500/40 text-amber-400 font-bold text-[10px] flex items-center justify-center">3</span>
+          <span>Selesai! Google Flow langsung terbuka dalam kondisi login aktif.</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-2">
+        <button onclick="closeExtensionInstallModal()" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs font-display transition">
+          Batal
+        </button>
+        <button onclick="confirmAndInstallExtension()" class="py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-extrabold text-xs font-display shadow-lg shadow-orange-600/30 flex items-center justify-center gap-1.5 transition">
+          <span>Pasang Sekarang</span>
+          <i class="fa-solid fa-check"></i>
+        </button>
+      </div>
 
     </div>
   </div>
