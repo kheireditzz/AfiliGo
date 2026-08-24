@@ -194,122 +194,250 @@ app.post('/api/auth/update-profile', (req, res) => {
 });
 
 // ==========================================
-// DASHBOARD STATS API
+// DASHBOARD STATS API (SUPABASE CLOUD SYNC)
 // ==========================================
-app.get('/api/dashboard/stats', (req, res) => {
-  const products = readJson(DB_PRODUCTS);
-  const storyboards = readJson(DB_STORYBOARDS);
-  const prompts = readJson(DB_PROMPTS);
+app.get('/api/dashboard/stats', async (req, res) => {
+  try {
+    const [pRes, sbRes, prRes] = await Promise.all([
+      supabase.from('products').select('id', { count: 'exact' }),
+      supabase.from('storyboards').select('*').order('created_at', { ascending: false }),
+      supabase.from('prompts').select('id', { count: 'exact' })
+    ]);
 
-  let totalScenes = 0;
-  storyboards.forEach(sb => {
-    if (sb.scenes && Array.isArray(sb.scenes)) {
-      totalScenes += sb.scenes.length;
-    }
-  });
+    const storyboardsList = sbRes.data || readJson(DB_STORYBOARDS);
+    let totalScenes = 0;
+    storyboardsList.forEach(sb => {
+      if (sb.scenes && Array.isArray(sb.scenes)) {
+        totalScenes += sb.scenes.length;
+      }
+    });
 
-  res.json({
-    totalProducts: products.length,
-    totalStoryboards: storyboards.length,
-    totalScenes: totalScenes,
-    totalPrompts: prompts.length,
-    recentStoryboards: storyboards.slice(-4).reverse()
-  });
+    res.json({
+      totalProducts: pRes.count !== null ? pRes.count : readJson(DB_PRODUCTS).length,
+      totalStoryboards: sbRes.data ? sbRes.data.length : storyboardsList.length,
+      totalScenes: totalScenes,
+      totalPrompts: prRes.count !== null ? prRes.count : readJson(DB_PROMPTS).length,
+      recentStoryboards: storyboardsList.slice(0, 4)
+    });
+  } catch (err) {
+    const products = readJson(DB_PRODUCTS);
+    const storyboards = readJson(DB_STORYBOARDS);
+    const prompts = readJson(DB_PROMPTS);
+    let totalScenes = 0;
+    storyboards.forEach(sb => {
+      if (sb.scenes && Array.isArray(sb.scenes)) totalScenes += sb.scenes.length;
+    });
+    res.json({
+      totalProducts: products.length,
+      totalStoryboards: storyboards.length,
+      totalScenes: totalScenes,
+      totalPrompts: prompts.length,
+      recentStoryboards: storyboards.slice(-4).reverse()
+    });
+  }
 });
 
 // ==========================================
-// PRODUCTS CRUD APIs
+// PRODUCTS CRUD APIs (SUPABASE SYNC)
 // ==========================================
-app.get('/api/products', (req, res) => {
-  res.json(readJson(DB_PRODUCTS));
+app.get('/api/products', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+    if (error || !data) throw error;
+    res.json(data);
+  } catch (err) {
+    res.json(readJson(DB_PRODUCTS));
+  }
 });
 
-app.post('/api/products', (req, res) => {
-  const products = readJson(DB_PRODUCTS);
+app.post('/api/products', async (req, res) => {
   const newProduct = {
-    id: 'prod-' + Date.now(),
     title: req.body.title || 'Produk Baru',
     category: req.body.category || 'Umum',
     price: Number(req.body.price) || 0,
-    commissionRate: Number(req.body.commissionRate) || 10,
-    targetMarket: req.body.targetMarket || '',
+    commission_rate: Number(req.body.commissionRate) || 10,
+    target_market: req.body.targetMarket || '',
     usp: req.body.usp || '',
-    affiliateLink: req.body.affiliateLink || ''
+    affiliate_link: req.body.affiliateLink || '',
+    image_url: req.body.imageUrl || ''
   };
-  products.unshift(newProduct);
+
+  try {
+    const { data, error } = await supabase.from('products').insert([newProduct]).select();
+    if (!error && data && data[0]) {
+      // Local sync
+      const products = readJson(DB_PRODUCTS);
+      products.unshift(data[0]);
+      writeJson(DB_PRODUCTS, products);
+      return res.status(201).json(data[0]);
+    }
+  } catch (err) {
+    console.error('Supabase product insert error:', err);
+  }
+
+  const products = readJson(DB_PRODUCTS);
+  const fallbackProd = { id: 'prod-' + Date.now(), ...newProduct };
+  products.unshift(fallbackProd);
   writeJson(DB_PRODUCTS, products);
-  res.status(201).json(newProduct);
+  res.status(201).json(fallbackProd);
 });
 
-app.delete('/api/products/:id', (req, res) => {
+app.delete('/api/products/:id', async (req, res) => {
+  const id = req.params.id;
+  try {
+    await supabase.from('products').delete().eq('id', id);
+  } catch (err) {
+    console.error('Supabase product delete error:', err);
+  }
+
   let products = readJson(DB_PRODUCTS);
-  products = products.filter(p => p.id !== req.params.id);
+  products = products.filter(p => p.id !== id);
   writeJson(DB_PRODUCTS, products);
   res.json({ success: true });
 });
 
 // ==========================================
-// STORYBOARDS CRUD APIs
+// STORYBOARDS CRUD APIs (SUPABASE SYNC)
 // ==========================================
-app.get('/api/storyboards', (req, res) => {
-  res.json(readJson(DB_STORYBOARDS));
+app.get('/api/storyboards', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('storyboards').select('*').order('created_at', { ascending: false });
+    if (error || !data) throw error;
+    res.json(data);
+  } catch (err) {
+    res.json(readJson(DB_STORYBOARDS));
+  }
 });
 
-app.post('/api/storyboards', (req, res) => {
-  const storyboards = readJson(DB_STORYBOARDS);
+app.post('/api/storyboards', async (req, res) => {
   const sb = req.body;
-  const existingIdx = storyboards.findIndex(s => s.id === sb.id);
+  const sbPayload = {
+    title: sb.title || 'Storyboard Tanpa Judul',
+    platform: sb.platform || 'TikTok / Reels (9:16)',
+    total_duration: Number(sb.totalDuration) || 15,
+    model_description: sb.modelDescription || '',
+    location_setting: sb.locationSetting || '',
+    hook: sb.hook || '',
+    cta: sb.cta || '',
+    scenes: sb.scenes || []
+  };
 
+  try {
+    if (sb.id && !sb.id.startsWith('sb-')) {
+      // Existing UUID
+      const { data, error } = await supabase.from('storyboards').update(sbPayload).eq('id', sb.id).select();
+      if (!error && data && data[0]) {
+        return res.status(200).json(data[0]);
+      }
+    } else {
+      // New row
+      const { data, error } = await supabase.from('storyboards').insert([sbPayload]).select();
+      if (!error && data && data[0]) {
+        const storyboards = readJson(DB_STORYBOARDS);
+        storyboards.unshift(data[0]);
+        writeJson(DB_STORYBOARDS, storyboards);
+        return res.status(201).json(data[0]);
+      }
+    }
+  } catch (err) {
+    console.error('Supabase storyboard sync error:', err);
+  }
+
+  const storyboards = readJson(DB_STORYBOARDS);
+  const existingIdx = storyboards.findIndex(s => s.id === sb.id);
   if (existingIdx >= 0) {
     storyboards[existingIdx] = sb;
   } else {
     if (!sb.id) sb.id = 'sb-' + Date.now();
     storyboards.unshift(sb);
   }
-
   writeJson(DB_STORYBOARDS, storyboards);
   res.status(201).json(sb);
 });
 
-app.delete('/api/storyboards/:id', (req, res) => {
+app.delete('/api/storyboards/:id', async (req, res) => {
+  const id = req.params.id;
+  try {
+    await supabase.from('storyboards').delete().eq('id', id);
+  } catch (err) {
+    console.error('Supabase storyboard delete error:', err);
+  }
+
   let storyboards = readJson(DB_STORYBOARDS);
-  storyboards = storyboards.filter(s => s.id !== req.params.id);
+  storyboards = storyboards.filter(s => s.id !== id);
   writeJson(DB_STORYBOARDS, storyboards);
   res.json({ success: true });
 });
 
 // ==========================================
-// PROMPTS CRUD APIs
+// PROMPTS CRUD APIs (SUPABASE SYNC)
 // ==========================================
-app.get('/api/prompts', (req, res) => {
-  res.json(readJson(DB_PROMPTS));
+app.get('/api/prompts', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('prompts').select('*').order('created_at', { ascending: false });
+    if (error || !data) throw error;
+    res.json(data);
+  } catch (err) {
+    res.json(readJson(DB_PROMPTS));
+  }
 });
 
-app.post('/api/prompts', (req, res) => {
-  const prompts = readJson(DB_PROMPTS);
-  const newPrompt = {
-    id: 'prompt-' + Date.now(),
+app.post('/api/prompts', async (req, res) => {
+  const promptPayload = {
     title: req.body.title || 'Prompt Baru',
     category: req.body.category || 'General',
-    aspectRatio: req.body.aspectRatio || '9:16',
+    aspect_ratio: req.body.aspectRatio || '9:16',
     prompt: req.body.prompt || ''
   };
-  prompts.unshift(newPrompt);
+
+  try {
+    const { data, error } = await supabase.from('prompts').insert([promptPayload]).select();
+    if (!error && data && data[0]) {
+      const prompts = readJson(DB_PROMPTS);
+      prompts.unshift(data[0]);
+      writeJson(DB_PROMPTS, prompts);
+      return res.status(201).json(data[0]);
+    }
+  } catch (err) {
+    console.error('Supabase prompt insert error:', err);
+  }
+
+  const prompts = readJson(DB_PROMPTS);
+  const fallbackPrompt = { id: 'prompt-' + Date.now(), ...promptPayload };
+  prompts.unshift(fallbackPrompt);
   writeJson(DB_PROMPTS, prompts);
-  res.status(201).json(newPrompt);
+  res.status(201).json(fallbackPrompt);
 });
 
-app.delete('/api/prompts/:id', (req, res) => {
+app.delete('/api/prompts/:id', async (req, res) => {
+  const id = req.params.id;
+  try {
+    await supabase.from('prompts').delete().eq('id', id);
+  } catch (err) {
+    console.error('Supabase prompt delete error:', err);
+  }
+
   let prompts = readJson(DB_PROMPTS);
-  prompts = prompts.filter(p => p.id !== req.params.id);
+  prompts = prompts.filter(p => p.id !== id);
   writeJson(DB_PROMPTS, prompts);
   res.json({ success: true });
 });
 
 // ==========================================
-// SETTINGS APIs
+// SETTINGS APIs (SUPABASE SYNC)
 // ==========================================
-app.get('/api/settings', (req, res) => {
+app.get('/api/settings', async (req, res) => {
+  try {
+    const { data } = await supabase.from('settings').select('*').eq('id', 1).single();
+    if (data) {
+      return res.json({
+        geminiApiKey: data.gemini_api_key ? '********' : '',
+        huggingFaceKey: data.huggingface_key ? '********' : '',
+        adminName: 'Super Administrator VIP'
+      });
+    }
+  } catch (e) {}
+
   const settings = readJson(DB_SETTINGS);
   res.json({
     geminiApiKey: settings.geminiApiKey ? '********' : '',
