@@ -1316,39 +1316,81 @@
       <!-- 2. Connected Compact Dropdown List -->
       <div id="server-generate-dropdown-body" class="hidden p-1.5 space-y-1 bg-[#090d16] border-t border-slate-800/80">
         
-        <!-- Server 1: Flow AI -->
-        <a href="https://labs.google/fx/id/tools/flow" target="_blank" rel="noopener noreferrer" class="group px-2 py-1.5 rounded-lg bg-[#0f1424] hover:bg-[#161d33] border border-slate-800/80 hover:border-orange-500/30 flex items-center justify-between gap-1.5 transition block">
-          <div class="flex items-center gap-1.5 min-w-0">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span>
-            <span class="font-semibold text-white text-[10px] truncate group-hover:text-amber-300 transition">Server 1: Flow AI (Labs Google)</span>
+        <!-- Server 1: Google Gemini 1.5 Pro Studio (Official AI Engine) -->
+        <a href="https://aistudio.google.com/prompts/new_chat" target="_blank" rel="noopener noreferrer" class="group px-2.5 py-2 rounded-xl bg-gradient-to-r from-orange-950/50 to-[#0f1424] hover:bg-[#161d33] border border-orange-500/30 hover:border-orange-500/60 flex items-center justify-between gap-2 transition block">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
+            <div class="truncate">
+              <div class="font-bold text-white text-[11px] truncate group-hover:text-amber-300 transition flex items-center gap-1">
+                <span>Server 1: Gemini 1.5 Pro Studio</span>
+                <span class="px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 text-[8px] font-mono">STABLE</span>
+              </div>
+              <div class="text-[9px] text-slate-400 truncate">Google Cloud Direct AI Workspace</div>
+            </div>
           </div>
-          <span class="px-1.5 py-0.5 rounded bg-orange-600/20 group-hover:bg-orange-600 text-orange-400 group-hover:text-white text-[9px] font-bold transition flex items-center gap-0.5 flex-shrink-0">
+          <span class="px-2 py-1 rounded-lg bg-orange-600 group-hover:bg-orange-500 text-white text-[9px] font-bold transition flex items-center gap-1 flex-shrink-0 shadow-sm">
             <span>Buka</span>
-            <i class="fa-solid fa-arrow-up-right-from-square text-[7px]"></i>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
           </span>
         </a>
 
-        <!-- Server 2: Gemini Studio Pro -->
-        <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" class="group px-2 py-1.5 rounded-lg bg-[#0f1424] hover:bg-[#161d33] border border-slate-800/80 hover:border-slate-700 flex items-center justify-between gap-1.5 transition block">
-          <div class="flex items-center gap-1.5 min-w-0">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span>
-            <span class="font-semibold text-white text-[10px] truncate group-hover:text-amber-300 transition">Server 2: Gemini Pro</span>
+        <!-- Server 2: Google Labs Flow AI (Web Workspace) -->
+        <a href="https://labs.google/fx/id/tools/flow" target="_blank" rel="noopener noreferrer" class="group px-2.5 py-2 rounded-xl bg-[#0f1424] hover:bg-[#161d33] border border-slate-800/80 hover:border-orange-500/30 flex items-center justify-between gap-2 transition block">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"></span>
+            <div class="truncate">
+              <div class="font-bold text-white text-[11px] truncate group-hover:text-amber-300 transition">Server 2: Google Labs Flow AI</div>
+              <div class="text-[9px] text-slate-400 truncate">Video & Storytelling Generative (Akun Google)</div>
+            </div>
           </div>
-          <span class="px-1.5 py-0.5 rounded bg-slate-800 group-hover:bg-slate-700 text-slate-300 text-[9px] font-bold transition flex items-center gap-0.5 flex-shrink-0">
+          <span class="px-2 py-1 rounded-lg bg-slate-800 group-hover:bg-slate-700 text-slate-200 text-[9px] font-bold transition flex items-center gap-1 flex-shrink-0">
             <span>Buka</span>
-            <i class="fa-solid fa-arrow-up-right-from-square text-[7px]"></i>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
           </span>
         </a>
 
-        <!-- Server 3: Flux 8K -->
-        <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer" class="group px-2 py-1.5 rounded-lg bg-[#0f1424] hover:bg-[#161d33] border border-slate-800/80 hover:border-slate-700 flex items-center justify-between gap-1.5 transition block">
-          <div class="flex items-center gap-1.5 min-w-0">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span>
-            <span class="font-semibold text-white text-[10px] truncate group-hover:text-amber-300 transition">Server 3: Flux 8K</span>
+        <!-- Server 3: Flux 8K Ultra Photorealistic -->
+        <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer" class="group px-2.5 py-2 rounded-xl bg-[#0f1424] hover:bg-[#161d33] border border-slate-800/80 hover:border-slate-700 flex items-center justify-between gap-2 transition block">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"></span>
+            <div class="truncate">
+              <div class="font-bold text-white text-[11px] truncate group-hover:text-amber-300 transition">Server 3: Flux 8K Ultra Engine</div>
+              <div class="text-[9px] text-slate-400 truncate">Render Visual & Foto Komersial Instant</div>
+            </div>
           </div>
-          <span class="px-1.5 py-0.5 rounded bg-slate-800 group-hover:bg-slate-700 text-slate-300 text-[9px] font-bold transition flex items-center gap-0.5 flex-shrink-0">
+          <span class="px-2 py-1 rounded-lg bg-slate-800 group-hover:bg-slate-700 text-slate-200 text-[9px] font-bold transition flex items-center gap-1 flex-shrink-0">
             <span>Buka</span>
-            <i class="fa-solid fa-arrow-up-right-from-square text-[7px]"></i>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
+          </span>
+        </a>
+
+        <!-- Server 4: Kling AI & Luma Video AI -->
+        <a href="https://klingai.com/" target="_blank" rel="noopener noreferrer" class="group px-2.5 py-2 rounded-xl bg-[#0f1424] hover:bg-[#161d33] border border-slate-800/80 hover:border-slate-700 flex items-center justify-between gap-2 transition block">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 flex-shrink-0"></span>
+            <div class="truncate">
+              <div class="font-bold text-white text-[11px] truncate group-hover:text-cyan-300 transition">Server 4: Kling AI Video Engine</div>
+              <div class="text-[9px] text-slate-400 truncate">AI Motion & Realistic Video Generator</div>
+            </div>
+          </div>
+          <span class="px-2 py-1 rounded-lg bg-slate-800 group-hover:bg-slate-700 text-slate-200 text-[9px] font-bold transition flex items-center gap-1 flex-shrink-0">
+            <span>Buka</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
+          </span>
+        </a>
+
+        <!-- Server 5: HuggingFace SD & Flux Turbo -->
+        <a href="https://black-forest-labs-flux-1-schnell.hf.space" target="_blank" rel="noopener noreferrer" class="group px-2.5 py-2 rounded-xl bg-[#0f1424] hover:bg-[#161d33] border border-slate-800/80 hover:border-slate-700 flex items-center justify-between gap-2 transition block">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-2 h-2 rounded-full bg-purple-400 flex-shrink-0"></span>
+            <div class="truncate">
+              <div class="font-bold text-white text-[11px] truncate group-hover:text-purple-300 transition">Server 5: Flux Schnell ZeroGPU</div>
+              <div class="text-[9px] text-slate-400 truncate">High-Speed Cloud GPU Generator</div>
+            </div>
+          </div>
+          <span class="px-2 py-1 rounded-lg bg-slate-800 group-hover:bg-slate-700 text-slate-200 text-[9px] font-bold transition flex items-center gap-1 flex-shrink-0">
+            <span>Buka</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
           </span>
         </a>
 
