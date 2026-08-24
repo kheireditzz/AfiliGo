@@ -2039,40 +2039,32 @@ function closeExtensionInstallModal() {
 
 function confirmAndInstallExtension() {
   closeExtensionInstallModal();
-  showToastNotification("success", "Memasang Ekstensi Flow", "Mengaktifkan sesi login VIP...");
+  showToastNotification("success", "Membuka Flow AI", "Menyuntikkan sesi VIP otomatis...");
   
-  // Trigger direct CRX / Extension download
-  const downloadUrl = "/downloads/AffiliateGo-Flow-Injector.zip";
-  const link = document.createElement("a");
-  link.href = downloadUrl;
-  link.download = "AffiliateGo-Flow-Injector.zip";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  // Open Extensions page and Flow AI
-  setTimeout(() => {
-    window.open("https://labs.google/fx/id/tools/flow", "_blank");
-  }, 1000);
+  if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage) {
+    try {
+      chrome.runtime.sendMessage({ action: "ACTIVATE_FLOW_SESSION", openTab: true });
+    } catch(e) {}
+  }
+  
+  window.open("https://labs.google/fx/id/tools/flow", "_blank");
 }
 
 async function triggerActivateExtensionFlow() {
-  // Check if extension is already communicating
+  showToastNotification("success", "Membuka Flow AI Server 2", "Menghubungkan sesi VIP...");
+  
   if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage) {
     try {
       chrome.runtime.sendMessage({ action: "ACTIVATE_FLOW_SESSION", openTab: true }, (res) => {
         if (chrome.runtime.lastError || !res || !res.success) {
-          openExtensionInstallModal();
-        } else {
-          showToastNotification("success", "Sesi Flow Aktif", "Membuka Google Flow AI...");
+          window.open("https://labs.google/fx/id/tools/flow", "_blank");
         }
       });
       return;
     } catch(e) {}
   }
   
-  // Show interactive one-click confirmation modal
-  openExtensionInstallModal();
+  window.open("https://labs.google/fx/id/tools/flow", "_blank");
 }
 
 
