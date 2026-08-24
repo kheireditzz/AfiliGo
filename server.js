@@ -2,7 +2,13 @@
 // =========================================================================
 // SUPABASE CLIENT INITIALIZATION & CLOUD PERSISTENCE
 // =========================================================================
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
+import express from 'express';
+import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://bvmmshskoqylzptoyuxf.supabase.co';
 const SUPABASE_SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2bW1zaHNrb3F5bHpwdG95dXhmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NzU4ODY1MCwiZXhwIjoyMTAzMTY0NjUwfQ.g14Co5jvqMao9e6ZZ0sYUV8fQ1t6KCHlR8UD5CXf_-k';
 
@@ -11,12 +17,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE, {
 });
 
 console.log('SUPABASE_CLIENT_INITIALIZED_FOR_AFILIGO');
-
-import express from 'express';
-import cors from 'cors';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -890,6 +890,10 @@ app.get('/flow-live', async (req, res) => {
     res.status(500).send('<h3>Gagal memuat Google Labs Flow AI melalui sesi proxy. Silakan coba lagi.</h3>');
   }
 });
-app.listen(PORT, "0.0.0.0", () => {
-  console.log("AFFILIATE_AI_STUDIO_SERVER_RUNNING_ON_PORT_" + PORT);
-});
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log("AFFILIATE_AI_STUDIO_SERVER_RUNNING_ON_PORT_" + PORT);
+  });
+}
+
+export default app;
