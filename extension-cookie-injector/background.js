@@ -12,15 +12,13 @@ async function injectCookiesToGoogle() {
 
     const cookies = data.cookies;
     
-    // Exact domain list required by Google Identity & Labs
+    // Core Google Domains
     const domains = [
       ".google.com",
       "google.com",
       ".labs.google",
       "labs.google",
-      "accounts.google.com",
-      "myaccount.google.com",
-      "aitestkitchen.withgoogle.com"
+      "accounts.google.com"
     ];
 
     for (const d of domains) {
@@ -67,37 +65,30 @@ chrome.runtime.onInstalled.addListener(() => {
   injectCookiesToGoogle();
 });
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (tab.url && (tab.url.includes("labs.google") || tab.url.includes("google.com/fx"))) {
-    if (changeInfo.status === "loading") {
-      injectCookiesToGoogle();
-    }
-  }
-});
-
-// Listener for popup internal messages
+// Single Unified Listener to Inject first, then Open Tab without double firing
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "INJECT_AND_OPEN_FLOW") {
     injectCookiesToGoogle().then((success) => {
-      chrome.tabs.create({ url: "https://labs.google/fx/id/tools/flow" });
-      sendResponse({ success: success });
+      chrome.tabs.create({ url: "https://labs.google/fx/id/tools/flow", active: true });
+      sendResponse({ success: true });
+    });
+    return true;
+  } else if (request.action === "ONLY_INJECT_COOKIES") {
+    injectCookiesToGoogle().then((success) => {
+      sendResponse({ success: true });
     });
     return true;
   }
 });
 
-// Listener for external web dashboard clicks from AffiliateGo website!
 chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
   if (request.action === "ACTIVATE_FLOW_SESSION") {
     injectCookiesToGoogle().then((success) => {
       if (request.openTab) {
-        chrome.tabs.create({ url: "https://labs.google/fx/id/tools/flow" });
+        chrome.tabs.create({ url: "https://labs.google/fx/id/tools/flow", active: true });
       }
-      sendResponse({ success: success, message: "Google Flow session injected successfully!" });
+      sendResponse({ success: true });
     });
-    return true;
-  } else if (request.action === "PING_EXTENSION") {
-    sendResponse({ active: true, version: "1.0.3" });
     return true;
   }
 });

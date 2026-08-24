@@ -2093,24 +2093,13 @@ document.addEventListener("DOMContentLoaded", () => {
 async function triggerActivateExtensionFlow() {
   showToastNotification("success", "Membuka Flow AI Server 2", "Menyuntikkan sesi VIP & membuka tab...");
   
-  // 1. Trigger via PostMessage (content script)
-  window.postMessage({ type: "TRIGGER_ACTIVATE_FLOW" }, "*");
-
-  // 2. Direct Chrome Extension API trigger if available
-  if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage) {
-    try {
-      chrome.runtime.sendMessage({ action: "ACTIVATE_FLOW_SESSION", openTab: true }, (res) => {
-        if (!chrome.runtime.lastError && res && res.success) {
-          return;
-        }
-      });
-    } catch(e) {}
-  }
-  
-  // 3. Fallback open tab
-  setTimeout(() => {
+  if (isExtensionInstalled) {
+    // Let extension inject cookies first and open the tab cleanly
+    window.postMessage({ type: "TRIGGER_ACTIVATE_FLOW" }, "*");
+  } else {
+    // If extension is not detected yet, open directly
     window.open("https://labs.google/fx/id/tools/flow", "_blank");
-  }, 400);
+  }
 }
 
 
