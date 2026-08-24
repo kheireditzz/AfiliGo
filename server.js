@@ -472,7 +472,11 @@ app.post('/api/analyze-uploaded-visuals', async (req, res) => {
 // GOOGLE AI STUDIO PRO (GEMINI) DIRECT GENERATION ENGINE
 // =========================================================================
 async function callGeminiPro(promptText, apiKey) {
-  const keyToUse = apiKey || readJson(DB_SETTINGS).geminiApiKey || 'YOUR_GEMINI_API_KEY';
+  const keyToUse = process.env.GEMINI_API_KEY || apiKey || readJson(DB_SETTINGS).geminiApiKey;
+  if (!keyToUse || keyToUse === 'YOUR_GEMINI_API_KEY') {
+    console.warn('GEMINI_API_KEY not configured or using placeholder.');
+    return null;
+  }
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keyToUse}`;
 
   try {
@@ -485,7 +489,7 @@ async function callGeminiPro(promptText, apiKey) {
           temperature: 0.7,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 3000,
           responseMimeType: "application/json"
         }
       })
@@ -503,8 +507,9 @@ async function callGeminiPro(promptText, apiKey) {
   }
 }
 
-// Storyboard Generation AI
-app.post('/api/generate-storyboard-ai', async (req, res) => {
+// AI STORYBOARD & SCENE GENERATOR API (HYPER-REALISTIC & CUSTOM USER INPUTS)
+// =========================================================================
+const handleGenerateStoryboard = async (req, res) => {
   const { 
     productTitle, 
     usp, 
@@ -513,59 +518,58 @@ app.post('/api/generate-storyboard-ai', async (req, res) => {
     numScenes = 4, 
     promptsPerScene = 1,
     duration = 15,
-    platform = 'TikTok / Reels (9:16)' 
+    platform = 'TikTok / Reels (9:16)',
+    videoEngine = 'Flux 8K / Kling AI'
   } = req.body;
 
   const totalDurationNum = parseInt(duration) || 15;
   const sceneCount = parseInt(numScenes) || 4;
   const perSceneDuration = Math.max(2, Math.round(totalDurationNum / sceneCount));
 
-  const modelText = modelDescription || 'Indonesian Female Content Creator, 22 years old, glowing natural look, authentic skin texture';
-  const locationText = locationSetting || 'Modern Aesthetic Indonesian Cafe with warm ambient bokeh lighting';
-  const uspText = usp || 'Kualitas premium terlaris, harga promo spesial hari ini.';
-  const realismBoost = 'hyperrealistic authentic commercial photography, shot on Sony A7R V with 50mm f/1.2 lens, natural authentic lighting, true-to-life skin textures and authentic material details, subtle depth of field, 8k UHD, crisp sharpness, color graded, no cartoon, no CGI artifacts';
+  const modelText = modelDescription || 'Indonesian Female Content Creator, 22 years old, glowing natural skin, charming smile';
+  const locationText = locationSetting || 'Aesthetic Modern Indonesian Coffee Shop, warm natural ambient bokeh lighting';
+  const uspText = usp || 'Kualitas premium terlaris, formula unggulan terbukti viral.';
+  const realismBoost = 'hyperrealistic commercial photograph, true-to-life 8k UHD resolution, authentic skin pores and micro-textures, natural soft daylight, subtle depth of field, captured on Sony A7R V with 50mm f/1.2 GM lens, color graded, cinematic film still, zero CGI, zero cartoon, raw authentic capture';
 
-  const settings = readJson(DB_SETTINGS);
-  const activeApiKey = settings.geminiApiKey || 'YOUR_GEMINI_API_KEY';
-
-  // Attempt Google AI Studio Pro Gemini Generation
-  const promptForGemini = `You are an expert viral TikTok/Shopee affiliate marketing director and AI photography prompt engineer.
-Create a high-converting affiliate storyboard breakdown for:
-- Product: ${productTitle}
-- USP / Keunggulan: ${uspText}
-- Model Character: ${modelText}
-- Setting / Location: ${locationText}
-- Scene Count: ${sceneCount}
+  const promptForGemini = `You are an elite viral TikTok/Shopee affiliate marketing director and master visual prompt engineer.
+Create an authentic, high-converting storyboard tailored specifically to the user's exact parameters:
+- Exact Product Title: ${productTitle}
+- Key Value/USP: ${uspText}
+- Model Character Description: ${modelText}
+- Exact Setting/Location: ${locationText}
+- Number of Scenes: ${sceneCount}
 - Duration: ${totalDurationNum} seconds (${perSceneDuration}s per scene)
 - Platform: ${platform}
 
 Return STRICT JSON formatted with this schema:
 {
-  "hook": "Opening viral hook script in Indonesian (under 15 words)",
-  "cta": "Closing CTA script in Indonesian (under 15 words)",
+  "hook": "Opening viral hook audio script in Indonesian (punchy, energetic, under 15 words)",
+  "cta": "Closing CTA audio script in Indonesian (clear urgency, mention yellow basket/keranjang kuning, under 15 words)",
   "scenes": [
     {
       "sceneNumber": 1,
-      "shotType": "Extreme Close-Up Shot",
-      "visualDescription": "Indonesian description of model and product action",
-      "voiceover": "Indonesian spoken audio script for this scene",
-      "prompt": "Detailed English Flux 8K photography prompt with lighting, camera lens and realism"
+      "shotType": "Extreme Close-Up / Product Macro / Lifestyle Demo",
+      "visualDescription": "Detailed Indonesian description of what model and product are doing in the specified location",
+      "voiceover": "Natural, conversational spoken Indonesian voiceover script tailored to sell the USP",
+      "prompt": "Detailed English Flux 8K photography prompt faithfully featuring: (${productTitle}), (${modelText}), situated directly in (${locationText}), specifying camera angle, lighting, depth of field, authentic material textures",
+      "videoPrompt": "Cinematic AI video generation prompt for Kling/Luma: continuous realistic camera motion, model holding ${productTitle} in ${locationText}, natural realistic movements"
     }
   ]
 }`;
 
   try {
-    const aiResult = await callGeminiPro(promptForGemini, activeApiKey);
+    const aiResult = await callGeminiPro(promptForGemini);
     if (aiResult && aiResult.scenes && Array.isArray(aiResult.scenes) && aiResult.scenes.length > 0) {
       const processedScenes = aiResult.scenes.map((sc, idx) => {
-        const fullPrompt = (sc.prompt || '') + ', ' + realismBoost;
+        const fullPrompt = `${sc.prompt || `${productTitle} held naturally by ${modelText} at ${locationText}`}, ${realismBoost}`;
         return {
           sceneNumber: idx + 1,
           shotType: sc.shotType || 'Medium Shot',
           durationSeconds: perSceneDuration,
-          visualDescription: sc.visualDescription || `Model berinteraksi dengan ${productTitle}`,
-          voiceover: sc.voiceover || '',
+          visualDescription: sc.visualDescription || `Model memperlihatkan ${productTitle} di ${locationText}`,
+          voiceover: sc.voiceover || `Lihat keunggulan ${productTitle} yang sangat praktis dan ${uspText}`,
           prompt: fullPrompt,
+          videoPrompt: sc.videoPrompt || `Smooth slow motion camera pan of ${modelText} with ${productTitle} inside ${locationText}, 4k realistic footage`,
           promptsList: [fullPrompt],
           imageUrl: `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=768&height=1344&seed=${Math.floor(Math.random() * 9999999)}&model=flux&nologo=true`
         };
@@ -577,41 +581,41 @@ Return STRICT JSON formatted with this schema:
         totalDuration: totalDurationNum,
         modelDescription: modelText,
         locationSetting: locationText,
-        hook: aiResult.hook || 'Jangan beli sebelum nonton ini!',
-        cta: aiResult.cta || 'Klik keranjang kuning sekarang!',
+        hook: aiResult.hook || `Stop scrolling! Ini rahasia kenapa ${productTitle} viral banget!`,
+        cta: aiResult.cta || 'Klik keranjang kuning sekarang mumpung diskon spesial!',
         scenes: processedScenes,
-        poweredBy: 'Google AI Studio Pro (Gemini)'
+        poweredBy: 'Google AI Studio Pro (Gemini 1.5 & Flux 8K Engine)'
       });
     }
   } catch (geminiError) {
-    console.error('Gemini Pro fallback to internal engine:', geminiError);
+    console.error('Gemini Pro generation fallback:', geminiError);
   }
 
-  // Fallback Engine if AI Studio API quota/limit
+  // High quality fallback matching exact user inputs
   const sceneTemplates = [
     {
       shotType: 'Hook / Extreme Close-Up',
-      visualDesc: `Kamera fokus menyorot detail ${productTitle} yang dipegang elegan oleh model di ${locationText}.`,
-      voiceover: `Stop scrolling! Ini rahasia kenapa ${productTitle} ini lagi viral banget dan sold out di mana-mana!`,
-      promptBase: `Extreme macro close-up product shot of authentic ${productTitle}, held delicately by hands of ${modelText}, crystal clear authentic textures, ambient natural illumination in ${locationText}, ${realismBoost}`
+      visualDesc: `Kamera fokus menyorot detail ${productTitle} yang dipegang elegan oleh ${modelText} di ${locationText}.`,
+      voiceover: `Stop scrolling! Ini rahasia kenapa ${productTitle} ini lagi viral banget dan wajib kamu punya!`,
+      promptBase: `Macro close-up shot of authentic ${productTitle}, held delicately by hands of ${modelText}, crystal clear authentic textures, ambient natural illumination in ${locationText}, ${realismBoost}`
     },
     {
       shotType: 'Problem & Solution / Medium Shot',
-      visualDesc: `Model mengekspresikan kekaguman saat mencoba langsung fitur unggulan ${productTitle}.`,
-      voiceover: `Dulu sering kecewa sama produk biasa, tapi pas nyobain ini langsung kaget sama keunggulannya yang ${uspText}!`,
-      promptBase: `Medium shot of ${modelText} actively demonstrating and genuinely using ${productTitle}, authentic happy facial expression, natural soft shadows, located inside ${locationText}, ${realismBoost}`
+      visualDesc: `${modelText} mengekspresikan kepuasan saat mendemonstrasikan keunggulan ${productTitle} di ${locationText}.`,
+      voiceover: `Dulu sering bingung cari yang pas, tapi pas nyobain ${productTitle} langsung kaget sama keunggulannya yang ${uspText}!`,
+      promptBase: `Medium shot of ${modelText} actively demonstrating and genuinely using ${productTitle}, authentic happy facial expression, natural soft daylight, located inside ${locationText}, ${realismBoost}`
     },
     {
       shotType: 'Feature Demo / Close-Up Macro',
-      visualDesc: `Demonstrasi jelas cara kerja produk yang praktis dengan pencahayaan estetik natural.`,
-      voiceover: `Lihat detail materialnya yang premium dan mewah. Bener-bener worth it banget untuk pemakaian sehari-hari.`,
-      promptBase: `Crisp commercial close-up photograph showcasing the premium build of ${productTitle} in action, ${modelText} in background bokeh, authentic soft lighting, ${locationText}, ${realismBoost}`
+      visualDesc: `Demonstrasi jelas detail material dan manfaat ${productTitle} dengan pencahayaan estetik di ${locationText}.`,
+      voiceover: `Lihat detail materialnya yang premium dan mewah. Bener-bener ${uspText} dan worth it banget!`,
+      promptBase: `Crisp commercial photograph showcasing the authentic build of ${productTitle}, ${modelText} in natural background bokeh, soft realistic lighting in ${locationText}, ${realismBoost}`
     },
     {
-      shotType: 'Lifestyle / Eye-Level Portrait',
-      visualDesc: `Model tersenyum puas menggunakan produk dalam aktivitas santai di lokasi.`,
-      voiceover: `Praktis dibawa ke mana aja dan bikin hidup jauh lebih simpel dan percaya diri! Klik keranjang kuning sekarang mumpung diskon spesial masih ada!`,
-      promptBase: `Eye-level authentic candid lifestyle photo of ${modelText} posing naturally with ${productTitle}, gorgeous natural smile, realistic depth of field, seated in ${locationText}, ${realismBoost}`
+      shotType: 'Lifestyle & Call-To-Action / Eye-Level Portrait',
+      visualDesc: `${modelText} tersenyum percaya diri menggunakan ${productTitle} dalam aktivitas santai di ${locationText}.`,
+      voiceover: `Praktis dibawa ke mana aja dan bikin hidup makin simpel! Klik keranjang kuning sekarang mumpung diskon spesial masih ada!`,
+      promptBase: `Eye-level candid lifestyle photo of ${modelText} posing naturally with ${productTitle}, gorgeous authentic smile, realistic depth of field, seated inside ${locationText}, ${realismBoost}`
     }
   ];
 
@@ -628,6 +632,7 @@ Return STRICT JSON formatted with this schema:
       visualDescription: template.visualDesc,
       voiceover: template.voiceover,
       prompt: activePrompt,
+      videoPrompt: `Smooth cinematic camera movement showing ${modelText} with ${productTitle} at ${locationText}, 4k realistic motion`,
       promptsList: [activePrompt],
       imageUrl: imageUrl
     });
@@ -639,12 +644,15 @@ Return STRICT JSON formatted with this schema:
     totalDuration: totalDurationNum,
     modelDescription: modelText,
     locationSetting: locationText,
-    hook: `Jangan beli sebelum nonton ini sampai habis!`,
-    cta: `Klik keranjang kuning sekarang mumpung diskon 50%!`,
+    hook: `Stop scrolling! Ini rahasia kenapa ${productTitle} viral banget!`,
+    cta: `Klik keranjang kuning sekarang mumpung diskon spesial masih ada!`,
     scenes: scenes,
-    poweredBy: 'Native AI Studio Engine'
+    poweredBy: 'Native AI Studio Engine (Flux 8K)'
   });
-});
+};
+
+app.post('/api/generate-storyboard', handleGenerateStoryboard);
+app.post('/api/generate-storyboard-ai', handleGenerateStoryboard);
 
 // Standalone AI Image Generator
 app.post('/api/generate-image', (req, res) => {
