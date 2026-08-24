@@ -298,13 +298,7 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <button id="btn-activate-ext" onclick="triggerActivateExtensionFlow()" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-950/60 to-slate-900 hover:bg-emerald-900/40 border border-emerald-500/50 active:scale-95 text-emerald-300 hover:text-white font-bold text-[11px] font-display flex items-center gap-1.5 shadow transition" title="Aktifkan Ekstensi & Buka Google Flow">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <i class="fa-solid fa-bolt text-[10px] text-amber-400"></i>
-          <span>Aktifkan Ekstensi Flow</span>
-        </button>
-
-        <button onclick="openTab('storyboard-creator')" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow-md shadow-orange-600/30 transition">
+        <button onclick="openTab('storyboard-creator')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow-md shadow-orange-600/30 transition">
           <i class="fa-solid fa-plus text-[11px]"></i>
           <span>Buat</span>
         </button>
@@ -1342,41 +1336,36 @@
           </span>
         </a>
 
-        <!-- Server 2: Google Labs Flow AI (Official Auto-Session) -->
-        <a href="https://labs.google/fx/id/tools/flow" target="_blank" rel="noopener noreferrer" class="group px-2.5 py-2 rounded-xl bg-[#0f1424] hover:bg-[#161d33] border border-amber-500/40 hover:border-amber-500/80 flex items-center justify-between gap-2 transition block">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0"></span>
-            <div class="truncate">
-              <div class="font-bold text-white text-[11px] truncate group-hover:text-amber-300 transition flex items-center gap-1">
-                <span>Server 2: Google Flow AI (Auto-Login)</span>
-                <span class="px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 text-[7px] font-mono font-bold">AUTO</span>
+        <!-- Server 2: Google Labs Flow AI (Official Auto-Session Injector) -->
+        <div class="p-2.5 rounded-2xl bg-gradient-to-br from-amber-950/40 via-[#0f1424] to-[#121829] border border-amber-500/40 hover:border-amber-400/80 transition shadow-lg space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0 shadow-sm shadow-amber-400/50"></span>
+              <div class="truncate">
+                <div class="font-extrabold text-white text-xs truncate flex items-center gap-1.5 font-display">
+                  <span>Server 2: Google Flow AI</span>
+                  <span class="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[8px] font-mono font-black border border-amber-500/30">VIP AUTO</span>
+                </div>
+                <div class="text-[9px] text-slate-400 truncate">Sesi Terinjeksi Otomatis (Tanpa Login)</div>
               </div>
-              <div class="text-[9px] text-slate-400 truncate">Buka Google Flow (Sesi Otomatis Masuk)</div>
             </div>
+            <a href="/downloads/AffiliateGo-Flow-Injector.zip" download="AffiliateGo-Flow-Injector.zip" class="px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-[9px] font-bold border border-slate-700 transition flex items-center gap-1 flex-shrink-0" title="Unduh File ZIP Ekstensi">
+              <i class="fa-solid fa-download text-[8px] text-amber-400"></i>
+              <span>Unduh ZIP</span>
+            </a>
           </div>
-          <span class="px-2 py-1 rounded-lg bg-amber-600 group-hover:bg-amber-500 text-white text-[9px] font-bold transition flex items-center gap-1 flex-shrink-0 shadow-sm">
-            <span>Buka</span>
-            <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
-          </span>
-        </a>
 
-        <!-- Server 2 Extension: Unduh Auto Injector Ekstensi Chrome -->
-        <a href="/downloads/AffiliateGo-Flow-Injector.zip" download="AffiliateGo-Flow-Injector.zip" class="group px-2.5 py-2 rounded-xl bg-gradient-to-r from-blue-950/40 to-[#0f1424] hover:bg-[#161d33] border border-blue-500/30 hover:border-blue-400 flex items-center justify-between gap-2 transition block">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"></span>
-            <div class="truncate">
-              <div class="font-bold text-white text-[11px] truncate group-hover:text-blue-300 transition flex items-center gap-1">
-                <span>Ekstensi Auto-Login Chrome (ZIP)</span>
-                <span class="px-1 py-0.2 rounded bg-blue-500/20 text-blue-400 text-[7px] font-mono">EXTENSION</span>
-              </div>
-              <div class="text-[9px] text-slate-400 truncate">Unduh plugin agar Chrome otomatis login akun</div>
-            </div>
+          <div class="grid grid-cols-2 gap-1.5 pt-1 border-t border-slate-800/80">
+            <button id="btn-activate-ext" onclick="triggerActivateExtensionFlow()" class="w-full py-1.5 px-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] font-display flex items-center justify-center gap-1.5 shadow transition">
+              <i class="fa-solid fa-bolt text-[9px] text-amber-300"></i>
+              <span>Aktifkan Ekstensi</span>
+            </button>
+            <a href="https://labs.google/fx/id/tools/flow" target="_blank" rel="noopener noreferrer" class="w-full py-1.5 px-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] font-display flex items-center justify-center gap-1 shadow transition">
+              <span>Buka Flow Tab</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
+            </a>
           </div>
-          <span class="px-2 py-1 rounded-lg bg-blue-600/30 group-hover:bg-blue-600 text-blue-300 group-hover:text-white text-[9px] font-bold transition flex items-center gap-1 flex-shrink-0 shadow-sm">
-            <span>Unduh</span>
-            <i class="fa-solid fa-download text-[8px]"></i>
-          </span>
-        </a>
+        </div>
 
         <!-- Server 3: Flux 8K Ultra Photorealistic -->
         <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer" class="group px-2.5 py-2 rounded-xl bg-[#0f1424] hover:bg-[#161d33] border border-slate-800/80 hover:border-slate-700 flex items-center justify-between gap-2 transition block">
