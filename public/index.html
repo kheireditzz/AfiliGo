@@ -1318,52 +1318,44 @@
       <!-- 2. Connected Compact Dropdown List -->
       <div id="server-generate-dropdown-body" class="hidden p-1.5 space-y-1 bg-[#090d16] border-t border-slate-800/80">
         
-        <!-- Server 1: Google Gemini 1.5 Pro Studio (Official AI Engine) -->
-        <a href="https://aistudio.google.com/prompts/new_chat" target="_blank" rel="noopener noreferrer" class="group px-2.5 py-2 rounded-xl bg-gradient-to-r from-orange-950/50 to-[#0f1424] hover:bg-[#161d33] border border-orange-500/30 hover:border-orange-500/60 flex items-center justify-between gap-2 transition block">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
-            <div class="truncate">
-              <div class="font-bold text-white text-[11px] truncate group-hover:text-amber-300 transition flex items-center gap-1">
-                <span>Server 1: Gemini 1.5 Pro Studio</span>
-                <span class="px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 text-[8px] font-mono">STABLE</span>
+        <!-- TOP SERVERS (2-COLUMN GRID): SERVER 1 (GEMINI) & SERVER 2 (FLOW AI) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+          <!-- Server 1: Google Gemini 1.5 Pro Studio -->
+          <a href="https://aistudio.google.com/prompts/new_chat" target="_blank" rel="noopener noreferrer" class="group p-2.5 rounded-2xl bg-gradient-to-br from-orange-950/40 via-[#0f1424] to-[#121829] hover:bg-[#161d33] border border-orange-500/30 hover:border-orange-500/60 flex flex-col justify-between gap-2 transition shadow">
+            <div class="flex items-center justify-between gap-1.5">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
+                <span class="font-extrabold text-white text-[11px] truncate group-hover:text-amber-300 font-display">Server 1: Gemini 1.5 Pro</span>
               </div>
-              <div class="text-[9px] text-slate-400 truncate">Google Cloud Direct AI Workspace</div>
+              <span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 text-[8px] font-mono font-bold flex-shrink-0">STABLE</span>
             </div>
-          </div>
-          <span class="px-2 py-1 rounded-lg bg-orange-600 group-hover:bg-orange-500 text-white text-[9px] font-bold transition flex items-center gap-1 flex-shrink-0 shadow-sm">
-            <span>Buka</span>
-            <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
-          </span>
-        </a>
-
-        <!-- Server 2: Google Labs Flow AI (Official Auto-Session Injector) -->
-        <div class="p-2.5 rounded-2xl bg-gradient-to-br from-amber-950/40 via-[#0f1424] to-[#121829] border border-amber-500/40 hover:border-amber-400/80 transition shadow-lg space-y-2">
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0 shadow-sm shadow-amber-400/50"></span>
-              <div class="truncate">
-                <div class="font-extrabold text-white text-xs truncate flex items-center gap-1.5 font-display">
-                  <span>Server 2: Google Flow AI</span>
-                  <span class="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[8px] font-mono font-black border border-amber-500/30">VIP AUTO</span>
-                </div>
-                <div class="text-[9px] text-slate-400 truncate">Sesi Terinjeksi Otomatis (Tanpa Login)</div>
-              </div>
-            </div>
-            <a href="/downloads/AffiliateGo-Flow-Injector.zip" download="AffiliateGo-Flow-Injector.zip" class="px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-[9px] font-bold border border-slate-700 transition flex items-center gap-1 flex-shrink-0" title="Unduh File ZIP Ekstensi">
-              <i class="fa-solid fa-download text-[8px] text-amber-400"></i>
-              <span>Unduh ZIP</span>
-            </a>
-          </div>
-
-          <div class="grid grid-cols-2 gap-1.5 pt-1 border-t border-slate-800/80">
-            <button id="btn-activate-ext" onclick="triggerActivateExtensionFlow()" class="w-full py-1.5 px-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] font-display flex items-center justify-center gap-1.5 shadow transition">
-              <i class="fa-solid fa-bolt text-[9px] text-amber-300"></i>
-              <span>Aktifkan Ekstensi</span>
-            </button>
-            <a href="https://labs.google/fx/id/tools/flow" target="_blank" rel="noopener noreferrer" class="w-full py-1.5 px-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] font-display flex items-center justify-center gap-1 shadow transition">
-              <span>Buka Flow Tab</span>
+            <div class="text-[9px] text-slate-400 truncate">Official Google AI Workspace</div>
+            <div class="w-full py-1.5 px-2 rounded-xl bg-orange-600 group-hover:bg-orange-500 text-white font-bold text-[10px] font-display flex items-center justify-center gap-1 shadow-sm transition">
+              <span>Buka Server 1</span>
               <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
-            </a>
+            </div>
+          </a>
+
+          <!-- Server 2: Google Flow AI -->
+          <div class="p-2.5 rounded-2xl bg-gradient-to-br from-amber-950/40 via-[#0f1424] to-[#121829] border border-amber-500/40 hover:border-amber-400/80 flex flex-col justify-between gap-2 transition shadow">
+            <div class="flex items-center justify-between gap-1.5">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0 shadow-sm shadow-amber-400/50"></span>
+                <span class="font-extrabold text-white text-[11px] truncate font-display">Flow AI Server 2</span>
+              </div>
+              <span class="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[8px] font-mono font-bold flex-shrink-0 border border-amber-500/30">VIP AUTO</span>
+            </div>
+            <div class="text-[9px] text-slate-400 truncate">Auto-Inject Sesi Tanpa Login</div>
+            <div class="grid grid-cols-2 gap-1">
+              <button onclick="triggerActivateExtensionFlow()" class="py-1 px-1 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90 active:scale-95 text-white font-bold text-[9px] font-display flex items-center justify-center gap-1 shadow transition" title="Buka dengan Ekstensi Otomatis">
+                <i class="fa-solid fa-bolt text-[8px] text-amber-300"></i>
+                <span>Aktifkan</span>
+              </button>
+              <a href="https://labs.google/fx/id/tools/flow" target="_blank" rel="noopener noreferrer" class="py-1 px-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[9px] font-display flex items-center justify-center gap-0.5 shadow transition" title="Buka Tab Resmi">
+                <span>Tab Resmi</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[7px]"></i>
+              </a>
+            </div>
           </div>
         </div>
 
