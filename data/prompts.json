@@ -1,16 +1,1 @@
-[
-  {
-    "id": "prompt-1",
-    "title": "Cinematic Hyperrealistic Product Commercial",
-    "category": "Product Focus",
-    "aspectRatio": "9:16",
-    "prompt": "Award-winning commercial photography of {PRODUCT}, pristine natural lighting, authentic textures, clean aesthetic studio background, shot on 85mm f/1.4 lens, 8k resolution, raw realistic photo"
-  },
-  {
-    "id": "prompt-2",
-    "title": "Authentic Indonesian UGC Content Creator",
-    "category": "Talent / Lifestyle",
-    "aspectRatio": "9:16",
-    "prompt": "Authentic candid lifestyle photo of {MODEL}, happily holding and reviewing {PRODUCT}, natural warm sunlight, authentic skin pores and glowing natural look, situated in {LOCATION}, 8k ultra realistic photography"
-  }
-]
+[]
