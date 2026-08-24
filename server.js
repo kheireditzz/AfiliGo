@@ -706,6 +706,28 @@ app.post('/api/admin/features-config', (req, res) => {
 // =========================================================================
 // GOOGLE LABS FLOW AI AUTHENTICATED SESSION PROXY TUNNEL
 // =========================================================================
+app.get('/api/flow/session-cookies', (req, res) => {
+  const settings = readJson(DB_SETTINGS);
+  const rawCookie = settings.googleFlowCookies || '';
+  const parsedCookies = [];
+
+  rawCookie.split(';').forEach(c => {
+    const trimmed = c.trim();
+    if (!trimmed) return;
+    const eqIdx = trimmed.indexOf('=');
+    if (eqIdx !== -1) {
+      const name = trimmed.substring(0, eqIdx).trim();
+      const value = trimmed.substring(eqIdx + 1).trim();
+      parsedCookies.push({ name, value });
+    }
+  });
+
+  res.json({
+    success: true,
+    cookies: parsedCookies
+  });
+});
+
 app.get('/api/flow/session-status', (req, res) => {
   const settings = readJson(DB_SETTINGS);
   res.json({

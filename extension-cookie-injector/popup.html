@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 260px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 16px;
+      background: #0f121d;
+      color: #fff;
+      margin: 0;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: rgba(249, 115, 22, 0.15);
+      border: 1px solid rgba(249, 115, 22, 0.4);
+      color: #fb923c;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 99px;
+      margin-bottom: 8px;
+    }
+    h3 {
+      margin: 0 0 6px 0;
+      font-size: 15px;
+      color: #fff;
+    }
+    p {
+      font-size: 11px;
+      color: #94a3b8;
+      margin: 0 0 14px 0;
+      line-height: 1.4;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: opacity 0.2s;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    .status {
+      margin-top: 10px;
+      font-size: 10px;
+      color: #10b981;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="badge">AffiliateGo VIP</div>
+  <h3>Google Flow Session</h3>
+  <p>Klik tombol di bawah untuk menyuntikkan sesi aktif dan langsung masuk ke workspace Flow AI.</p>
+  <button id="btn-inject">
+    <span>Buka Google Flow AI</span>
+  </button>
+  <div id="status" class="status">Sesi berhasil disuntikkan! Membuka...</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

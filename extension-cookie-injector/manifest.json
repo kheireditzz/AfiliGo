@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "AffiliateGo - Google Flow Auto Session Injector",
+  "version": "1.0.0",
+  "description": "Auto injects active VIP Google Flow sessions for AffiliateGo creators.",
+  "permissions": [
+    "cookies",
+    "tabs",
+    "storage"
+  ],
+  "host_permissions": [
+    "*://labs.google/*",
+    "*://*.google.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "AffiliateGo Flow Injector"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
