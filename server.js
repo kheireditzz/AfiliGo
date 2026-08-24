@@ -857,9 +857,20 @@ app.post('/api/generate-image', (req, res) => {
 
 
 // ==========================================
-// FEATURE CONFIGURATION & SYSTEM STATUS API
+// FEATURE CONFIGURATION & SYSTEM STATUS API (SUPABASE SYNC)
 // ==========================================
-app.get('/api/admin/features-config', (req, res) => {
+app.get('/api/admin/features-config', async (req, res) => {
+  try {
+    const { data } = await supabase.from('settings').select('*').eq('id', 1).single();
+    if (data && data.feature_config) {
+      return res.json({
+        featureConfig: data.feature_config || {},
+        vipActive: true,
+        vipExpiresAt: null
+      });
+    }
+  } catch (e) {}
+
   const settings = readJson(DB_SETTINGS);
   res.json({
     featureConfig: settings.featureConfig || {},
@@ -868,7 +879,7 @@ app.get('/api/admin/features-config', (req, res) => {
   });
 });
 
-app.post('/api/admin/features-config', (req, res) => {
+app.post('/api/admin/features-config', async (req, res) => {
   const { featureConfig, vipActive, vipDaysToAdd } = req.body;
   const settings = readJson(DB_SETTINGS);
 
@@ -880,6 +891,16 @@ app.post('/api/admin/features-config', (req, res) => {
   }
   if (vipDaysToAdd) {
     settings.vipExpiresAt = new Date(Date.now() + parseInt(vipDaysToAdd) * 24 * 60 * 60 * 1000).toISOString();
+  }
+
+  try {
+    await supabase.from('settings').upsert({
+      id: 1,
+      feature_config: featureConfig || settings.featureConfig,
+      updated_at: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Supabase featureConfig upsert error:', err);
   }
 
   writeJson(DB_SETTINGS, settings);

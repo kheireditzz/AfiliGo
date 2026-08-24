@@ -745,6 +745,12 @@ function renderFeaturesConfigTable() {
 }
 
 async function saveFeatureConfigFromAdmin() {
+  const saveBtn = document.getElementById("btn-save-feature-config");
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = "<i class=\"fa-solid fa-spinner fa-spin\"></i> Menyimpan...";
+  }
+
   Object.keys(currentFeaturesConfig).forEach(key => {
     const vipEl = document.getElementById("cfg-vip-" + key);
     const errEl = document.getElementById("cfg-err-" + key);
@@ -763,12 +769,19 @@ async function saveFeatureConfigFromAdmin() {
     });
     const data = await res.json();
     if (data.success) {
-      alert("Tersimpan! Konfigurasi fitur berhasil diperbarui.");
+      showToastNotification("success", "Konfigurasi Berhasil Disimpan!", "Status fitur dan keamanan sistem berhasil diperbarui di cloud database.");
       applyFeatureLockAndErrorState();
+    } else {
+      showToastNotification("error", "Gagal Menyimpan", data.message || "Terjadi kendala saat menyimpan ke database.");
     }
   } catch (e) {
     console.error("Save feature config error:", e);
-    alert("Gagal menyimpan konfigurasi.");
+    showToastNotification("error", "Gagal Menyimpan", "Koneksi terputus. Silakan coba lagi.");
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = "<i class=\"fa-solid fa-floppy-disk\"></i> Simpan Konfigurasi";
+    }
   }
 }
 
@@ -1921,10 +1934,53 @@ async function saveSettings() {
 function copyPromptText(encodedText) {
   const text = decodeURIComponent(encodedText);
   navigator.clipboard.writeText(text).then(() => {
-    alert("Tersalin!");
+    showToastNotification("success", "Tersalin!", "Prompt berhasil disalin ke clipboard.");
   }).catch(err => {
     console.error("Copy failed", err);
   });
+}
+
+function showToastNotification(type, title, message) {
+  let toastContainer = document.getElementById("toast-global-container");
+  if (!toastContainer) {
+    toastContainer = document.createElement("div");
+    toastContainer.id = "toast-global-container";
+    toastContainer.className = "fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4";
+    document.body.appendChild(toastContainer);
+  }
+
+  const toast = document.createElement("div");
+  const isSuccess = type === "success";
+  const iconClass = isSuccess ? "fa-solid fa-circle-check text-emerald-400" : "fa-solid fa-circle-xmark text-rose-400";
+  const borderClass = isSuccess ? "border-emerald-500/50 shadow-emerald-950/40" : "border-rose-500/50 shadow-rose-950/40";
+  const bgClass = isSuccess ? "from-emerald-950/90 to-[#0f1424]/95" : "from-rose-950/90 to-[#0f1424]/95";
+
+  toast.className = "pointer-events-auto p-3.5 rounded-2xl bg-gradient-to-r " + bgClass + " border " + borderClass + " shadow-2xl backdrop-blur-xl flex items-start gap-3 transform transition-all duration-300 translate-y-4 opacity-0";
+  toast.innerHTML = `
+    <div class="w-8 h-8 rounded-xl bg-slate-900/80 border border-white/10 flex items-center justify-center text-sm flex-shrink-0 mt-0.5">
+      <i class="${iconClass}"></i>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="text-xs font-bold text-white font-display">${title}</div>
+      <div class="text-[11px] text-slate-300 leading-relaxed mt-0.5">${message}</div>
+    </div>
+    <button onclick="this.parentElement.remove()" class="text-slate-500 hover:text-white text-xs transition">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  `;
+
+  toastContainer.appendChild(toast);
+
+  // Animate in
+  setTimeout(() => {
+    toast.classList.remove("translate-y-4", "opacity-0");
+  }, 10);
+
+  // Auto dismiss
+  setTimeout(() => {
+    toast.classList.add("translate-y-4", "opacity-0");
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
 }
 
 // =========================================================================
