@@ -1156,13 +1156,23 @@ async function handleFlowProxyRequest(req, res, customPath = null) {
     if (contentType.includes('text/html')) {
       let html = await response.text();
       
+      // Inject authenticated user session directly into Next.js pageProps JSON payload
+      html = html.replace(
+        '"pageProps":{"session":null',
+        '"pageProps":{"session":{"user":{"name":"Kheir Editz VIP","email":"kheireditzsupport@gmail.com","image":"https://lh3.googleusercontent.com/a/default-user=s96-c"},"expires":"2027-12-31T23:59:59.999Z"}'
+      );
+
       // Inject Client-Side Google Auth Layer Interceptor
       const authInjectionScript = `
 <script>
 (function() {
   window.__GOOGLE_FLOW_SESSION_ACTIVE__ = true;
+  window.__NEXT_AUTH_USER__ = {
+    name: "Kheir Editz VIP",
+    email: "kheireditzsupport@gmail.com"
+  };
   
-  // Intercept window.fetch to attach Google Authentication & Session Headers to apis.google.com and accounts.google.com
+  // Intercept window.fetch to attach Google Authentication & Session Headers
   const originalFetch = window.fetch;
   window.fetch = async function(...args) {
     let [resource, config] = args;
@@ -1181,23 +1191,6 @@ async function handleFlowProxyRequest(req, res, customPath = null) {
     }
     return originalFetch(resource, config);
   };
-
-  // Intercept XMLHttpRequest
-  const originalOpen = XMLHttpRequest.prototype.open;
-  XMLHttpRequest.prototype.open = function(method, url, ...rest) {
-    this._url = url;
-    return originalOpen.apply(this, [method, url, ...rest]);
-  };
-  const originalSend = XMLHttpRequest.prototype.send;
-  XMLHttpRequest.prototype.send = function(...args) {
-    if (typeof this._url === 'string' && (this._url.includes('google') || this._url.includes('/fx/api/'))) {
-      try {
-        this.setRequestHeader('X-Goog-AuthUser', '0');
-        this.withCredentials = true;
-      } catch(e) {}
-    }
-    return originalSend.apply(this, args);
-  };
 })();
 </script>
 `;
@@ -1205,7 +1198,7 @@ async function handleFlowProxyRequest(req, res, customPath = null) {
       // Inject base href and client auth interceptor script
       html = html.replace(
         '<head>',
-        '<head>\n<base href="https://labs.google/">\n' + authInjectionScript + '\n<style>#gb, header .sign-in-btn, a[href*="accounts.google.com"] { display: none !important; }</style>'
+        '<head>\n<base href="https://labs.google/">\n' + authInjectionScript + '\n<style>#gb, header .sign-in-btn, a[href*="accounts.google.com"], [data-testid="signin-button"] { display: none !important; }</style>'
       );
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       return res.send(html);
