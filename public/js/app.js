@@ -2140,3 +2140,308 @@ function copyGeneratedFlowPrompt() {
     });
   }
 }
+
+// ================================================================
+// GEMINI AI CHAT GATEWAY & PER-USER AES-256 API KEY CLIENT
+// ================================================================
+let currentChatId = null;
+let currentChatModel = 'gemini-2.5-flash';
+let activeUserHasApiKey = false;
+
+async function checkUserApiKeyStatus() {
+  try {
+    const res = await fetch('/api/user/api-key-status');
+    const data = await res.json();
+    if (data.success) {
+      activeUserHasApiKey = data.hasApiKey;
+      const badge = document.getElementById('user-apikey-status-badge');
+      const warningBox = document.getElementById('chat-key-warning-box');
+      const deleteBtn = document.getElementById('btn-delete-apikey');
+      const inputKey = document.getElementById('user-gemini-custom-key');
+
+      if (badge) {
+        if (data.hasApiKey) {
+          badge.className = 'px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[9px] font-mono font-bold border border-emerald-500/30';
+          badge.innerText = 'TERHUBUNG (AES-256)';
+          if (inputKey) inputKey.placeholder = '•••••••••••••••••••••••••••••••• (Tersimpan Aman)';
+          if (deleteBtn) deleteBtn.classList.remove('hidden');
+          if (warningBox) warningBox.classList.add('hidden');
+        } else {
+          badge.className = 'px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[9px] font-mono font-bold';
+          badge.innerText = 'BELUM TERHUBUNG';
+          if (deleteBtn) deleteBtn.classList.add('hidden');
+          if (warningBox) warningBox.classList.remove('hidden');
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Check API key status error:', err);
+  }
+}
+
+async function saveUserApiKey() {
+  const input = document.getElementById('user-gemini-custom-key');
+  const apiKey = input ? input.value.trim() : '';
+
+  if (!apiKey || apiKey.length < 10) {
+    showToastNotification('error', 'API Key Tidak Valid', 'Masukkan Gemini API Key dari Google AI Studio (AIzaSy...).');
+    return;
+  }
+
+  showToastNotification('info', 'Mengenkripsi...', 'Menyimpan key dengan enkripsi AES-256-GCM...');
+
+  try {
+    const res = await fetch('/api/user/save-api-key', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      showToastNotification('success', 'Tersimpan!', data.message);
+      if (input) input.value = '';
+      checkUserApiKeyStatus();
+    } else {
+      showToastNotification('error', 'Gagal', data.message);
+    }
+  } catch (err) {
+    showToastNotification('error', 'Error', err.message);
+  }
+}
+
+async function deleteUserApiKey() {
+  if (!confirm('Hapus Google Gemini API Key dari akun Anda?')) return;
+  try {
+    const res = await fetch('/api/user/delete-api-key', { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      showToastNotification('success', 'Terhapus', data.message);
+      const input = document.getElementById('user-gemini-custom-key');
+      if (input) input.placeholder = 'Paste API Key Anda (AIzaSy...)';
+      checkUserApiKeyStatus();
+    }
+  } catch(e) {}
+}
+
+function changeChatModel(model) {
+  currentChatModel = model;
+  const badge = document.getElementById('chat-model-badge');
+  if (badge) {
+    badge.innerText = model.includes('pro') ? 'Gemini 2.5 Pro' : 'Gemini 2.5 Flash';
+  }
+}
+
+function injectChatPrompt(text) {
+  const input = document.getElementById('chat-input-text');
+  if (input) {
+    input.value = text;
+    input.focus();
+  }
+}
+
+function startNewChatSession() {
+  currentChatId = 'chat_' + Date.now();
+  const container = document.getElementById('chat-messages-container');
+  const welcome = document.getElementById('chat-empty-welcome');
+  if (container) {
+    container.innerHTML = '';
+    if (welcome) {
+      container.appendChild(welcome);
+      welcome.classList.remove('hidden');
+    }
+  }
+  loadChatSessions();
+}
+
+async function loadChatSessions() {
+  try {
+    const res = await fetch('/api/chats');
+    const data = await res.json();
+    const list = document.getElementById('chat-history-sidebar-list');
+    if (!list) return;
+
+    if (data.success && data.chats && data.chats.length > 0) {
+      list.innerHTML = data.chats.map(c => `
+        <div onclick="openChatSession('${c.id}')" class="group p-2 rounded-xl bg-slate-900/60 hover:bg-cyan-950/40 border border-slate-800/80 hover:border-cyan-500/40 cursor-pointer flex items-center justify-between transition">
+          <div class="min-w-0 flex items-center gap-2">
+            <i class="fa-solid fa-message text-[10px] text-cyan-400"></i>
+            <div class="text-[11px] font-bold text-slate-300 truncate group-hover:text-cyan-300">${c.title || 'New Chat'}</div>
+          </div>
+          <button onclick="event.stopPropagation(); deleteChatSession('${c.id}')" class="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 text-[10px] p-1">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      `).join('');
+    } else {
+      list.innerHTML = '<div class="text-[10px] text-slate-500 italic p-2 text-center">Belum ada riwayat chat</div>';
+    }
+  } catch(e) {}
+}
+
+async function openChatSession(id) {
+  try {
+    const res = await fetch('/api/chats');
+    const data = await res.json();
+    if (data.success && data.chats) {
+      const chat = data.chats.find(c => c.id === id);
+      if (chat) {
+        currentChatId = chat.id;
+        currentChatModel = chat.model || 'gemini-2.5-flash';
+        const modelSelect = document.getElementById('chat-model-select');
+        if (modelSelect) modelSelect.value = currentChatModel;
+        changeChatModel(currentChatModel);
+
+        const container = document.getElementById('chat-messages-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        chat.messages.forEach(m => {
+          appendMessageToUI(m.role, m.content);
+        });
+      }
+    }
+  } catch(e) {}
+}
+
+async function deleteChatSession(id) {
+  try {
+    await fetch(`/api/chats/${id}`, { method: 'DELETE' });
+    if (currentChatId === id) startNewChatSession();
+    loadChatSessions();
+  } catch(e) {}
+}
+
+function appendMessageToUI(role, content) {
+  const container = document.getElementById('chat-messages-container');
+  const welcome = document.getElementById('chat-empty-welcome');
+  if (welcome) welcome.classList.add('hidden');
+
+  const msgDiv = document.createElement('div');
+  const isUser = role === 'user';
+  
+  msgDiv.className = `flex items-start gap-2.5 ${isUser ? 'justify-end' : 'justify-start'}`;
+
+  const formattedContent = content
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+
+  msgDiv.innerHTML = `
+    ${!isUser ? '<div class="w-7 h-7 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-xs flex-shrink-0 mt-0.5"><i class="fa-solid fa-robot"></i></div>' : ''}
+    <div class="max-w-[82%] sm:max-w-[75%] p-3 rounded-2xl ${isUser ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-tr-sm font-medium' : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-sm'} text-xs leading-relaxed shadow">
+      ${formattedContent}
+    </div>
+    ${isUser ? '<div class="w-7 h-7 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 flex items-center justify-center text-xs flex-shrink-0 mt-0.5"><i class="fa-solid fa-user"></i></div>' : ''}
+  `;
+
+  container.appendChild(msgDiv);
+  container.scrollTop = container.scrollHeight;
+  return msgDiv;
+}
+
+async function handleSendChatMessage(event) {
+  event.preventDefault();
+  const input = document.getElementById('chat-input-text');
+  const message = input ? input.value.trim() : '';
+  const statusEl = document.getElementById('chat-stream-status');
+  const sendBtn = document.getElementById('btn-send-chat');
+
+  if (!message) return;
+
+  if (!activeUserHasApiKey) {
+    showToastNotification('error', 'API Key Diperlukan', 'Harap masukkan Google Gemini API Key Anda di Pengaturan.');
+    selectMenu('settings');
+    return;
+  }
+
+  input.value = '';
+  appendMessageToUI('user', message);
+
+  // Setup streaming model response container
+  const container = document.getElementById('chat-messages-container');
+  const modelMsgDiv = document.createElement('div');
+  modelMsgDiv.className = 'flex items-start gap-2.5 justify-start';
+  modelMsgDiv.innerHTML = `
+    <div class="w-7 h-7 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-xs flex-shrink-0 mt-0.5 animate-pulse"><i class="fa-solid fa-robot"></i></div>
+    <div class="ai-reply-body max-w-[82%] sm:max-w-[75%] p-3 rounded-2xl bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-sm text-xs leading-relaxed shadow font-mono">
+      <span class="inline-block w-2 h-3 bg-cyan-400 animate-pulse"></span>
+    </div>
+  `;
+  container.appendChild(modelMsgDiv);
+  container.scrollTop = container.scrollHeight;
+
+  const replyBody = modelMsgDiv.querySelector('.ai-reply-body');
+  let accumulatedText = '';
+
+  if (statusEl) statusEl.innerText = 'Mengetik...';
+  if (sendBtn) sendBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message,
+        model: currentChatModel,
+        chatId: currentChatId
+      })
+    });
+
+    if (!res.ok) {
+      const errData = await res.json();
+      replyBody.innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> ${errData.message || 'Error'}</span>`;
+      if (statusEl) statusEl.innerText = 'Error';
+      if (sendBtn) sendBtn.disabled = false;
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.replace('data: ', '').trim());
+            if (data.chunk) {
+              accumulatedText += data.chunk;
+              const formatted = accumulatedText
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+              replyBody.innerHTML = formatted + '<span class="inline-block w-1.5 h-3 bg-cyan-400 animate-pulse ml-0.5"></span>';
+              container.scrollTop = container.scrollHeight;
+            }
+            if (data.done) {
+              if (data.chatId) currentChatId = data.chatId;
+              const formatted = accumulatedText
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+              replyBody.innerHTML = formatted;
+              loadChatSessions();
+            }
+            if (data.error) {
+              replyBody.innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> ${data.error}</span>`;
+            }
+          } catch(e) {}
+        }
+      }
+    }
+  } catch (err) {
+    replyBody.innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> ${err.message}</span>`;
+  } finally {
+    if (statusEl) statusEl.innerText = 'Siap';
+    if (sendBtn) sendBtn.disabled = false;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  checkUserApiKeyStatus();
+  loadChatSessions();
+});
+

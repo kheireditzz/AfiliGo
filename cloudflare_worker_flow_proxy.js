@@ -14,7 +14,7 @@ async function handleRequest(request) {
   
   let targetPath = url.pathname;
   
-  // Intercept auth session check
+  // 1. Intercept Next-Auth session check
   if (targetPath.includes('/api/auth/session')) {
     return new Response(JSON.stringify({
       user: {
@@ -26,12 +26,13 @@ async function handleRequest(request) {
     }), {
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': 'true'
       }
     });
   }
 
-  // If root or /flow, target the direct editor project tool
+  // 2. Route root directly to Flow Tool
   if (targetPath === '/' || targetPath === '' || targetPath === '/flow') {
     targetPath = '/fx/id/tools/flow';
   }
@@ -74,12 +75,12 @@ async function handleRequest(request) {
     responseHeaders.delete('X-Frame-Options');
     responseHeaders.delete('Content-Security-Policy');
 
-    // Rewrite cookie domain for user browser
+    // 3. Rewrite and set all individual cookies on the worker domain with Lax policy
     const individualCookies = RAW_COOKIE_STRING.split(';');
     for (const c of individualCookies) {
       const trimmed = c.trim();
       if (trimmed) {
-        responseHeaders.append('Set-Cookie', `${trimmed}; Domain=${workerDomain}; Path=/; Secure; SameSite=None; HttpOnly`);
+        responseHeaders.append('Set-Cookie', `${trimmed}; Domain=${workerDomain}; Path=/; Secure; SameSite=Lax; HttpOnly; Max-Age=31536000`);
       }
     }
 
@@ -92,10 +93,38 @@ async function handleRequest(request) {
         '"pageProps":{"session":{"user":{"name":"Kheir Editz VIP","email":"kheireditzsupport@gmail.com","image":"https://lh3.googleusercontent.com/a/default-user=s96-c"},"expires":"2027-12-31T23:59:59.999Z"}'
       );
 
-      // Inject base tag
+      // Client Auth Script: intercept client-side fetch in browser
+      const clientInterceptorScript = `
+<script>
+(function() {
+  window.__GOOGLE_FLOW_SESSION_ACTIVE__ = true;
+  window.__NEXT_AUTH_USER__ = {
+    name: "Kheir Editz VIP",
+    email: "kheireditzsupport@gmail.com"
+  };
+  
+  const originalFetch = window.fetch;
+  window.fetch = async function(...args) {
+    let [resource, config] = args;
+    config = config || {};
+    config.headers = config.headers || {};
+
+    if (typeof resource === 'string' && resource.includes('/api/auth/session')) {
+      return new Response(JSON.stringify({
+        user: { name: "Kheir Editz VIP", email: "kheireditzsupport@gmail.com", image: "https://lh3.googleusercontent.com/a/default-user=s96-c" },
+        expires: "2027-12-31T23:59:59.999Z"
+      }), { headers: { 'Content-Type': 'application/json' } });
+    }
+    return originalFetch(resource, config);
+  };
+})();
+</script>
+`;
+
+      // Inject base tag & client interceptor
       html = html.replace(
         '<head>',
-        `<head>\n<base href="https://labs.google/">\n<style>#gb, header .sign-in-btn, a[href*="accounts.google.com"], [data-testid="signin-button"] { display: none !important; }</style>`
+        `<head>\n<base href="https://labs.google/">\n${clientInterceptorScript}\n<style>#gb, header .sign-in-btn, a[href*="accounts.google.com"], [data-testid="signin-button"] { display: none !important; }</style>`
       );
 
       return new Response(html, {
