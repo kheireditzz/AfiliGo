@@ -1112,6 +1112,18 @@ async function handleFlowProxyRequest(req, res, customPath = null) {
     subPath = '/fx/id/tools/flow';
   }
 
+  // Intercept Next-Auth session check to always return active authenticated session
+  if (subPath.includes('/api/auth/session')) {
+    return res.json({
+      user: {
+        name: "Kheir Editz VIP",
+        email: "kheireditzsupport@gmail.com",
+        image: "https://lh3.googleusercontent.com/a/default-user=s96-c"
+      },
+      expires: "2027-12-31T23:59:59.999Z"
+    });
+  }
+
   const targetUrl = `https://labs.google${subPath}`;
 
   try {
@@ -1219,6 +1231,8 @@ async function handleFlowProxyRequest(req, res, customPath = null) {
 app.all('/flow-proxy', (req, res) => handleFlowProxyRequest(req, res));
 app.all('/flow-proxy/*', (req, res) => handleFlowProxyRequest(req, res));
 app.all('/fx/*', (req, res) => handleFlowProxyRequest(req, res));
+app.all('/api/auth/*', (req, res) => handleFlowProxyRequest(req, res));
+app.all('/api/fx/*', (req, res) => handleFlowProxyRequest(req, res));
 app.all('/_next/*', (req, res) => handleFlowProxyRequest(req, res));
 app.all('/flow-live', (req, res) => handleFlowProxyRequest(req, res));
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
