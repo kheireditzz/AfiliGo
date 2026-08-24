@@ -2,7 +2,7 @@
 // ================================================================
 // DRAGGABLE & EDGE-DOCKING FLOATING HUB CONTROLLER
 // ================================================================
-let isFloatingHubActive = localStorage.getItem('affiliate_floating_user_enabled') === 'true';
+let isFloatingHubActive = false;
 let isFloatingWindowOpen = false;
 let isDockedOnLeft = false;
 let isDockedOnRight = false;
@@ -23,11 +23,11 @@ async function loadFloatingServersState() {
     const res = await fetch('/api/floating-servers');
     const data = await res.json();
     if (data) {
-      // Respect user's local activation toggle or server settings
+      // Respect user's local activation toggle (default: false / OFF)
       if (localStorage.getItem('affiliate_floating_user_enabled') !== null) {
         isFloatingHubActive = localStorage.getItem('affiliate_floating_user_enabled') === 'true';
       } else {
-        isFloatingHubActive = data.enabled || false;
+        isFloatingHubActive = false; // Default OFF
       }
 
       if (data.servers && data.servers.length > 0) {
@@ -2022,37 +2022,21 @@ function showToastNotification(type, title, message) {
 // ONE-CLICK BROWSER EXTENSION ACTIVATION BRIDGE
 // =========================================================================
 async function triggerActivateExtensionFlow() {
-  const statusEl = document.getElementById("ext-status-toast");
-  const btn = document.getElementById("btn-activate-ext");
+  showToastNotification("success", "Membuka Google Flow AI", "Menyuntikkan sesi VIP otomatis...");
   
-  if (btn) {
-    btn.innerHTML = "<i class=\"fa-solid fa-spinner fa-spin\"></i> Mengaktifkan...";
-  }
-
-  // Attempt communication with chrome extension if supported
   if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage) {
     try {
       chrome.runtime.sendMessage({ action: "ACTIVATE_FLOW_SESSION", openTab: true }, (res) => {
-        if (chrome.runtime.lastError) {
-          // Extension not installed or external ID mismatch, open official Flow tab directly
+        if (chrome.runtime.lastError || !res || !res.success) {
           window.open("https://labs.google/fx/id/tools/flow", "_blank");
-        } else if (res && res.success) {
-          alert("Ekstensi Aktif! Sesi VIP Google Flow berhasil disuntikkan & tab dibuka.");
         }
       });
     } catch(e) {
       window.open("https://labs.google/fx/id/tools/flow", "_blank");
     }
   } else {
-    // Standard direct browser redirect
     window.open("https://labs.google/fx/id/tools/flow", "_blank");
   }
-
-  setTimeout(() => {
-    if (btn) {
-      btn.innerHTML = "<i class=\"fa-solid fa-bolt text-amber-400\"></i> Aktifkan Ekstensi & Buka Flow";
-    }
-  }, 1500);
 }
 
 
