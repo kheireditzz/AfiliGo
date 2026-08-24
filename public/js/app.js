@@ -2070,3 +2070,38 @@ async function triggerActivateExtensionFlow() {
 
 
 // ================================================================
+// FLOW AI VIDEO PROMPT GENERATOR HELPERS
+// ================================================================
+function generateFlowCustomPrompt() {
+  const inputEl = document.getElementById("flow-prompt-input");
+  const cameraEl = document.getElementById("flow-camera-style");
+  const lightingEl = document.getElementById("flow-lighting-style");
+  const outputBox = document.getElementById("flow-prompt-output-box");
+  const resultText = document.getElementById("flow-prompt-result-text");
+
+  const rawIdea = inputEl ? inputEl.value.trim() : "";
+  const camera = cameraEl ? cameraEl.value : "Cinematic Smooth Slow Pan";
+  const lighting = lightingEl ? lightingEl.value : "Warm Golden Hour Sunlight";
+
+  if (!rawIdea) {
+    showToastNotification("error", "Input Kosong", "Harap masukkan naskah atau ide video terlebih dahulu!");
+    return;
+  }
+
+  const enhancedPrompt = `Cinematic commercial video of (${rawIdea}), executed with (${camera}), illuminated by natural (${lighting}), hyperrealistic 8K UHD textures, Sony FX3 cinema line camera motion, smooth fluid dynamic movement, realistic lighting reflections, ultra high-definition commercial film look.`;
+
+  if (resultText && outputBox) {
+    resultText.innerText = enhancedPrompt;
+    outputBox.classList.remove("hidden");
+    showToastNotification("success", "Prompt Siap!", "Master prompt video berhasil dirancang.");
+  }
+}
+
+function copyGeneratedFlowPrompt() {
+  const resultText = document.getElementById("flow-prompt-result-text");
+  if (resultText && resultText.innerText) {
+    navigator.clipboard.writeText(resultText.innerText).then(() => {
+      showToastNotification("success", "Tersalin!", "Prompt video berhasil disalin.");
+    });
+  }
+}
