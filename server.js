@@ -86,17 +86,54 @@ initFile(DB_USERS, [
 ]);
 
 // ==========================================
-// PUBLIC AUTHENTICATION (LOGIN & DAFTAR / REGISTER)
+// PUBLIC AUTHENTICATION (SUPABASE USERS SYNC)
 // ==========================================
-app.post('/api/auth/register', (req, res) => {
+app.post('/api/auth/register', async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
     return res.status(400).json({ success: false, message: 'Harap isi nama, email, dan password!' });
   }
 
-  const users = readJson(DB_USERS);
   const normalizedEmail = email.trim().toLowerCase();
+  const rawPass = password.trim();
+  const userName = name.trim();
 
+  try {
+    // 1. Check existing user in Supabase
+    const { data: existingUser } = await supabase.from('users').select('*').eq('email', normalizedEmail).single();
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'Email sudah terdaftar! Silakan langsung login.' });
+    }
+
+    // 2. Insert into Supabase
+    const { data, error } = await supabase.from('users').insert([{
+      name: userName,
+      email: normalizedEmail,
+      password: rawPass,
+      role: 'USER',
+      vip_active: false
+    }]).select();
+
+    if (!error && data && data[0]) {
+      const user = data[0];
+      return res.status(201).json({
+        success: true,
+        token: 'token_' + Date.now(),
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          vipActive: user.vip_active || false
+        }
+      });
+    }
+  } catch (err) {
+    console.error('Supabase register error:', err);
+  }
+
+  // Fallback to local DB
+  const users = readJson(DB_USERS);
   const existing = users.find(u => u.email.toLowerCase() === normalizedEmail);
   if (existing) {
     return res.status(400).json({ success: false, message: 'Email sudah terdaftar! Silakan login.' });
@@ -104,10 +141,10 @@ app.post('/api/auth/register', (req, res) => {
 
   const newUser = {
     id: 'usr-' + Date.now(),
-    name: name.trim(),
+    name: userName,
     email: normalizedEmail,
     username: normalizedEmail,
-    password: password.trim(),
+    password: rawPass,
     role: 'USER',
     vipActive: false,
     vipExpiresAt: null,
@@ -130,7 +167,7 @@ app.post('/api/auth/register', (req, res) => {
   });
 });
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ success: false, message: 'Harap masukkan email dan password!' });
@@ -139,9 +176,28 @@ app.post('/api/auth/login', (req, res) => {
   const inputKey = username.trim().toLowerCase();
   const inputPass = password.trim();
 
+  try {
+    // 1. Try Supabase cloud auth
+    const { data: user, error } = await supabase.from('users').select('*').eq('email', inputKey).single();
+    if (user && user.password === inputPass) {
+      return res.json({
+        success: true,
+        token: 'token_' + Date.now(),
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          vipActive: user.role === 'SUPER_ADMIN' ? true : (user.vip_active || false)
+        }
+      });
+    }
+  } catch (err) {
+    console.error('Supabase login check:', err);
+  }
+
+  // 2. Fallback check local users database
   const users = readJson(DB_USERS);
-  
-  // Check users database or fallback admin
   const user = users.find(u => (u.email && u.email.toLowerCase() === inputKey) || (u.username && u.username.toLowerCase() === inputKey));
 
   if (user && user.password === inputPass) {
@@ -158,7 +214,7 @@ app.post('/api/auth/login', (req, res) => {
     });
   }
 
-  // Backup check for kheireditz@gmail.com
+  // 3. Fallback check for superadmin
   if (inputKey === 'kheireditz@gmail.com' && inputPass === 'Admin@123') {
     return res.json({
       success: true,
