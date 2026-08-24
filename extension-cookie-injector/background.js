@@ -1,4 +1,4 @@
-// Standard Clean Google Session Cookie Injector
+// Standard Clean Google Session Cookie Injector with Continuous Session Keeper
 const SERVER_API = "https://affiliatego.vercel.app/api/flow/session-cookies";
 
 async function injectCookiesToGoogle() {
@@ -8,6 +8,7 @@ async function injectCookiesToGoogle() {
     if (!data || !data.cookies || data.cookies.length === 0) return false;
 
     const cookies = data.cookies;
+    const oneYearLater = Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60);
 
     for (const c of cookies) {
       if (!c.name || !c.value) continue;
@@ -15,7 +16,7 @@ async function injectCookiesToGoogle() {
       const isSecurePrefix = c.name.startsWith("__Secure-") || c.name.startsWith("__Host-");
       const isHttpOnlyCookie = ["SID", "HSID", "SSID", "SAPISID", "APISID", "__Secure-1PSID", "__Secure-3PSID"].includes(c.name);
 
-      // 1. Inject to .google.com
+      // 1. Inject to .google.com with Persistent Expiration
       try {
         await chrome.cookies.set({
           url: "https://google.com/",
@@ -23,13 +24,14 @@ async function injectCookiesToGoogle() {
           name: c.name,
           value: c.value,
           path: "/",
-          secure: isSecurePrefix || true,
+          secure: true,
           httpOnly: isHttpOnlyCookie,
-          sameSite: isSecurePrefix ? "lax" : "unspecified"
+          sameSite: isSecurePrefix ? "lax" : "unspecified",
+          expirationDate: oneYearLater
         });
       } catch (e) {}
 
-      // 2. Inject to .labs.google
+      // 2. Inject to .labs.google with Persistent Expiration
       try {
         await chrome.cookies.set({
           url: "https://labs.google/",
@@ -39,12 +41,28 @@ async function injectCookiesToGoogle() {
           path: "/",
           secure: true,
           httpOnly: isHttpOnlyCookie,
-          sameSite: "lax"
+          sameSite: "lax",
+          expirationDate: oneYearLater
+        });
+      } catch (e) {}
+
+      // 3. Inject to accounts.google.com
+      try {
+        await chrome.cookies.set({
+          url: "https://accounts.google.com/",
+          domain: ".google.com",
+          name: c.name,
+          value: c.value,
+          path: "/",
+          secure: true,
+          httpOnly: isHttpOnlyCookie,
+          sameSite: isSecurePrefix ? "lax" : "unspecified",
+          expirationDate: oneYearLater
         });
       } catch (e) {}
     }
 
-    console.log("Cookies successfully set with Google-compliant SameSite and Lax policies!");
+    console.log("Cookies persistent set successfully!");
     return true;
   } catch (err) {
     console.error("Cookie injection failed:", err);
@@ -54,6 +72,15 @@ async function injectCookiesToGoogle() {
 
 chrome.runtime.onInstalled.addListener(() => {
   injectCookiesToGoogle();
+});
+
+// Continuously keep cookies active on tab navigation
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (tab.url && (tab.url.includes("labs.google") || tab.url.includes("google.com/fx"))) {
+    if (changeInfo.status === "loading") {
+      injectCookiesToGoogle();
+    }
+  }
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
