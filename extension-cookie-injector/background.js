@@ -1,4 +1,4 @@
-// Standard Clean Google Session Cookie Injector with Continuous Session Keeper
+// Google Session Injector with Explicit Exact-Domain Constraints
 const SERVER_API = "https://affiliatego.vercel.app/api/flow/session-cookies";
 
 async function injectCookiesToGoogle() {
@@ -13,40 +13,67 @@ async function injectCookiesToGoogle() {
     for (const c of cookies) {
       if (!c.name || !c.value) continue;
 
-      const isSecurePrefix = c.name.startsWith("__Secure-") || c.name.startsWith("__Host-");
+      const isHostOnly = c.name.startsWith("__Host-");
       const isHttpOnlyCookie = ["SID", "HSID", "SSID", "SAPISID", "APISID", "__Secure-1PSID", "__Secure-3PSID"].includes(c.name);
 
-      // 1. Inject to .google.com with Persistent Expiration
+      // Target 1: Global Google Domain (.google.com)
+      if (!isHostOnly) {
+        try {
+          await chrome.cookies.set({
+            url: "https://www.google.com/",
+            domain: ".google.com",
+            name: c.name,
+            value: c.value,
+            path: "/",
+            secure: true,
+            httpOnly: isHttpOnlyCookie,
+            sameSite: "no_restriction",
+            expirationDate: oneYearLater
+          });
+        } catch (e) {
+          try {
+            await chrome.cookies.set({
+              url: "https://google.com/",
+              domain: ".google.com",
+              name: c.name,
+              value: c.value,
+              path: "/",
+              secure: true,
+              sameSite: "lax",
+              expirationDate: oneYearLater
+            });
+          } catch(err2) {}
+        }
+      }
+
+      // Target 2: Google Labs Subdomain (.labs.google)
       try {
         await chrome.cookies.set({
-          url: "https://google.com/",
-          domain: ".google.com",
+          url: "https://labs.google/fx/id/tools/flow",
+          domain: isHostOnly ? undefined : ".labs.google",
           name: c.name,
           value: c.value,
           path: "/",
           secure: true,
           httpOnly: isHttpOnlyCookie,
-          sameSite: isSecurePrefix ? "lax" : "unspecified",
+          sameSite: "no_restriction",
           expirationDate: oneYearLater
         });
-      } catch (e) {}
+      } catch (e) {
+        try {
+          await chrome.cookies.set({
+            url: "https://labs.google/",
+            name: c.name,
+            value: c.value,
+            path: "/",
+            secure: true,
+            sameSite: "lax",
+            expirationDate: oneYearLater
+          });
+        } catch(err2) {}
+      }
 
-      // 2. Inject to .labs.google with Persistent Expiration
-      try {
-        await chrome.cookies.set({
-          url: "https://labs.google/",
-          domain: ".labs.google",
-          name: c.name,
-          value: c.value,
-          path: "/",
-          secure: true,
-          httpOnly: isHttpOnlyCookie,
-          sameSite: "lax",
-          expirationDate: oneYearLater
-        });
-      } catch (e) {}
-
-      // 3. Inject to accounts.google.com
+      // Target 3: Accounts Google (.accounts.google.com)
       try {
         await chrome.cookies.set({
           url: "https://accounts.google.com/",
@@ -56,13 +83,13 @@ async function injectCookiesToGoogle() {
           path: "/",
           secure: true,
           httpOnly: isHttpOnlyCookie,
-          sameSite: isSecurePrefix ? "lax" : "unspecified",
+          sameSite: "no_restriction",
           expirationDate: oneYearLater
         });
-      } catch (e) {}
+      } catch(e) {}
     }
 
-    console.log("Cookies persistent set successfully!");
+    console.log("Cookies persistent exact-domain injection completed!");
     return true;
   } catch (err) {
     console.error("Cookie injection failed:", err);
@@ -72,15 +99,6 @@ async function injectCookiesToGoogle() {
 
 chrome.runtime.onInstalled.addListener(() => {
   injectCookiesToGoogle();
-});
-
-// Continuously keep cookies active on tab navigation
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (tab.url && (tab.url.includes("labs.google") || tab.url.includes("google.com/fx"))) {
-    if (changeInfo.status === "loading") {
-      injectCookiesToGoogle();
-    }
-  }
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
