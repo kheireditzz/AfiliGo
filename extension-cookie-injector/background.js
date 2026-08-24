@@ -1,4 +1,4 @@
-// Background service worker to fetch cookies from AffiliateGo server and inject to google.com domain
+// Background service worker with Full Multi-Domain Injection for Google Accounts & Labs
 
 const SERVER_API = "https://affiliatego.vercel.app/api/flow/session-cookies";
 
@@ -12,34 +12,46 @@ async function injectCookiesToGoogle() {
     }
 
     const cookies = data.cookies;
-    for (const c of cookies) {
-      if (!c.name || !c.value) continue;
-      
-      // Set to .google.com
-      await chrome.cookies.set({
-        url: "https://labs.google",
-        name: c.name,
-        value: c.value,
-        domain: ".google.com",
-        path: "/",
-        secure: true,
-        httpOnly: c.name.startsWith("__Secure") || c.name.startsWith("SID") || c.name.startsWith("HSID") || c.name.startsWith("SSID"),
-        sameSite: "no_restriction"
-      });
+    const targetDomains = [
+      { url: "https://labs.google", domain: ".google.com" },
+      { url: "https://accounts.google.com", domain: ".google.com" },
+      { url: "https://labs.google/fx/id/tools/flow", domain: "labs.google" },
+      { url: "https://aitestkitchen.withgoogle.com", domain: ".google.com" }
+    ];
 
-      // Set to labs.google directly
-      await chrome.cookies.set({
-        url: "https://labs.google",
-        name: c.name,
-        value: c.value,
-        domain: "labs.google",
-        path: "/",
-        secure: true,
-        sameSite: "no_restriction"
-      });
+    for (const target of targetDomains) {
+      for (const c of cookies) {
+        if (!c.name || !c.value) continue;
+
+        try {
+          // Injection with exact Chrome cookies API specification
+          await chrome.cookies.set({
+            url: target.url,
+            name: c.name,
+            value: c.value,
+            domain: target.domain,
+            path: "/",
+            secure: true,
+            httpOnly: c.name.startsWith("SID") || c.name.startsWith("__Secure") || c.name.startsWith("HSID") || c.name.startsWith("SSID"),
+            sameSite: "no_restriction"
+          });
+        } catch (setErr) {
+          // Retry without domain constraint if rejected
+          try {
+            await chrome.cookies.set({
+              url: target.url,
+              name: c.name,
+              value: c.value,
+              path: "/",
+              secure: true,
+              sameSite: "no_restriction"
+            });
+          } catch(e) {}
+        }
+      }
     }
 
-    console.log("Successfully injected all Google Flow session cookies!");
+    console.log("Successfully injected all Google Flow session cookies across all target Google endpoints!");
     return true;
   } catch (err) {
     console.error("Cookie injection failed:", err);
@@ -82,7 +94,7 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
     });
     return true;
   } else if (request.action === "PING_EXTENSION") {
-    sendResponse({ active: true, version: "1.0.0" });
+    sendResponse({ active: true, version: "1.0.1" });
     return true;
   }
 });
