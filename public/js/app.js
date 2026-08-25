@@ -1180,172 +1180,19 @@ async function triggerTargetVisionAnalysis(targetType) {
   }
 }
 
-function renderVisionSkeletonLoading() {
-  const container = document.getElementById("vision-analysis-results-container");
-  const analysisBox = document.getElementById("vision-product-analysis-box");
-  const promptsBox = document.getElementById("vision-video-prompts-box");
-  const captionsBox = document.getElementById("vision-captions-box");
-
-  if (!container) return;
-  container.classList.remove("hidden");
-
-  if (analysisBox) {
-    analysisBox.innerHTML = `
-      <div class="space-y-2 p-1">
-        <div class="h-3.5 w-2/5 skeleton-shimmer-emerald rounded-lg"></div>
-        <div class="grid grid-cols-2 gap-2">
-          <div class="h-5 skeleton-shimmer rounded-lg"></div>
-          <div class="h-5 skeleton-shimmer rounded-lg"></div>
-        </div>
-        <div class="h-5 w-11/12 skeleton-shimmer rounded-lg"></div>
-        <div class="h-5 w-4/5 skeleton-shimmer-orange rounded-lg"></div>
-        <div class="h-4 w-full skeleton-shimmer rounded-lg"></div>
-      </div>
-    `;
-  }
-
-  if (promptsBox) {
-    promptsBox.innerHTML = [1, 2, 3].map(i => `
-      <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
-        <div class="flex items-center justify-between">
-          <div class="h-4 w-28 skeleton-shimmer-orange rounded-md"></div>
-          <div class="h-4 w-14 skeleton-shimmer rounded-md"></div>
-        </div>
-        <div class="h-12 w-full skeleton-shimmer rounded-lg"></div>
-        <div class="h-3.5 w-3/4 skeleton-shimmer rounded-md"></div>
-      </div>
-    `).join("");
-  }
-
-  if (captionsBox) {
-    captionsBox.innerHTML = [1, 2, 3].map(i => `
-      <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
-        <div class="flex items-center justify-between">
-          <div class="h-4 w-32 skeleton-shimmer-emerald rounded-md"></div>
-          <div class="h-4 w-16 skeleton-shimmer rounded-md"></div>
-        </div>
-        <div class="h-5 w-3/4 skeleton-shimmer rounded-md"></div>
-        <div class="h-10 w-full skeleton-shimmer rounded-lg"></div>
-        <div class="h-3.5 w-1/2 skeleton-shimmer-orange rounded-md"></div>
-      </div>
-    `).join("");
-  }
-}
-
-function toggleVisionCardCollapse() {
-  const body = document.getElementById("vision-analysis-body");
-  const icon = document.getElementById("vision-collapse-icon");
-  if (!body) return;
-  if (body.classList.contains("hidden")) {
-    body.classList.remove("hidden");
-    if (icon) icon.className = "fa-solid fa-chevron-up text-[10px]";
-  } else {
-    body.classList.add("hidden");
-    if (icon) icon.className = "fa-solid fa-chevron-down text-[10px]";
-  }
-}
-
-function renderAffiliateVisionResults(data) {
-  const container = document.getElementById("vision-analysis-results-container");
-  const analysisBox = document.getElementById("vision-product-analysis-box");
-  const promptsBox = document.getElementById("vision-video-prompts-box");
-  const captionsBox = document.getElementById("vision-captions-box");
-
-  if (!container) return;
-  container.classList.remove("hidden");
-
-  // 1. Analisa Produk Box
-  if (analysisBox && data.analisa_produk) {
-    const ap = data.analisa_produk;
-    analysisBox.innerHTML = `
-      <div class="grid grid-cols-2 gap-2 text-slate-300">
-        <div><span class="text-slate-400 font-semibold">Jenis:</span> <span class="text-white font-medium">${ap.jenis || "-"}</span></div>
-        <div><span class="text-slate-400 font-semibold">Warna:</span> <span class="text-white font-medium">${ap.warna || "-"}</span></div>
-      </div>
-      <div class="text-slate-300"><span class="text-slate-400 font-semibold">Fitur:</span> <span class="text-emerald-300 font-medium">${ap.fitur_menonjol || "-"}</span></div>
-      <div class="text-slate-300"><span class="text-slate-400 font-semibold">Target Pasar:</span> <span class="text-amber-300 font-medium">${ap.target_pasar || "-"}</span></div>
-      ${ap.deskripsi_singkat ? `<div class="text-slate-400 italic text-[10px] border-t border-slate-800 pt-1">"${ap.deskripsi_singkat}"</div>` : ""}
-    `;
-  }
-
-  // 2. Video Prompts Box
-  if (promptsBox && Array.isArray(data.prompt_video) && data.prompt_video.length > 0) {
-    promptsBox.innerHTML = data.prompt_video.map((pv, idx) => `
-      <div class="p-2 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 space-y-1.5 transition">
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-            ${idx + 1}. ${pv.gaya || "Varian " + (idx + 1)}
-          </span>
-          <div class="flex items-center gap-1">
-            <button type="button" onclick="copyPromptText('${encodeURIComponent(pv.prompt_en || "")}')" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] font-semibold flex items-center gap-1 transition" title="Salin Prompt Video">
-              <i class="fa-solid fa-copy text-[9px]"></i> Salin
-            </button>
-            <button type="button" onclick="applyPromptToScene('${encodeURIComponent(pv.prompt_en || "")}')" class="px-2 py-0.5 rounded bg-orange-600/30 hover:bg-orange-600/60 text-orange-200 text-[10px] font-semibold flex items-center gap-1 border border-orange-500/40 transition" title="Gunakan di Scene 1">
-              <i class="fa-solid fa-arrow-right-to-bracket text-[9px]"></i> Pakai
-            </button>
-          </div>
-        </div>
-        <p class="text-[10px] font-mono text-slate-300 bg-slate-950/80 p-1.5 rounded border border-slate-800/80 break-words leading-relaxed">${pv.prompt_en || ""}</p>
-        ${pv.instruksi_kreator ? `<div class="text-[9px] text-slate-400 flex items-center gap-1"><i class="fa-solid fa-lightbulb text-amber-400 text-[8px]"></i> <span>${pv.instruksi_kreator}</span></div>` : ""}
-      </div>
-    `).join("");
-  }
-
-  // 3. Captions Box
-  if (captionsBox && Array.isArray(data.caption) && data.caption.length > 0) {
-    captionsBox.innerHTML = data.caption.map((cap, idx) => `
-      <div class="p-2 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 space-y-1.5 transition">
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-            ${cap.tipe || "Opsi " + (idx + 1)}
-          </span>
-          <button type="button" onclick="copyCaptionText('${encodeURIComponent((cap.hook ? cap.hook + "\n\n" : "") + (cap.teks_lengkap || "") + (cap.hashtags ? "\n\n" + cap.hashtags : ""))}')" class="px-2 py-0.5 rounded bg-cyan-950 hover:bg-cyan-900 text-cyan-200 text-[10px] font-semibold flex items-center gap-1 border border-cyan-500/30 transition">
-            <i class="fa-solid fa-copy text-[9px]"></i> Salin Caption
-          </button>
-        </div>
-        ${cap.hook ? `<div class="text-[11px] font-bold text-white bg-slate-950/60 p-1 rounded border border-slate-800">${cap.hook}</div>` : ""}
-        <p class="text-[10px] text-slate-300 leading-relaxed">${cap.teks_lengkap || ""}</p>
-        ${cap.hashtags ? `<div class="text-[9px] font-mono text-cyan-400">${cap.hashtags}</div>` : ""}
-      </div>
-    `).join("");
-  }
-}
-
-function applyPromptToScene(encodedPrompt) {
-  const promptText = decodeURIComponent(encodedPrompt);
-  if (!promptText) return;
-  const promptInput = document.getElementById("scene-prompt-1") || document.getElementById("scene-video-prompt-1");
-  if (promptInput) {
-    promptInput.value = promptText;
-    promptInput.classList.add("ring-2", "ring-orange-400", "border-orange-400");
-    setTimeout(() => promptInput.classList.remove("ring-2", "ring-orange-400", "border-orange-400"), 2500);
-    showToastNotification("success", "Prompt Diterapkan!", "Prompt berhasil dimasukkan ke Scene 1.");
-  } else {
-    showToastNotification("info", "Prompt Disalin", "Prompt telah disalin ke clipboard.");
-    navigator.clipboard.writeText(promptText);
-  }
-}
-
-function copyCaptionText(encodedCaption) {
-  const captionText = decodeURIComponent(encodedCaption);
-  if (!captionText) return;
-  navigator.clipboard.writeText(captionText);
-  showToastNotification("success", "Caption Disalin!", "Caption lengkap & hashtag siap diposting di TikTok/Reels.");
-}
-
 function renderStoryboardSkeletonLoading(count = 4) {
   const container = document.getElementById("scenes-container");
   if (!container) return;
 
   const num = parseInt(count) || 4;
   container.innerHTML = Array.from({ length: num }).map((_, idx) => `
-    <div class="p-3 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-900/90 to-slate-950/90 border border-slate-800/90 space-y-3 relative overflow-hidden">
+    <div class="rounded-3xl bg-[#0f121d] border border-slate-800/90 p-3.5 sm:p-4 space-y-3 shadow-xl">
       <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
         <div class="flex items-center gap-2">
-          <div class="h-5 w-28 skeleton-shimmer-orange rounded-lg"></div>
-          <div class="h-4 w-16 skeleton-shimmer rounded-lg"></div>
+          <div class="h-5 w-16 skeleton-shimmer-orange rounded-lg"></div>
+          <div class="h-5 w-28 skeleton-shimmer rounded-lg"></div>
         </div>
-        <div class="h-4 w-20 skeleton-shimmer rounded-lg"></div>
+        <div class="h-5 w-12 skeleton-shimmer rounded-lg"></div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
@@ -1460,13 +1307,12 @@ async function generateStoryboardWithAI() {
   icon.className = "fa-solid fa-circle-notch fa-spin text-[12px] text-amber-200";
   text.innerText = "Antigravity AI Merancang...";
 
-  // Immediately render Skeleton Shimmer loading placeholders for both Vault & Scenes
-  renderVisionSkeletonLoading();
+  // Render Skeleton Shimmer scene cards for instant feedback
   renderStoryboardSkeletonLoading(numScenes);
 
   try {
-    // 1. Generate Storyboard with Antigravity / Gemini 2.5 Pro
-    const sbPromise = fetch("/api/generate-storyboard-ai", {
+    // Generate Storyboard with Antigravity / Gemini 2.5 Pro
+    const res = await fetch("/api/generate-storyboard-ai", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
@@ -1479,50 +1325,26 @@ async function generateStoryboardWithAI() {
         duration, 
         platform 
       })
-    }).then(r => r.json());
+    });
 
-    // 2. Generate Vision & Script Vault Prompts & Captions
-    const vaultPromise = (async () => {
-      try {
-        const vaultRes = await fetch("/api/ai/analyze-affiliate-product", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            image: uploadedImages.product || (currentStoryboard?.scenes?.[0]?.imageUrl) || "data:image/jpeg;base64,placeholder",
-            target_platform: platform,
-            additional_context: `Produk: ${title}, USP: ${usp}, Model: ${modelDescription}, Lokasi: ${locationSetting}`
-          })
-        });
-        return await vaultRes.json();
-      } catch (e) {
-        return null;
-      }
-    })();
-
-    const [sbData, vaultData] = await Promise.all([sbPromise, vaultPromise]);
-
-    if (sbData && sbData.scenes) {
+    const data = await res.json();
+    if (data && data.scenes) {
       currentStoryboard = {
         id: "sb-" + Date.now(),
-        title: sbData.title || title,
-        platform: sbData.platform || platform,
-        totalDuration: sbData.totalDuration || duration,
-        modelDescription: sbData.modelDescription || modelDescription,
-        locationSetting: sbData.locationSetting || locationSetting,
-        hook: sbData.hook,
-        cta: sbData.cta,
-        scenes: sbData.scenes || []
+        title: data.title || ("Affiliate: " + title),
+        platform: data.platform || platform,
+        totalDuration: data.totalDuration || duration,
+        modelDescription: data.modelDescription || modelDescription,
+        locationSetting: data.locationSetting || locationSetting,
+        hook: data.hook,
+        cta: data.cta,
+        scenes: data.scenes || []
       };
 
       renderStoryboardPreview();
+      triggerAutoSave();
+      showToastNotification("success", "Antigravity AI Berhasil!", "Skrip, hook, prompt visual & storyboard siap.");
     }
-
-    if (vaultData && vaultData.success) {
-      renderAffiliateVisionResults(vaultData);
-    }
-
-    triggerAutoSave();
-    showToastNotification("success", "Antigravity AI Berhasil!", "Naskah video, hook, prompt visual & storyboard siap.");
   } catch (err) {
     console.error("Generate Storyboard Error:", err);
     showToastNotification("error", "Storyboard Gagal", "Gagal membuat storyboard. Silakan coba lagi.");
