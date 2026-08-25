@@ -150,6 +150,25 @@
         if (switchBtn) switchBtn.innerText = 'Daftar';
       }
     }
+
+    function togglePasswordVisibility(inputId, btnEl) {
+      var input = document.getElementById(inputId);
+      if (!input) return;
+      var icon = btnEl ? btnEl.querySelector('i') : null;
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) {
+          icon.classList.remove('fa-eye', 'fa-regular');
+          icon.classList.add('fa-eye-slash', 'fa-solid', 'text-orange-400');
+        }
+      } else {
+        input.type = 'password';
+        if (icon) {
+          icon.classList.remove('fa-eye-slash', 'fa-solid', 'text-orange-400');
+          icon.classList.add('fa-eye', 'fa-regular');
+        }
+      }
+    }
   </script>
 
   <script>
@@ -290,8 +309,11 @@
 
         <div class="space-y-1.5">
           <label class="block text-xs font-bold text-slate-300 font-display">Kata Sandi</label>
-          <div class="relative">
-            <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-[#070a14] border border-slate-700/80 hover:border-slate-600 focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition shadow-inner">
+          <div class="relative flex items-center">
+            <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-[#070a14] border border-slate-700/80 hover:border-slate-600 focus:border-orange-500 rounded-xl px-4 py-2.5 pr-10 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition shadow-inner">
+            <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3 text-slate-500 hover:text-orange-400 focus:outline-none p-1 transition" title="Lihat Kata Sandi">
+              <i class="fa-regular fa-eye text-xs"></i>
+            </button>
           </div>
         </div>
 
@@ -315,7 +337,12 @@
 
         <div class="space-y-1.5">
           <label class="block text-xs font-bold text-slate-300 font-display">Kata Sandi</label>
-          <input type="password" id="reg-password" required placeholder="Minimal 6 karakter" class="w-full bg-[#070a14] border border-slate-700/80 hover:border-slate-600 focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition shadow-inner">
+          <div class="relative flex items-center">
+            <input type="password" id="reg-password" required placeholder="Minimal 6 karakter" class="w-full bg-[#070a14] border border-slate-700/80 hover:border-slate-600 focus:border-orange-500 rounded-xl px-4 py-2.5 pr-10 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition shadow-inner">
+            <button type="button" onclick="togglePasswordVisibility('reg-password', this)" class="absolute right-3 text-slate-500 hover:text-orange-400 focus:outline-none p-1 transition" title="Lihat Kata Sandi">
+              <i class="fa-regular fa-eye text-xs"></i>
+            </button>
+          </div>
         </div>
 
         <button type="submit" id="btn-register" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-600 to-red-600 hover:from-amber-400 hover:to-orange-500 active:scale-[0.98] text-white font-extrabold text-xs font-display transition shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2">
