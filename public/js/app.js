@@ -440,17 +440,16 @@ function showMainApp() {
 
   openTab("dashboard");
 
-  // Load data asynchronously without blocking UI
+  // Lightweight staggered initialization for silky-smooth 60fps performance
   setTimeout(() => {
     try { loadDashboardData(); } catch(e){}
-    try { loadProducts(); } catch(e){}
-    try { loadStoryboards(); } catch(e){}
-    try { loadPrompts(); } catch(e){}
-    try { loadSettings(); } catch(e){}
     try { checkVipStatus(); } catch(e){}
-    try { loadFeaturesConfig(); } catch(e){}
-    try { loadFloatingServersState(); } catch(e){}
   }, 50);
+
+  setTimeout(() => {
+    try { loadSettings(); } catch(e){}
+    try { loadGeminiKeysPool(); } catch(e){}
+  }, 500);
 }
 
 function switchAuthMode(mode) {

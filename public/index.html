@@ -397,6 +397,26 @@
     }
   </script>
 
+
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+    }
+    /* GPU acceleration for smooth scrolling */
+    #tab-gemini-chat, #main-app, #chat-messages-container {
+      transform: translateZ(0);
+      -webkit-overflow-scrolling: touch;
+    }
+  </style>
+
 </head>
 <body class="w-full h-full flex flex-col antialiased selection:bg-orange-500 selection:text-white bg-[#0b0f19]">
 
@@ -632,12 +652,12 @@
   </div>
 
   <!-- FORMAL & CLEAN AUTH OVERLAY (LOGIN & DAFTAR) -->
-  <div id="login-overlay" class="hidden fixed inset-0 z-50 bg-[#070b14]/95 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto">
+  <div id="login-overlay" class="hidden fixed inset-0 z-50 bg-[#070b14]/95  flex items-center justify-center p-4 overflow-y-auto">
     <!-- Ambient Background Glows -->
-    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-orange-500/10 rounded-full blur-[100px] pointer-events-none"></div>
-    <div class="absolute bottom-1/4 left-1/3 w-72 h-72 bg-cyan-500/10 rounded-full blur-[90px] pointer-events-none"></div>
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-orange-500/10 rounded-full opacity-30 pointer-events-none"></div>
+    <div class="absolute bottom-1/4 left-1/3 w-72 h-72 bg-cyan-500/10 rounded-full opacity-30 pointer-events-none"></div>
 
-    <div class="w-full max-w-sm sm:max-w-md bg-gradient-to-b from-[#111827]/90 via-[#0d1322]/95 to-[#0b0f19] rounded-3xl p-6 sm:p-8 space-y-5 border border-slate-700/60 shadow-2xl shadow-black/80 relative my-auto backdrop-blur-2xl">
+    <div class="w-full max-w-sm sm:max-w-md bg-gradient-to-b from-[#111827]/90 via-[#0d1322]/95 to-[#0b0f19] rounded-3xl p-6 sm:p-8 space-y-5 border border-slate-700/60 shadow-2xl shadow-black/80 relative my-auto ">
       
       <!-- Brand & Header -->
       <div class="text-center space-y-2">
@@ -758,7 +778,7 @@
     <!-- BODY AREA -->
     <div class="w-full flex-1 flex overflow-hidden relative">
 
-      <div id="sidebar-backdrop" onclick="toggleSidebar(false)" class="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm hidden transition-opacity duration-300"></div>
+      <div id="sidebar-backdrop" onclick="toggleSidebar(false)" class="fixed inset-0 z-40 bg-black/80  hidden transition-opacity duration-300"></div>
 
       <!-- SIDEBAR DRAWER -->
       <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 lg:static lg:w-64 bg-[#0d0f18] lg:bg-transparent border-r border-slate-800/80 p-4 flex flex-col justify-between select-none -translate-x-full lg:translate-x-0 transition-transform duration-300 shadow-2xl lg:shadow-none overflow-y-auto">
@@ -938,7 +958,7 @@
 
           <!-- HERO BANNER -->
           <div class="rounded-3xl bg-gradient-to-br from-slate-900/90 via-[#0d121f] to-[#0a0d17] p-5 sm:p-7 border border-slate-800/80 shadow-2xl relative overflow-hidden">
-            <div class="absolute -right-12 -top-12 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -right-12 -top-12 w-64 h-64 bg-orange-500/10 rounded-full opacity-30 pointer-events-none"></div>
             <div class="max-w-2xl space-y-3 relative z-10">
               <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[11px] font-bold font-display uppercase tracking-wide">
                 <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
@@ -1275,7 +1295,7 @@
         <div id="tab-gemini-chat" class="tab-content hidden w-full max-w-full overflow-hidden h-[calc(100dvh-125px)] sm:h-[calc(100vh-115px)] flex flex-col space-y-2">
           
           <!-- MOBILE BACKDROP OVERLAY FOR SIDEBAR -->
-          <div id="gemini-chat-backdrop" onclick="toggleChatHistorySidebar(true)" class="hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-xs transition-opacity md:hidden"></div>
+          <div id="gemini-chat-backdrop" onclick="toggleChatHistorySidebar(true)" class="hidden fixed inset-0 z-40 bg-black/70  transition-opacity md:hidden"></div>
 
           <!-- TOP HEADER BAR -->
           <div class="w-full max-w-full overflow-hidden flex items-center justify-between gap-2 bg-[#0c101d] px-3 py-2 rounded-2xl border border-slate-800 shadow-md flex-shrink-0">
@@ -1411,7 +1431,7 @@
               </div>
 
               <!-- Chat Input Bar -->
-              <div class="p-2.5 sm:p-3 bg-[#0b0f1b] border-t border-slate-800/90 backdrop-blur-md relative z-10 w-full max-w-full">
+              <div class="p-2.5 sm:p-3 bg-[#0b0f1b] border-t border-slate-800/90  relative z-10 w-full max-w-full">
                 <form id="chat-form" onsubmit="handleSendChatMessage(event)" class="relative flex items-center w-full">
                   <input type="text" id="chat-input-text" autocomplete="off" placeholder="Tanya sesuatu ke Gemini..." class="w-full bg-[#050811] border border-slate-700/80 hover:border-slate-600 focus:border-cyan-500 rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none pr-10 sm:pr-12 transition">
                   
@@ -1701,7 +1721,7 @@
   </div>
 
   <!-- REALTIME HISTORY MODAL -->
-  <div id="history-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+  <div id="history-modal" class="fixed inset-0 z-50 bg-black/85  hidden items-center justify-center p-4">
     <div class="ultra-glass-card w-full max-w-lg rounded-3xl p-5 space-y-3.5 border border-orange-500/40 shadow-2xl flex flex-col max-h-[85vh]">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
         <div class="flex items-center gap-2">
@@ -1724,7 +1744,7 @@
   <!-- ============================================== -->
   <!-- VIP DONGTUBE QRIS PAYMENT MODAL (RP 25.000) -->
   <!-- ============================================== -->
-  <div id="vip-payment-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
+  <div id="vip-payment-modal" class="fixed inset-0 z-50 bg-black/90  hidden items-center justify-center p-4 overflow-y-auto">
     <div class="ultra-glass-card w-full max-w-sm sm:max-w-md rounded-3xl p-5 sm:p-6 space-y-4 border border-amber-500/40 shadow-2xl relative my-auto">
       
       <!-- Close Button -->
@@ -1820,7 +1840,7 @@
   </div>
 
 <!-- CROPPER MODAL -->
-  <div id="cropper-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4">
+  <div id="cropper-modal" class="fixed inset-0 z-50 bg-black/90  hidden items-center justify-center p-4">
     <div class="ultra-glass-card w-full max-w-lg rounded-3xl p-5 space-y-4 border border-orange-500/40 shadow-2xl flex flex-col max-h-[90vh]">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
         <div class="flex items-center gap-2">
@@ -1862,7 +1882,7 @@
   </div>
 
   <!-- PRODUCT MODAL -->
-  <div id="product-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+  <div id="product-modal" class="fixed inset-0 z-50 bg-black/80  hidden items-center justify-center p-4">
     <div class="ultra-glass-card w-full max-w-sm sm:max-w-md rounded-3xl p-5 space-y-3.5 border border-slate-700">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
         <h3 class="font-black text-white text-sm sm:text-base font-display">Tambah Produk Affiliate</h3>
@@ -1916,7 +1936,7 @@
   </div>
 
   <!-- PROMPT MODAL -->
-  <div id="prompt-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+  <div id="prompt-modal" class="fixed inset-0 z-50 bg-black/80  hidden items-center justify-center p-4">
     <div class="ultra-glass-card w-full max-w-sm sm:max-w-md rounded-3xl p-5 space-y-3.5 border border-slate-700">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
         <h3 class="font-black text-white text-sm sm:text-base font-display">Tambah Prompt Master</h3>
@@ -1968,7 +1988,7 @@
   <div id="floating-hub-fab" class="fixed z-[9999] select-none touch-none" style="display: none; top: 68px; left: calc(50% - 135px); width: 270px; max-width: 90vw;">
     
     <!-- Unified Ultra-Compact Dark Card with subtle border -->
-    <div class="rounded-xl bg-[#0e1322]/95 backdrop-blur-xl border border-slate-700/80 shadow-xl shadow-black/80 overflow-hidden flex flex-col transition-all duration-200">
+    <div class="rounded-xl bg-[#0e1322]/95  border border-slate-700/80 shadow-xl shadow-black/80 overflow-hidden flex flex-col transition-all duration-200">
       
       <!-- 1. Header Pill Bar (Super Compact) -->
       <div onclick="toggleServerGenerateDropdown(event)" class="px-2.5 py-1.5 bg-[#121829] flex items-center justify-between cursor-pointer hover:bg-[#161d31] transition select-none">
@@ -2092,7 +2112,7 @@
   </div>
 
   <!-- EXTENSION FLOW AI BRUTAL GENERATOR MODAL -->
-  <div id="modal-extension-flow-ai" class="fixed inset-0 z-[10000] bg-black/85 backdrop-blur-xl hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+  <div id="modal-extension-flow-ai" class="fixed inset-0 z-[10000] bg-black/85  hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="w-full max-w-lg bg-gradient-to-b from-[#141b2d] via-[#0e1322] to-[#070a14] border border-orange-500/40 rounded-3xl p-5 sm:p-7 shadow-2xl shadow-black relative text-white space-y-4 my-auto">
       
       <!-- Modal Header -->
@@ -2172,7 +2192,7 @@
   </div>
 
   <!-- ONE-CLICK EXTENSION INSTALLER MODAL (LEGACY FLOW 2) -->
-  <div id="modal-install-extension" class="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+  <div id="modal-install-extension" class="fixed inset-0 z-[10000] bg-black/80  hidden items-center justify-center p-4">
     <div class="w-full max-w-md bg-gradient-to-b from-[#141b2d] to-[#0b0e17] border border-amber-500/30 rounded-3xl p-5 sm:p-6 shadow-2xl shadow-black relative text-white space-y-4">
       
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -2213,7 +2233,7 @@
   <!-- ========================================================== -->
   <!-- GEMINI MULTI-API KEY POOL MODAL (AUTO-FAILOVER / ROTATION) -->
   <!-- ========================================================== -->
-  <div id="modal-gemini-keys" class="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4">
+  <div id="modal-gemini-keys" class="fixed inset-0 z-[10000] bg-black/80  hidden items-center justify-center p-3 sm:p-4">
     <div class="w-full max-w-lg bg-[#0c101d] border border-cyan-500/30 rounded-3xl p-5 sm:p-6 shadow-2xl shadow-black relative text-white space-y-4 max-h-[90vh] flex flex-col">
       
       <!-- Modal Header -->
