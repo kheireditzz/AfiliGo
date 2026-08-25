@@ -2978,6 +2978,36 @@ function closeExtensionModal() {
 }
 
 // ==========================================================
+// UNIFIED SERVER GENERATE & FLOW AI HUB MODAL CONTROLLER
+// ==========================================================
+function toggleServerGenerateHubModal() {
+  const modal = document.getElementById("modal-server-generate-hub");
+  if (!modal) return;
+  if (modal.classList.contains("hidden")) {
+    openServerGenerateHubModal();
+  } else {
+    closeServerGenerateHubModal();
+  }
+}
+
+function openServerGenerateHubModal() {
+  const modal = document.getElementById("modal-server-generate-hub");
+  if (modal) {
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    loadFlowAccounts();
+  }
+}
+
+function closeServerGenerateHubModal() {
+  const modal = document.getElementById("modal-server-generate-hub");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
+}
+
+// ==========================================================
 // GOOGLE & FLOW AI MULTI-ACCOUNT / SESSION SWITCHER CONTROLLER
 // ==========================================================
 function openFlowAccountsModal() {
@@ -3017,6 +3047,7 @@ async function loadFlowAccounts() {
   const sidebarBadge = document.getElementById("sidebar-flow-accounts-badge");
   const activeDisplay = document.getElementById("active-flow-account-display");
   const dashActiveEmail = document.getElementById("dash-active-flow-email");
+  const hubActiveEmail = document.getElementById("hub-active-flow-email");
   const dashQuotaBadge = document.getElementById("dash-flow-quota-badge");
   const floatEmailDisplay = document.getElementById("floating-flow-email-display");
   const floatLabel = document.getElementById("floating-flow-account-label");
@@ -3038,6 +3069,7 @@ async function loadFlowAccounts() {
       if (activeAcc) {
         if (activeDisplay) activeDisplay.innerText = `${activeAcc.email} (${activeAcc.label || 'Aktif'})`;
         if (dashActiveEmail) dashActiveEmail.innerText = `${activeAcc.email} (${activeAcc.label || 'Aktif'})`;
+        if (hubActiveEmail) hubActiveEmail.innerText = `${activeAcc.email} (${activeAcc.label || 'Aktif'})`;
         if (floatEmailDisplay) floatEmailDisplay.innerText = activeAcc.email;
         if (floatLabel) floatLabel.innerText = (activeAcc.label || 'GOOGLE FLOW').toUpperCase();
 

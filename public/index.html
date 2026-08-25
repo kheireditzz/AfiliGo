@@ -533,15 +533,15 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <button onclick="openFlowAccountsModal()" class="px-2.5 sm:px-3 py-2 rounded-xl bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 hover:text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow transition active:scale-95" title="Google & Flow AI Session Switcher">
-          <i class="fa-brands fa-google text-emerald-400 text-xs"></i>
-          <span class="inline">Akun Flow</span>
-          <span id="topbar-flow-badge" class="px-1.5 py-0.2 rounded-full bg-emerald-900 text-emerald-200 text-[9px] font-mono border border-emerald-400/40">1</span>
+        <button onclick="toggleServerGenerateHubModal()" class="px-2.5 sm:px-3 py-2 rounded-xl bg-gradient-to-r from-orange-950/80 via-amber-950/60 to-emerald-950/80 hover:bg-slate-800 border border-orange-500/60 hover:border-emerald-400 text-amber-300 hover:text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow-lg shadow-orange-950/40 transition active:scale-95" title="Server Generate & Akun Flow AI Hub">
+          <i class="fa-solid fa-server text-orange-400 text-xs animate-pulse"></i>
+          <span>Server Generate</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
         </button>
 
         <button onclick="openExtensionModal()" class="px-3 py-2 rounded-xl bg-slate-850 hover:bg-slate-800 border border-orange-500/40 text-amber-300 hover:text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow transition" title="Buka & Unduh Flow Ai Extension">
-          <i class="fa-solid fa-puzzle-piece text-orange-400 text-xs animate-pulse"></i>
-          <span class="hidden sm:inline">Flow Ai Extension</span>
+          <i class="fa-solid fa-puzzle-piece text-orange-400 text-xs"></i>
+          <span class="hidden sm:inline">Flow Extension</span>
         </button>
 
         <button id="header-btn-create" onclick="openTab('storyboard-creator')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow-md shadow-orange-600/30 transition">
@@ -589,14 +589,14 @@
               <span>Dashboard Utama</span>
             </button>
 
-            <!-- GOOGLE & FLOW AI SESSION SWITCHER -->
-            <button onclick="openFlowAccountsModal()" id="nav-flow-accounts" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 font-semibold text-xs transition">
+            <!-- SERVER GENERATE & AKUN FLOW AI HUB -->
+            <button onclick="toggleServerGenerateHubModal()" id="nav-server-hub" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 font-semibold text-xs transition">
               <div class="flex items-center gap-3">
-                <i class="fa-brands fa-google w-4 text-center text-emerald-400 text-sm"></i>
-                <span class="font-bold text-white">Akun Google / Flow</span>
+                <i class="fa-solid fa-server w-4 text-center text-orange-400 text-sm"></i>
+                <span class="font-bold text-white">Server Generate</span>
               </div>
               <span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[8px] font-mono font-bold border border-emerald-500/30">
-                SWITCHER
+                FLOW AI
               </span>
             </button>
 
@@ -2148,6 +2148,185 @@
       <div class="flex justify-end gap-2 pt-1 flex-shrink-0 border-t border-slate-800">
         <button onclick="closeGeminiKeyModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition">
           Selesai
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- UNIFIED SERVER GENERATE & FLOW AI HUB MODAL -->
+  <!-- ========================================================== -->
+  <div id="modal-server-generate-hub" class="fixed inset-0 z-[10000] bg-black/85 hidden items-center justify-center p-3 sm:p-4">
+    <div class="w-full max-w-2xl bg-[#090d16] border border-orange-500/40 rounded-3xl p-5 sm:p-6 shadow-2xl shadow-black relative text-white space-y-4 max-h-[92vh] flex flex-col">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-red-600 flex items-center justify-center text-white text-base shadow-lg shadow-orange-600/30">
+            <i class="fa-solid fa-server"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm sm:text-base font-display text-white flex items-center gap-2">
+              Server Generate Hub
+              <span class="px-2 py-0.5 rounded-full bg-emerald-950 border border-emerald-500/40 text-[9px] text-emerald-300 font-mono">ONLINE</span>
+            </h3>
+            <p class="text-[10px] sm:text-[11px] text-slate-400 font-mono">Pusat Server AI Video, Gemini Pro, & Akun Google Flow AI</p>
+          </div>
+        </div>
+        <button onclick="closeServerGenerateHubModal()" class="w-8 h-8 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Server List Cards -->
+      <div class="space-y-3 flex-1 overflow-y-auto pr-1 custom-scrollbar">
+        
+        <!-- SERVER 2: GOOGLE FLOW AI (WITH INTEGRATED ACCOUNT SWITCHER) -->
+        <div class="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-br from-emerald-950/60 via-[#0b1219] to-[#0e1622] border border-emerald-500/50 shadow-md space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0 shadow shadow-emerald-400/50"></span>
+              <div>
+                <h4 class="font-extrabold text-xs sm:text-sm text-white font-display flex items-center gap-1.5">
+                  <span>Server 2: Google Flow AI</span>
+                  <span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold border border-emerald-500/40">VIP AUTO</span>
+                </h4>
+                <p class="text-[10px] text-slate-400">Platform Pembuatan Video AI Google Flow Labs</p>
+              </div>
+            </div>
+            <button onclick="openFlowAccountsModal()" class="px-2.5 py-1 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 font-bold text-[10px] transition flex items-center gap-1">
+              <i class="fa-solid fa-users text-[9px]"></i> Kelola Akun
+            </button>
+          </div>
+
+          <!-- INTEGRATED ACCOUNT INFO INSIDE SERVER 2 -->
+          <div class="p-2.5 rounded-xl bg-[#04080c] border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-6 h-6 rounded-lg bg-emerald-900/60 text-emerald-400 flex items-center justify-center text-xs flex-shrink-0">
+                <i class="fa-brands fa-google"></i>
+              </div>
+              <div class="min-w-0 truncate">
+                <div class="text-[9px] text-slate-500 font-mono">Akun Aktif Terhubung:</div>
+                <div id="hub-active-flow-email" class="text-xs font-bold text-emerald-300 font-mono truncate">kheir.creator@gmail.com</div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 w-full sm:w-auto justify-end">
+              <button onclick="copyActiveFlowEmail()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-emerald-900/60 text-slate-300 hover:text-emerald-300 text-[10px] font-bold transition flex items-center gap-1">
+                <i class="fa-regular fa-copy text-[9px]"></i> Salin Email
+              </button>
+              <button onclick="copyActiveFlowPass()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-emerald-900/60 text-slate-300 hover:text-emerald-300 text-[10px] font-bold transition flex items-center gap-1">
+                <i class="fa-solid fa-key text-[9px]"></i> Salin Sandi
+              </button>
+              <button onclick="openFlowAccountsModal()" class="px-2 py-1 rounded-lg bg-emerald-900/80 hover:bg-emerald-800 text-emerald-200 text-[10px] font-bold transition flex items-center gap-1">
+                <i class="fa-solid fa-arrows-rotate text-[9px]"></i> Beralih
+              </button>
+            </div>
+          </div>
+
+          <!-- Flow Action Buttons -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
+            <button onclick="triggerActivateExtensionFlow()" class="py-2 px-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-xs font-display flex items-center justify-center gap-1 shadow transition">
+              <span>Buka Tap Baru</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+            </button>
+            <a href="https://affiliatego.affiliatego.workers.dev/" target="_blank" rel="noopener noreferrer" class="py-2 px-2 rounded-xl bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-500/50 active:scale-95 text-emerald-300 font-bold text-xs font-display flex items-center justify-center gap-1 transition">
+              <span>Tab Proxy Cloud</span>
+              <i class="fa-solid fa-shield-halved text-[9px]"></i>
+            </a>
+            <a href="https://labs.google/fx/id/tools/flow" target="_blank" rel="noopener noreferrer" class="py-2 px-2 rounded-xl bg-orange-950/80 hover:bg-orange-900 border border-orange-500/50 active:scale-95 text-amber-300 font-bold text-xs font-display flex items-center justify-center gap-1 transition">
+              <span>Website Resmi</span>
+              <i class="fa-solid fa-external-link text-[9px]"></i>
+            </a>
+            <a href="/AffiliateGo-FlowAI-Extension.zip" download="AffiliateGo-FlowAI-Extension.zip" class="py-2 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 border border-slate-700 font-bold text-xs font-display flex items-center justify-center gap-1 transition">
+              <i class="fa-solid fa-puzzle-piece text-amber-400 text-[10px]"></i>
+              <span>Unduh Ekstensi</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 2-COLUMN GRID: SERVER 1 & SERVER 3 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <!-- SERVER 1: GEMINI PRO STUDIO -->
+          <div class="p-3.5 rounded-2xl bg-[#0f1424] border border-slate-800/90 hover:border-cyan-500/50 flex flex-col justify-between gap-2.5 transition">
+            <div class="flex items-center justify-between gap-1">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span class="font-extrabold text-white text-xs font-display">Server 1: Google Gemini 1.5 Pro</span>
+              </div>
+              <span class="px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 text-[8px] font-mono font-bold">STABLE</span>
+            </div>
+            <p class="text-[10px] text-slate-400">Studio Resmi AI Gemini untuk Naskah Video & Scripting</p>
+            <a href="https://aistudio.google.com/prompts/new_chat" target="_blank" rel="noopener noreferrer" class="w-full py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs font-display flex items-center justify-center gap-1 shadow transition">
+              <span>Buka Google AI Studio</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+            </a>
+          </div>
+
+          <!-- SERVER 3: FLUX 8K ULTRA -->
+          <div class="p-3.5 rounded-2xl bg-[#0f1424] border border-slate-800/90 hover:border-orange-500/50 flex flex-col justify-between gap-2.5 transition">
+            <div class="flex items-center justify-between gap-1">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-orange-400"></span>
+                <span class="font-extrabold text-white text-xs font-display">Server 3: Flux 8K Ultra Engine</span>
+              </div>
+              <span class="px-1.5 py-0.2 rounded bg-orange-500/20 text-orange-300 text-[8px] font-mono font-bold">8K PHOTO</span>
+            </div>
+            <p class="text-[10px] text-slate-400">Generator Gambar & Visual Iklan Affiliate Resolusi Tinggi</p>
+            <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer" class="w-full py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs font-display flex items-center justify-center gap-1 shadow transition">
+              <span>Buka Server Flux</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- 2-COLUMN GRID: SERVER 4 & SERVER 5 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <!-- SERVER 4: KLING AI -->
+          <div class="p-3.5 rounded-2xl bg-[#0f1424] border border-slate-800/90 hover:border-purple-500/50 flex flex-col justify-between gap-2.5 transition">
+            <div class="flex items-center justify-between gap-1">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                <span class="font-extrabold text-white text-xs font-display">Server 4: Kling AI Video</span>
+              </div>
+              <span class="px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 text-[8px] font-mono font-bold">MOTION</span>
+            </div>
+            <p class="text-[10px] text-slate-400">Generator Gerakan Video Sinematik Realistis</p>
+            <a href="https://klingai.com/" target="_blank" rel="noopener noreferrer" class="w-full py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs font-display flex items-center justify-center gap-1 shadow transition">
+              <span>Buka Kling AI</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+            </a>
+          </div>
+
+          <!-- SERVER 5: HUGGINGFACE SD -->
+          <div class="p-3.5 rounded-2xl bg-[#0f1424] border border-slate-800/90 hover:border-amber-500/50 flex flex-col justify-between gap-2.5 transition">
+            <div class="flex items-center justify-between gap-1">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span class="font-extrabold text-white text-xs font-display">Server 5: HuggingFace Schnell</span>
+              </div>
+              <span class="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[8px] font-mono font-bold">FAST</span>
+            </div>
+            <p class="text-[10px] text-slate-400">Server Render Cepat Bebas Antrean</p>
+            <a href="https://black-forest-labs-flux-1-schnell.hf.space" target="_blank" rel="noopener noreferrer" class="w-full py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs font-display flex items-center justify-center gap-1 shadow transition">
+              <span>Buka HuggingFace</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="flex justify-between items-center pt-2 flex-shrink-0 border-t border-slate-800">
+        <button onclick="openFlowAccountsModal()" class="px-3.5 py-2 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 font-bold text-xs transition flex items-center gap-1.5">
+          <i class="fa-brands fa-google text-xs"></i>
+          <span>Kelola Akun Flow</span>
+        </button>
+
+        <button onclick="closeServerGenerateHubModal()" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition">
+          Tutup
         </button>
       </div>
 
