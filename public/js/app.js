@@ -835,7 +835,7 @@ function checkAndOpenVipMenu(tabId) {
   const feat = currentFeaturesConfig[tabId];
 
   if (feat && feat.isError) {
-    alert("PERINGATAN SISTEM: " + feat.name + " sedang dinonaktifkan sementara.\n\nPesan: " + (feat.errorMsg || "Dalam pemeliharaan server."));
+    showToastNotification("warning", "Fitur Dinonaktifkan", (feat.name || "Fitur ini") + " sedang dinonaktifkan sementara. " + (feat.errorMsg || "Dalam pemeliharaan server."));
     return;
   }
 
@@ -900,11 +900,11 @@ async function requestDongtubeInvoice() {
 
       startInvoicePolling(data.invoice_id);
     } else {
-      alert(data.message || "Gagal membuat QRIS Dongtube.");
+      showToastNotification("error", "QRIS Gagal", data.message || "Gagal membuat QRIS Dongtube.");
     }
   } catch (err) {
     console.error("Request Dongtube error:", err);
-    alert("Terjadi kesalahan saat memproses QRIS.");
+    showToastNotification("error", "QRIS Error", "Terjadi kesalahan saat memproses QRIS.");
   } finally {
     btn.disabled = false;
     btn.innerHTML = originalHtml;
@@ -931,9 +931,10 @@ async function checkInvoiceStatusRealtime(invoiceId) {
 
       document.getElementById("vip-step-qris").classList.add("hidden");
       document.getElementById("vip-step-success").classList.remove("hidden");
+      showToastNotification("success", "Pembayaran Berhasil!", "Akun VIP Anda telah aktif selama 30 hari.");
     } else if (data.status === "expired") {
       if (invoicePollInterval) clearInterval(invoicePollInterval);
-      alert("Invoice QRIS telah kadaluarsa. Silakan buat QRIS baru.");
+      showToastNotification("warning", "QRIS Kadaluarsa", "Invoice QRIS telah kadaluarsa. Silakan buat QRIS baru.");
       closeVipPaymentModal();
     }
   } catch (e) {
@@ -1170,7 +1171,13 @@ async function generateStoryboardWithAI() {
   const platform = document.getElementById("sb-platform").value;
 
   if (!title) {
-    alert("Harap isi nama produk terlebih dahulu!");
+    const productInput = document.getElementById("input-product-name");
+    if (productInput) {
+      productInput.focus();
+      productInput.classList.add("ring-2", "ring-orange-500", "border-orange-500");
+      setTimeout(() => productInput.classList.remove("ring-2", "ring-orange-500", "border-orange-500"), 3000);
+    }
+    showToastNotification("warning", "Nama Produk Diperlukan", "Harap isi nama produk terlebih dahulu sebelum membuat storyboard!");
     return;
   }
 
@@ -1214,9 +1221,10 @@ async function generateStoryboardWithAI() {
 
     renderStoryboardPreview();
     triggerAutoSave();
+    showToastNotification("success", "Storyboard Berhasil!", "Skrip, hook, dan prompt storyboard berhasil dibuat.");
   } catch (err) {
     console.error("Generate Storyboard Error:", err);
-    alert("Gagal membuat storyboard.");
+    showToastNotification("error", "Storyboard Gagal", "Gagal membuat storyboard. Silakan periksa koneksi atau coba lagi.");
   } finally {
     btn.disabled = false;
     btn.classList.remove("laser-btn-active");
@@ -1330,9 +1338,10 @@ function copyEntireScene(idx) {
     "🖼️ PROMPT FOTO AI:\n" + (scene.prompt || "");
 
   navigator.clipboard.writeText(textToCopy).then(() => {
-    alert("Tersalin! Semua konten Scene " + (idx + 1) + " berhasil disalin.");
+    showToastNotification("success", "Scene Tersalin!", "Semua konten Scene " + (idx + 1) + " berhasil disalin ke clipboard.");
   }).catch(err => {
     console.error("Copy scene failed", err);
+    showToastNotification("error", "Gagal Menyalin", "Tidak dapat menyalin konten scene.");
   });
 }
 
@@ -2001,26 +2010,47 @@ function showToastNotification(type, title, message) {
   if (!toastContainer) {
     toastContainer = document.createElement("div");
     toastContainer.id = "toast-global-container";
-    toastContainer.className = "fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4";
+    toastContainer.className = "fixed top-4 left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-auto sm:right-6 sm:bottom-6 sm:top-auto z-[99999] flex flex-col gap-2.5 pointer-events-none max-w-sm w-[92vw] sm:w-full";
     document.body.appendChild(toastContainer);
   }
 
   const toast = document.createElement("div");
-  const isSuccess = type === "success";
-  const iconClass = isSuccess ? "fa-solid fa-circle-check text-emerald-400" : "fa-solid fa-circle-xmark text-rose-400";
-  const borderClass = isSuccess ? "border-emerald-500/50 shadow-emerald-950/40" : "border-rose-500/50 shadow-rose-950/40";
-  const bgClass = isSuccess ? "from-emerald-950/90 to-[#0f1424]/95" : "from-rose-950/90 to-[#0f1424]/95";
+  let iconClass = "fa-solid fa-circle-info text-cyan-400";
+  let borderClass = "border-cyan-500/50 shadow-cyan-950/50";
+  let bgClass = "from-[#081528]/95 via-[#0d1c33]/95 to-[#081528]/95";
+  let glowColor = "rgba(6, 182, 212, 0.25)";
 
-  toast.className = "pointer-events-auto p-3.5 rounded-2xl bg-gradient-to-r " + bgClass + " border " + borderClass + " shadow-2xl backdrop-blur-xl flex items-start gap-3 transform transition-all duration-300 translate-y-4 opacity-0";
+  if (type === "success") {
+    iconClass = "fa-solid fa-circle-check text-emerald-400";
+    borderClass = "border-emerald-500/50 shadow-emerald-950/50";
+    bgClass = "from-[#042018]/95 via-[#062c21]/95 to-[#042018]/95";
+    glowColor = "rgba(16, 185, 129, 0.25)";
+  } else if (type === "error") {
+    iconClass = "fa-solid fa-triangle-exclamation text-rose-400";
+    borderClass = "border-rose-500/50 shadow-rose-950/50";
+    bgClass = "from-[#250912]/95 via-[#350d1a]/95 to-[#250912]/95";
+    glowColor = "rgba(244, 63, 94, 0.25)";
+  } else if (type === "warning") {
+    iconClass = "fa-solid fa-circle-exclamation text-amber-400";
+    borderClass = "border-amber-500/50 shadow-amber-950/50";
+    bgClass = "from-[#261506]/95 via-[#381f08]/95 to-[#261506]/95";
+    glowColor = "rgba(245, 158, 11, 0.25)";
+  }
+
+  toast.className = "pointer-events-auto p-3.5 rounded-2xl bg-gradient-to-r " + bgClass + " border " + borderClass + " shadow-2xl backdrop-blur-xl flex items-start gap-3 transform transition-all duration-300 -translate-y-3 sm:translate-y-4 opacity-0";
+  toast.style.boxShadow = `0 10px 30px -5px ${glowColor}, 0 0 15px 0 ${glowColor}`;
+
   toast.innerHTML = `
-    <div class="w-8 h-8 rounded-xl bg-slate-900/80 border border-white/10 flex items-center justify-center text-sm flex-shrink-0 mt-0.5">
+    <div class="w-8 h-8 rounded-xl bg-slate-950/80 border border-white/10 flex items-center justify-center text-sm flex-shrink-0 mt-0.5 shadow-inner">
       <i class="${iconClass}"></i>
     </div>
     <div class="flex-1 min-w-0">
-      <div class="text-xs font-bold text-white font-display">${title}</div>
-      <div class="text-[11px] text-slate-300 leading-relaxed mt-0.5">${message}</div>
+      <div class="text-xs font-bold text-white font-display flex items-center gap-1.5">
+        <span>${title || 'Pemberitahuan'}</span>
+      </div>
+      <div class="text-[11px] text-slate-200 leading-relaxed mt-0.5">${message || ''}</div>
     </div>
-    <button onclick="this.parentElement.remove()" class="text-slate-500 hover:text-white text-xs transition">
+    <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white text-xs p-1 transition" title="Tutup">
       <i class="fa-solid fa-xmark"></i>
     </button>
   `;
@@ -2029,15 +2059,20 @@ function showToastNotification(type, title, message) {
 
   // Animate in
   setTimeout(() => {
-    toast.classList.remove("translate-y-4", "opacity-0");
+    toast.classList.remove("-translate-y-3", "translate-y-4", "opacity-0");
   }, 10);
 
   // Auto dismiss
   setTimeout(() => {
-    toast.classList.add("translate-y-4", "opacity-0");
+    toast.classList.add("-translate-y-3", "sm:translate-y-4", "opacity-0");
     setTimeout(() => toast.remove(), 300);
-  }, 3500);
+  }, 4000);
 }
+
+// Override default browser alert
+window.alert = function(msg) {
+  showToastNotification("warning", "Pemberitahuan", typeof msg === "object" ? JSON.stringify(msg) : String(msg));
+};
 
 // =========================================================================
 // ONE-CLICK BROWSER EXTENSION ACTIVATION & INSTALL BRIDGE
