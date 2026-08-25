@@ -674,8 +674,13 @@ function getGeminiKeyPool() {
 
 function getActiveGeminiKey() {
   const pool = getGeminiKeyPool();
-  const active = pool.find(k => k.isActive) || pool.find(k => k.status === 'active') || pool[0];
-  return active ? active.key : (process.env.GEMINI_API_KEY || 'AIzaSyC5n4K5LAJEZM7IZbhenCUvQt18k-nd3Aw');
+  const validKeyObj = pool.find(k => k.isActive && k.key && k.key.startsWith('AIzaSy')) ||
+                       pool.find(k => k.status === 'active' && k.key && k.key.startsWith('AIzaSy')) ||
+                       pool.find(k => k.key && k.key.startsWith('AIzaSy'));
+  if (validKeyObj) return validKeyObj.key;
+  return (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.startsWith('AIzaSy'))
+    ? process.env.GEMINI_API_KEY
+    : 'AIzaSyC5n4K5LAJEZM7IZbhenCUvQt18k-nd3Aw';
 }
 
 function rotateGeminiKeyOnLimit(failedKey) {
@@ -1750,6 +1755,8 @@ Return STRICT JSON formatted with this schema:
     {
       shotType: 'Scene 4: Call to Action (CTA)',
       visualDesc: `${modelText} tersenyum percaya diri mengajak penonton sambil menunjukkan ${productTitle} ke arah kamera di ${locationText}.`,
+      voiceover: `Klik keranjang kuning sekarang mumpung diskon spesial dan promo gratis ongkir masih tersedia!`,
+      videoPrompt: `Smooth push-in camera move towards ${modelText} smiling and presenting ${productTitle} to the viewer, highly engaging eye contact, 9:16 vertical, 10s duration`
     }
   ];
 
