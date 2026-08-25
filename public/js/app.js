@@ -481,7 +481,7 @@ async function handleRegister(e) {
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = "<i class=\"fa-solid fa-user-plus\"></i><span>Daftar Akun Sekarang</span>";
+      btn.innerHTML = "<i class=\"fa-solid fa-user-plus\"></i><span>Daftar</span>";
     }
   }
 }
@@ -540,7 +540,7 @@ async function handleLogin(e) {
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = "<i class=\"fa-solid fa-right-to-bracket\"></i><span>Masuk ke Dashboard</span>";
+      btn.innerHTML = "<i class=\"fa-solid fa-right-to-bracket\"></i><span>Masuk</span>";
     }
   }
 }
