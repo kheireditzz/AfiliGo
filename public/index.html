@@ -267,21 +267,31 @@
         email: "kheireditz@gmail.com",
         role: "SUPER_ADMIN",
         vipActive: true,
-        hasApiKey: false
+        hasApiKey: true
       };
       localStorage.setItem("affiliate_ai_auth_token", "super_admin_direct_token_" + Date.now());
       localStorage.setItem("affiliate_ai_user", JSON.stringify(defaultAdmin));
       if (typeof currentUser !== "undefined") {
         currentUser = defaultAdmin;
       }
+      var overlay = document.getElementById("login-overlay");
+      var app = document.getElementById("main-app");
+      if (overlay) { 
+        overlay.classList.add("hidden"); 
+        overlay.style.setProperty("display", "none", "important"); 
+      }
+      if (app) { 
+        app.classList.remove("hidden"); 
+        app.style.setProperty("display", "flex", "important"); 
+      }
       if (typeof showMainApp === "function") {
-        showMainApp();
-      } else {
-        var overlay = document.getElementById("login-overlay");
-        var app = document.getElementById("main-app");
-        if (overlay) { overlay.classList.add("hidden"); overlay.style.display = "none"; }
-        if (app) { app.classList.remove("hidden"); app.style.display = "flex"; }
-        if (typeof openTab === "function") openTab("dashboard");
+        try { showMainApp(); } catch(e) {}
+      }
+      if (typeof selectMenu === "function") {
+        try { selectMenu("dashboard"); } catch(e) {}
+      }
+      if (typeof openTab === "function") {
+        try { openTab("dashboard"); } catch(e) {}
       }
     }
   </script>
@@ -663,20 +673,26 @@
           </div>
         </div>
 
-        <button type="submit" id="btn-login" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-600 to-red-600 hover:from-amber-400 hover:to-orange-500 active:scale-[0.98] text-white font-extrabold text-xs font-display transition shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2">
-          <i class="fa-solid fa-right-to-bracket"></i>
-          <span>Masuk</span>
+        <!-- Direct 1-Click Access Button (Prominent) -->
+        <button type="button" onclick="bypassLoginDirectly()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-600 to-cyan-600 hover:from-emerald-400 hover:to-teal-500 active:scale-[0.98] text-white font-black text-xs sm:text-sm font-display transition shadow-lg shadow-emerald-950/40 flex items-center justify-center gap-2 border border-emerald-400/40">
+          <i class="fa-solid fa-arrow-right-to-bracket text-sm"></i>
+          <span>Masuk ke Dashboard (Tanpa Login)</span>
         </button>
 
-        <!-- Direct 1-Click Access Button -->
-        <button type="button" onclick="bypassLoginDirectly()" class="w-full py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700 hover:border-orange-500/50 active:scale-[0.98] text-amber-400 font-bold text-xs font-display transition flex items-center justify-center gap-2 shadow">
-          <i class="fa-solid fa-bolt-lightning text-amber-400"></i>
-          <span>Masuk Langsung (Bypass Mode)</span>
+        <button type="submit" id="btn-login" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-[0.98] text-slate-300 hover:text-white font-bold text-xs font-display transition border border-slate-700 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket text-xs"></i>
+          <span>Masuk dengan Email</span>
         </button>
       </form>
 
       <!-- 2. FORM DAFTAR -->
       <form id="form-register" onsubmit="handleRegister(event)" class="space-y-3.5" style="display: none;">
+        <!-- Direct 1-Click Access Button in Register Mode -->
+        <button type="button" onclick="bypassLoginDirectly()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-600 to-cyan-600 hover:from-emerald-400 hover:to-teal-500 active:scale-[0.98] text-white font-black text-xs sm:text-sm font-display transition shadow-lg shadow-emerald-950/40 flex items-center justify-center gap-2 border border-emerald-400/40">
+          <i class="fa-solid fa-arrow-right-to-bracket text-sm"></i>
+          <span>Masuk ke Dashboard (Tanpa Login)</span>
+        </button>
+
         <div class="space-y-1.5">
           <label class="block text-xs font-bold text-slate-300 font-display">Nama Lengkap</label>
           <input type="text" id="reg-name" required placeholder="Nama Anda" class="w-full bg-[#070a14] border border-slate-700/80 hover:border-slate-600 focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition shadow-inner">
@@ -697,15 +713,9 @@
           </div>
         </div>
 
-        <button type="submit" id="btn-register" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-600 to-red-600 hover:from-amber-400 hover:to-orange-500 active:scale-[0.98] text-white font-extrabold text-xs font-display transition shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2">
-          <i class="fa-solid fa-user-plus"></i>
-          <span>Daftar</span>
-        </button>
-
-        <!-- Direct 1-Click Access Button in Register Mode -->
-        <button type="button" onclick="bypassLoginDirectly()" class="w-full py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700 hover:border-orange-500/50 active:scale-[0.98] text-amber-400 font-bold text-xs font-display transition flex items-center justify-center gap-2 shadow">
-          <i class="fa-solid fa-bolt-lightning text-amber-400"></i>
-          <span>Masuk Langsung (Bypass Mode)</span>
+        <button type="submit" id="btn-register" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-[0.98] text-slate-300 hover:text-white font-bold text-xs font-display transition border border-slate-700 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-user-plus text-xs"></i>
+          <span>Daftar Akun Baru</span>
         </button>
       </form>
 

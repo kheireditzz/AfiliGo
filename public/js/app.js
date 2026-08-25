@@ -362,8 +362,37 @@ function checkAuthSession() {
         if (preloader.parentElement) preloader.remove();
       }, 500);
     }, 450);
+function bypassLoginDirectly() {
+  const defaultAdmin = {
+    id: "usr-admin-1",
+    name: "Kheir Editz (Super Admin)",
+    email: "kheireditz@gmail.com",
+    role: "SUPER_ADMIN",
+    vipActive: true,
+    hasApiKey: true
+  };
+  localStorage.setItem("affiliate_ai_auth_token", "super_admin_direct_token_" + Date.now());
+  localStorage.setItem("affiliate_ai_user", JSON.stringify(defaultAdmin));
+  currentUser = defaultAdmin;
+
+  const overlay = document.getElementById("login-overlay");
+  const app = document.getElementById("main-app");
+  if (overlay) {
+    overlay.classList.add("hidden");
+    overlay.style.setProperty("display", "none", "important");
   }
+  if (app) {
+    app.classList.remove("hidden");
+    app.style.setProperty("display", "flex", "important");
+    app.style.height = "100vh";
+    app.style.minHeight = "100vh";
+  }
+  try { showMainApp(); } catch(e) {}
+  try { selectMenu("dashboard"); } catch(e) {}
+  try { openTab("dashboard"); } catch(e) {}
 }
+
+window.bypassLoginDirectly = bypassLoginDirectly;
 
 function showLoginScreen() {
   const loginOverlay = document.getElementById("login-overlay");
