@@ -353,15 +353,15 @@ function checkAuthSession() {
     showLoginScreen();
   }
 
-  // Smoothly fade out TikTok preloader
-  const preloader = document.getElementById("tiktok-preloader");
+  // Smoothly fade out App Skeleton Preloader
+  const preloader = document.getElementById("app-skeleton-preloader") || document.getElementById("tiktok-preloader");
   if (preloader) {
     setTimeout(() => {
       preloader.classList.add("opacity-0", "pointer-events-none");
       setTimeout(() => {
         if (preloader.parentElement) preloader.remove();
-      }, 600);
-    }, 600);
+      }, 500);
+    }, 450);
   }
 }
 
@@ -377,7 +377,7 @@ function showLoginScreen() {
     mainApp.style.display = "none";
   }
 
-  const preloader = document.getElementById("tiktok-preloader");
+  const preloader = document.getElementById("app-skeleton-preloader") || document.getElementById("tiktok-preloader");
   if (preloader) {
     preloader.classList.add("opacity-0", "pointer-events-none");
     setTimeout(() => {
