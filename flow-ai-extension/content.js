@@ -31,6 +31,7 @@
     minus: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
     plus: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
     cloudUp: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16l-4-4-4 4M12 12v9M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>`,
+    folderPlus: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>',
     trash: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
     chevronUp: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>`
   };
@@ -583,11 +584,29 @@
       </div>
 
       
-      <!-- Remove All Uploaded Images & Videos in Flow AI -->
-      <button class="btn-ctrl" id="btn-clear-all-flow-assets" style="width:100%; height:26px; border-radius:7px; font-size:9px; background:rgba(220,38,38,0.15); border:1px solid rgba(248,113,113,0.35); color:#fca5a5; margin-top:2px;" title="Hapus semua gambar & video yang terlampir di Flow AI">
-        ${ICONS.trash}
-        <span style="margin-left:4px;">Hapus Semua Gambar & Video di Flow AI</span>
-      </button>
+      
+      <!-- Project & Asset Actions -->
+      <div style="display:grid; grid-template-columns: 1fr; gap:4px; margin-top:2px;">
+        <!-- Buat Project Baru -->
+        <button class="btn-ctrl" id="btn-create-new-project" style="width:100%; height:26px; border-radius:7px; font-size:9px; background:linear-gradient(135deg, rgba(245,158,11,0.2), rgba(234,88,12,0.25)); border:1px solid rgba(249,115,22,0.5); color:#fed7aa; font-weight:800;" title="Mulai project storyboard baru dari awal">
+          ${ICONS.folderPlus}
+          <span style="margin-left:4px;">+ Buat Project Baru</span>
+        </button>
+
+        <!-- Separated: Hapus Gambar vs Hapus Video -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px;">
+          <button class="btn-ctrl" id="btn-clear-flow-images" style="height:25px; border-radius:7px; font-size:8.5px; background:rgba(220,38,38,0.15); border:1px solid rgba(248,113,113,0.35); color:#fca5a5;" title="Hapus semua lampiran foto / gambar di Flow AI">
+            ${ICONS.trash}
+            <span style="margin-left:3px;">Hapus Gambar</span>
+          </button>
+
+          <button class="btn-ctrl" id="btn-clear-flow-videos" style="height:25px; border-radius:7px; font-size:8.5px; background:rgba(185,28,28,0.18); border:1px solid rgba(239,68,68,0.4); color:#fecaca;" title="Hapus semua video player & hasil render di Flow AI">
+            ${ICONS.video}
+            <span style="margin-left:3px;">Hapus Video</span>
+          </button>
+        </div>
+      </div>
+
 
       <!-- 1-Click Image Download & Web Sync Button -->
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px;">
@@ -706,49 +725,97 @@
 
   
     // Function to Remove All Uploaded Images & Videos in Flow AI
-    function removeAllUploadedFlowAssets() {
-      let removedCount = 0;
+    
+    // 1. Separate: Remove Flow AI Images
+    function removeFlowImages() {
+      let count = 0;
 
-      // 1. Click all delete / remove / close buttons on attachment previews in Flow AI
-      const removeButtons = Array.from(document.querySelectorAll('button[aria-label*="remove" i], button[aria-label*="delete" i], button[aria-label*="clear" i], button[aria-label*="close" i], [data-testid*="remove" i], [data-testid*="delete" i], .remove-btn, .delete-btn, .close-button, svg[aria-label*="remove" i]'));
-      for (const btn of removeButtons) {
+      // Click all close / remove / dismiss buttons on image chips
+      const imageChips = Array.from(document.querySelectorAll('img, [data-testid*="image" i], [aria-label*="image" i], .attachment-item'));
+      imageChips.forEach(chip => {
+        const closeBtn = chip.parentElement?.querySelector('button, [role="button"], svg');
+        if (closeBtn) {
+          try { closeBtn.click(); count++; } catch(e) {}
+        }
+      });
+
+      // Target all Material & standard dismiss buttons
+      const allDismissBtns = Array.from(document.querySelectorAll('button[aria-label*="remove" i], button[aria-label*="dismiss" i], button[aria-label*="delete" i], button[aria-label*="clear" i], button[aria-label*="close" i], [data-testid*="remove" i], [data-testid*="delete" i], .delete-btn, .remove-btn, .close-button, svg path[d*="19 6.41"], svg path[d*="M19 6.41"]'));
+      allDismissBtns.forEach(el => {
         try {
-          btn.click();
-          removedCount++;
+          const btn = el.tagName === "BUTTON" || el.getAttribute("role") === "button" ? el : el.closest("button, [role='button']");
+          if (btn) { btn.click(); count++; }
         } catch(e) {}
-      }
+      });
 
-      // 2. Clear all hidden file input elements
+      // Reset all file inputs
       const fileInputs = Array.from(document.querySelectorAll('input[type="file"]'));
-      for (const fi of fileInputs) {
+      fileInputs.forEach(fi => {
         try {
           fi.value = "";
           fi.dispatchEvent(new Event("change", { bubbles: true }));
           fi.dispatchEvent(new Event("input", { bubbles: true }));
-          removedCount++;
+          count++;
         } catch(e) {}
-      }
+      });
 
-      // 3. Clear prompt textareas / contenteditables
-      const promptInputs = Array.from(document.querySelectorAll('textarea, [contenteditable="true"][role="textbox"]'));
-      for (const pi of promptInputs) {
-        try {
-          if (pi.tagName === "TEXTAREA" || pi.tagName === "INPUT") {
-            pi.value = "";
-            pi.dispatchEvent(new Event("input", { bubbles: true }));
-            pi.dispatchEvent(new Event("change", { bubbles: true }));
-          } else {
-            pi.innerText = "";
-            pi.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "deleteContentBackward" }));
-          }
-        } catch(e) {}
-      }
-
-      // 4. Reset video watcher detected url
-      detectedVideoUrl = null;
-
-      alert("🧹 Berhasil membersihkan semua gambar, video, dan lampiran yang terupload di Flow AI!");
+      alert("🖼️ Berhasil menghapus seluruh lampiran gambar di Flow AI!");
     }
+
+    // 2. Separate: Remove Flow AI Videos
+    function removeFlowVideos() {
+      let count = 0;
+      const videos = Array.from(document.querySelectorAll("video"));
+      videos.forEach(v => {
+        try {
+          v.pause();
+          v.removeAttribute("src");
+          v.src = "";
+          v.load();
+          const card = v.closest(".video-card, .output-card, [data-testid*='video'], .result-container");
+          if (card) {
+            const delBtn = card.querySelector('button[aria-label*="delete" i], button[aria-label*="remove" i], [data-testid*="delete" i]');
+            if (delBtn) delBtn.click();
+          }
+          count++;
+        } catch(e) {}
+      });
+
+      detectedVideoUrl = null;
+      alert("🎬 Berhasil menghapus/membersihkan video hasil render di Flow AI!");
+    }
+
+    // 3. Create Brand New Project
+    function createNewProject() {
+      if (confirm("Buat Project Baru? Storyboard akan di-reset ke Scene 1 bersih.")) {
+        scenes = [
+          {
+            id: 1,
+            shotType: "Hook Close-Up",
+            aspectRatio: "9:16",
+            duration: 4,
+            promptVideo: "Cinematic commercial macro shot of product in aesthetic setting, 8k 60fps",
+            voiceover: "Stop scrolling! Ini rahasia produk yang lagi viral!",
+            imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600"
+          }
+        ];
+        activeSceneIndex = 0;
+        detectedVideoUrl = null;
+
+        // Try clicking New Project / Create in Flow AI web UI
+        const newProjectBtn = Array.from(document.querySelectorAll('button, a')).find(el => {
+          const txt = (el.textContent || el.getAttribute("aria-label") || "").toLowerCase();
+          return txt.includes("new project") || txt.includes("create project") || txt.includes("proyek baru");
+        });
+        if (newProjectBtn) {
+          try { newProjectBtn.click(); } catch(e) {}
+        }
+
+        render();
+        alert("✨ Project Baru Berhasil Dibuat! Siap untuk merancang storyboard baru.");
+      }
+    }
+
 
   function attachVideoStudioListeners() {
     const currentScene = scenes[activeSceneIndex] || scenes[0];
