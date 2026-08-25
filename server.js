@@ -1566,54 +1566,44 @@ app.post('/api/chat', async (req, res) => {
 // =========================================================================
 async function callGeminiPro(promptText, customKey) {
   let keyToUse = customKey || getActiveGeminiKey();
-  const pool = getGeminiKeyPool();
-  let maxAttempts = Math.max(1, pool.length);
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${keyToUse}`;
 
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${keyToUse}`;
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(25000),
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: promptText }] }],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 4000,
-            responseMimeType: "application/json"
-          }
-        })
-      });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        if ((response.status === 429 || response.status === 403 || errText.includes('RESOURCE_EXHAUSTED')) && attempt < maxAttempts - 1) {
-          keyToUse = rotateGeminiKeyOnLimit(keyToUse);
-          continue;
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(6000),
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: promptText }] }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 8192,
+          responseMimeType: "application/json"
         }
-        return null;
-      }
+      })
+    });
 
-      const data = await response.json();
-      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-        const rawText = data.candidates[0].content.parts[0].text;
-        return JSON.parse(rawText);
-      }
-      return null;
-    } catch (err) {
-      if (attempt < maxAttempts - 1) {
-        keyToUse = rotateGeminiKeyOnLimit(keyToUse);
-        continue;
-      }
-      console.error('Gemini Pro API call error:', err);
+    if (!response.ok) {
       return null;
     }
+
+    const data = await response.json();
+    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+      let rawText = data.candidates[0].content.parts[0].text.trim();
+      if (rawText.startsWith('```json')) rawText = rawText.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
+      else if (rawText.startsWith('```')) rawText = rawText.replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
+      try {
+        return JSON.parse(rawText);
+      } catch (pe) {
+        return null;
+      }
+    }
+    return null;
+  } catch (err) {
+    return null;
   }
-  return null;
 }
 
 // AI STORYBOARD & SCENE GENERATOR API (HYPER-REALISTIC & CUSTOM USER INPUTS)
