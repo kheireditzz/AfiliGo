@@ -717,29 +717,67 @@
         <div id="tab-dashboard" class="tab-content space-y-3">
 
           <!-- QUICK ACCESS: SAKLAR AKTIVASI TAB MELAYANG DI DASHBOARD -->
-          <div class="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-orange-950/60 via-amber-950/30 to-slate-900/90 border border-orange-500/40 shadow-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div class="flex items-center gap-3.5 min-w-0">
-              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-red-600 p-[1.5px] shadow-lg shadow-orange-600/30 flex-shrink-0">
-                <div class="w-full h-full bg-[#0d111e] rounded-2xl flex items-center justify-center text-amber-400 text-xl">
-                  <i class="fa-solid fa-cloud-bolt"></i>
+          <!-- DASHBOARD SERVER GENERATE & GOOGLE FLOW AI HUB -->
+          <div class="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-950/70 via-slate-900/90 to-amber-950/40 border border-emerald-500/40 shadow-2xl space-y-3.5">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-3.5 min-w-0">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-amber-500 p-[1.5px] shadow-lg shadow-emerald-600/30 flex-shrink-0">
+                  <div class="w-full h-full bg-[#0d111e] rounded-2xl flex items-center justify-center text-emerald-400 text-xl">
+                    <i class="fa-solid fa-server"></i>
+                  </div>
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-extrabold text-white text-sm sm:text-base font-display">Server Generate & Akun Flow AI</h3>
+                    <span id="dash-floating-status-badge" class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[10px] font-mono font-bold border border-slate-700">OFF</span>
+                  </div>
+                  <p class="text-xs text-slate-300">Kelola akun Google, cookie sesi Flow AI, dan kapsul server generate melayang</p>
                 </div>
               </div>
-              <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                  <h3 class="font-extrabold text-white text-sm sm:text-base font-display">Server Generate</h3>
-                  <span id="dash-floating-status-badge" class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[10px] font-mono font-bold border border-slate-700">OFF</span>
+
+              <!-- Saklar Aktivasi Dashboard & Tombol Switcher -->
+              <div class="flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-slate-800/80 pt-2.5 sm:pt-0">
+                <button onclick="openFlowAccountsModal()" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5 active:scale-95">
+                  <i class="fa-brands fa-google text-xs"></i>
+                  <span>Kelola Akun Flow</span>
+                </button>
+
+                <div class="flex items-center gap-2 pl-2 border-l border-slate-800">
+                  <span class="text-[11px] font-bold text-amber-300 font-display">Kapsul:</span>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="dashboard-floating-toggle" onchange="directToggleFlowHub(this)" class="sr-only peer">
+                    <div class="w-11 h-5.5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-emerald-500 peer-checked:to-teal-600"></div>
+                  </label>
                 </div>
-                <p class="text-xs text-slate-300">Kapsul server AI yang bisa digeser bebas & diselipkan ke tepi layar</p>
               </div>
             </div>
 
-            <!-- Saklar Aktivasi Dashboard -->
-            <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-slate-800/80 pt-2.5 sm:pt-0">
-              <span class="text-xs font-bold text-amber-300 font-display">Aktifkan Kapsul</span>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="dashboard-floating-toggle" onchange="directToggleFlowHub(this)" class="sr-only peer">
-                <div class="w-12 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-amber-500 peer-checked:to-orange-600"></div>
-              </label>
+            <!-- Active Flow Account Quick Status Strip -->
+            <div class="p-3 rounded-2xl bg-[#060c12]/90 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 flex items-center justify-center text-sm flex-shrink-0">
+                  <i class="fa-brands fa-google"></i>
+                </div>
+                <div class="min-w-0 truncate">
+                  <div class="text-[10px] text-slate-400 font-mono flex items-center gap-1.5">
+                    <span>AKUN GOOGLE FLOW AKTIF</span>
+                    <span id="dash-flow-quota-badge" class="px-1.5 py-0.2 rounded-full bg-emerald-950 text-emerald-300 text-[8.5px] font-mono border border-emerald-500/30">🟢 Siap Digunakan</span>
+                  </div>
+                  <div id="dash-active-flow-email" class="text-xs sm:text-sm font-extrabold text-emerald-300 font-mono truncate">kheir.creator@gmail.com</div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1.5 w-full sm:w-auto justify-end">
+                <button id="btn-copy-dash-email" onclick="copyActiveFlowEmail()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-emerald-950/60 text-slate-300 hover:text-emerald-300 border border-slate-700 text-xs font-bold transition flex items-center gap-1">
+                  <i class="fa-regular fa-copy text-[10px]"></i> Salin Email
+                </button>
+                <button id="btn-copy-dash-pass" onclick="copyActiveFlowPass()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-emerald-950/60 text-slate-300 hover:text-emerald-300 border border-slate-700 text-xs font-bold transition flex items-center gap-1">
+                  <i class="fa-solid fa-key text-[10px]"></i> Salin Sandi
+                </button>
+                <button onclick="openFlowAccountsModal()" class="px-3 py-1.5 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-200 text-xs font-bold transition flex items-center gap-1">
+                  <i class="fa-solid fa-arrows-rotate text-[10px]"></i> Ganti Akun
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1839,15 +1877,24 @@
           </a>
 
           <!-- Server 2: Google Flow AI (Auto Extension Injection, Tab Proxy, & Tab Resmi) -->
-          <div class="p-2.5 rounded-2xl bg-gradient-to-br from-amber-950/40 via-[#0f1424] to-[#121829] border border-amber-500/40 hover:border-amber-400/80 flex flex-col justify-between gap-2 transition shadow">
+          <div class="p-2.5 rounded-2xl bg-gradient-to-br from-emerald-950/50 via-[#0f1424] to-[#121829] border border-emerald-500/40 hover:border-emerald-400 flex flex-col justify-between gap-2 transition shadow">
             <div class="flex items-center justify-between gap-1.5">
               <div class="flex items-center gap-1.5 min-w-0">
-                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0 shadow-sm shadow-amber-400/50"></span>
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0 shadow-sm shadow-emerald-400/50"></span>
                 <span class="font-extrabold text-white text-[11px] truncate font-display">Flow AI Server 2</span>
               </div>
-              <span id="extension-status-badge" class="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[8px] font-mono font-bold flex-shrink-0 border border-amber-500/30">AUTO VIP</span>
+              <span id="floating-flow-account-label" class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[8px] font-mono font-bold flex-shrink-0 border border-emerald-500/30">GOOGLE FLOW</span>
             </div>
-            <div id="extension-status-subtext" class="text-[9px] text-slate-400 truncate">Sesi Auto-Login Ekstensi & Proxy</div>
+            
+            <!-- Quick Active Account Display in Floating Capsule -->
+            <div class="px-2 py-1 rounded-xl bg-black/60 border border-emerald-500/20 flex items-center justify-between gap-1 text-[9px] font-mono">
+              <span class="text-slate-400 truncate flex items-center gap-1">
+                <i class="fa-brands fa-google text-emerald-400 text-[8px]"></i>
+                <span id="floating-flow-email-display" class="text-emerald-300 font-bold truncate">kheir.creator@gmail.com</span>
+              </span>
+              <button onclick="openFlowAccountsModal()" class="text-amber-300 hover:text-white underline text-[8px] flex-shrink-0">Ganti</button>
+            </div>
+
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-1">
               <button onclick="triggerActivateExtensionFlow()" class="py-1.5 px-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[8.5px] font-display flex items-center justify-center gap-0.5 shadow transition" title="Buka Flow Sesi Ekstensi">
                 <span>Tap Baru</span>
@@ -1861,10 +1908,10 @@
                 <span>Resmi</span>
                 <i class="fa-solid fa-external-link text-[7px]"></i>
               </a>
-              <a id="btn-download-extension-ui" href="/AffiliateGo-FlowAI-Extension.zip" download="AffiliateGo-FlowAI-Extension.zip" class="py-1.5 px-1 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 border border-slate-700 font-bold text-[8.5px] font-display flex items-center justify-center gap-0.5 transition" title="Unduh Ekstensi Flow AI">
-                <i class="fa-solid fa-puzzle-piece text-amber-400 text-[8px]"></i>
-                <span>Ekstensi</span>
-              </a>
+              <button onclick="openFlowAccountsModal()" class="py-1.5 px-1 rounded-xl bg-slate-800 hover:bg-emerald-950 text-slate-300 hover:text-emerald-300 border border-slate-700 font-bold text-[8.5px] font-display flex items-center justify-center gap-0.5 transition" title="Kelola Akun Flow AI">
+                <i class="fa-solid fa-users text-emerald-400 text-[8px]"></i>
+                <span>Akun</span>
+              </button>
             </div>
           </div>
         </div>

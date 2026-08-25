@@ -3008,12 +3008,18 @@ function toggleFlowPasswordVisibility() {
   icon.className = isFlowPassVisible ? "fa-solid fa-eye-slash" : "fa-solid fa-eye";
 }
 
+let currentActiveFlowAccount = null;
+
 async function loadFlowAccounts() {
   const list = document.getElementById("flow-accounts-modal-list");
   const badge = document.getElementById("flow-accounts-badge");
   const topbarBadge = document.getElementById("topbar-flow-badge");
   const sidebarBadge = document.getElementById("sidebar-flow-accounts-badge");
   const activeDisplay = document.getElementById("active-flow-account-display");
+  const dashActiveEmail = document.getElementById("dash-active-flow-email");
+  const dashQuotaBadge = document.getElementById("dash-flow-quota-badge");
+  const floatEmailDisplay = document.getElementById("floating-flow-email-display");
+  const floatLabel = document.getElementById("floating-flow-account-label");
   const statusText = document.getElementById("flow-accounts-status-text");
 
   try {
@@ -3027,8 +3033,26 @@ async function loadFlowAccounts() {
       if (statusText) statusText.innerText = `${data.accounts.length} Akun Tersimpan`;
 
       const activeAcc = data.accounts.find(a => a.isActive) || data.accounts[0];
-      if (activeDisplay && activeAcc) {
-        activeDisplay.innerText = `${activeAcc.email} (${activeAcc.label || 'Aktif'})`;
+      currentActiveFlowAccount = activeAcc;
+
+      if (activeAcc) {
+        if (activeDisplay) activeDisplay.innerText = `${activeAcc.email} (${activeAcc.label || 'Aktif'})`;
+        if (dashActiveEmail) dashActiveEmail.innerText = `${activeAcc.email} (${activeAcc.label || 'Aktif'})`;
+        if (floatEmailDisplay) floatEmailDisplay.innerText = activeAcc.email;
+        if (floatLabel) floatLabel.innerText = (activeAcc.label || 'GOOGLE FLOW').toUpperCase();
+
+        if (dashQuotaBadge) {
+          if (activeAcc.quotaStatus === 'ready') {
+            dashQuotaBadge.className = "px-1.5 py-0.2 rounded-full bg-emerald-950 text-emerald-300 text-[8.5px] font-mono border border-emerald-500/30";
+            dashQuotaBadge.innerText = "🟢 Siap Digunakan";
+          } else if (activeAcc.quotaStatus === 'low') {
+            dashQuotaBadge.className = "px-1.5 py-0.2 rounded-full bg-amber-950 text-amber-300 text-[8.5px] font-mono border border-amber-500/30";
+            dashQuotaBadge.innerText = "🟡 Kuota Menipis";
+          } else {
+            dashQuotaBadge.className = "px-1.5 py-0.2 rounded-full bg-rose-950 text-rose-300 text-[8.5px] font-mono border border-rose-500/30";
+            dashQuotaBadge.innerText = "🔴 Limit Tercapai";
+          }
+        }
       }
 
       if (!list) return;
@@ -3212,5 +3236,21 @@ function copyFlowCredential(type, text) {
   }).catch(() => {
     showToastNotification("info", "Disalin", `${type}: ${text}`);
   });
+}
+
+function copyActiveFlowEmail() {
+  if (currentActiveFlowAccount && currentActiveFlowAccount.email) {
+    copyFlowCredential("Email Google", currentActiveFlowAccount.email);
+  } else {
+    showToastNotification("info", "Pemberitahuan", "Belum ada akun Google Flow yang aktif.");
+  }
+}
+
+function copyActiveFlowPass() {
+  if (currentActiveFlowAccount && currentActiveFlowAccount.rawPassword) {
+    copyFlowCredential("Kata Sandi", currentActiveFlowAccount.rawPassword);
+  } else {
+    showToastNotification("info", "Pemberitahuan", "Kata sandi belum disimpan untuk akun aktif ini. Silakan buka 'Kelola Akun Flow'.");
+  }
 }
 
