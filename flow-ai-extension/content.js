@@ -1,6 +1,9 @@
-// Flow Ai Extension v3.5 - Advanced In-Page Floating Studio
+// Flow Ai Extension v3.8 - In-Page Floating Studio with Dynamic Resizing & Zoom
 (function() {
-  if (window.__FLOW_AI_EXTENSION_INJECTED__) return;
+  if (window.__FLOW_AI_EXTENSION_INJECTED__) {
+    const existing = document.getElementById('flow-ai-extension-host');
+    if (existing) existing.remove();
+  }
   window.__FLOW_AI_EXTENSION_INJECTED__ = true;
 
   const host = document.createElement('div');
@@ -19,6 +22,7 @@
   style.textContent = `
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
+    /* Minimized Floating Pill */
     .floating-pill {
       display: flex;
       align-items: center;
@@ -61,10 +65,14 @@
       border: 1px solid rgba(249, 115, 22, 0.4);
     }
 
+    /* Main Floating Studio Box (Resizable & Expandable) */
     .floating-studio {
       width: 420px;
-      max-width: calc(100vw - 30px);
-      max-height: 88vh;
+      min-width: 280px;
+      max-width: 95vw;
+      height: 580px;
+      min-height: 280px;
+      max-height: 92vh;
       background: linear-gradient(180deg, #0b0f19 0%, #070a12 100%);
       border: 1.5px solid rgba(249, 115, 22, 0.5);
       border-radius: 22px;
@@ -74,6 +82,8 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      position: relative;
+      resize: both;
       animation: popIn 0.2s ease-out;
     }
     @keyframes popIn {
@@ -82,7 +92,7 @@
     }
 
     .studio-header {
-      padding: 12px 16px;
+      padding: 10px 14px;
       background: rgba(15, 23, 42, 0.9);
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
@@ -90,10 +100,12 @@
       justify-content: space-between;
       cursor: grab;
       user-select: none;
+      flex-shrink: 0;
     }
     .studio-body {
-      padding: 13px;
+      padding: 12px;
       overflow-y: auto;
+      flex: 1;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -101,21 +113,29 @@
     .studio-body::-webkit-scrollbar { width: 4px; }
     .studio-body::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
 
-    .btn-minimize {
+    /* Header Controls (+, -, Maximize, Minimize) */
+    .ctrl-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-ctrl {
       background: #1e293b;
-      color: #94a3b8;
-      width: 26px;
-      height: 26px;
-      border-radius: 7px;
-      border: none;
+      color: #cbd5e1;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 15px;
+      font-size: 11px;
       font-weight: bold;
+      transition: all 0.15s;
     }
-    .btn-minimize:hover { background: #334155; color: #fff; }
+    .btn-ctrl:hover { background: #334155; color: #fff; }
+    .btn-ctrl:active { transform: scale(0.92); }
 
     .card-section {
       background: rgba(13, 19, 34, 0.85);
@@ -228,6 +248,19 @@
       gap: 5px;
     }
 
+    /* Resize Handle Gripper in Bottom-Right */
+    .resize-handle {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 14px;
+      height: 14px;
+      cursor: nwse-resize;
+      background: linear-gradient(135deg, transparent 50%, #f97316 50%);
+      border-bottom-right-radius: 18px;
+      pointer-events: auto;
+    }
+
     .crop-modal-overlay {
       position: fixed;
       inset: 0;
@@ -255,6 +288,11 @@
   shadow.appendChild(style);
 
   let isMinimized = true;
+  let isMaximized = false;
+  let currentZoom = 1.0;
+  let savedWidth = "420px";
+  let savedHeight = "580px";
+
   let scenes = [
     {
       id: 1,
@@ -337,7 +375,7 @@
         <div class="floating-pill" id="btn-expand-pill" title="Klik untuk membuka Flow Ai Extension">
           <div class="pill-icon">⚡</div>
           <span>Flow Ai Extension</span>
-          <span class="pill-badge">v3.5</span>
+          <span class="pill-badge">v3.8</span>
         </div>
       `;
       wrapper.querySelector('#btn-expand-pill').addEventListener('click', () => {
@@ -346,24 +384,36 @@
       });
       makeDraggable(wrapper.querySelector('.floating-pill'));
     } else {
+      const studioWidth = isMaximized ? "92vw" : savedWidth;
+      const studioHeight = isMaximized ? "90vh" : savedHeight;
+
       wrapper.innerHTML = `
-        <div class="floating-studio">
+        <div class="floating-studio" id="main-floating-studio" style="width:${studioWidth}; height:${studioHeight}; transform:scale(${currentZoom}); transform-origin:center center;">
+          <!-- Drag Header with Zoom & Sizing Controls -->
           <div class="studio-header" id="studio-drag-bar">
             <div style="display:flex; align-items:center; gap:8px;">
               <div class="pill-icon">⚡</div>
               <div>
                 <div style="font-size:11.5px; font-weight:800; color:#fff;">Flow Ai Extension</div>
-                <div style="font-size:8.5px; color:#94a3b8;">Omni Flash & Veo 3.1 (Tengah Layar)</div>
+                <div style="font-size:8.5px; color:#94a3b8;">Bisa Diperbesar / Diperkecil (Drag Sudut)</div>
               </div>
             </div>
-            <button class="btn-minimize" id="btn-minimize-studio" title="Perkecil / Minimize">-</button>
+            
+            <div class="ctrl-group">
+              <button class="btn-ctrl" id="btn-zoom-out" title="Perkecil Ukuran (Zoom Out)">🔍-</button>
+              <button class="btn-ctrl" id="btn-zoom-in" title="Perbesar Ukuran (Zoom In)">🔍+</button>
+              <button class="btn-ctrl" id="btn-toggle-maximize" title="Layar Penuh / Pulihkan">${isMaximized ? "🗗" : "🗖"}</button>
+              <button class="btn-ctrl" id="btn-minimize-studio" title="Perkecil ke Kapsul" style="background:#ea580c; color:#fff;">-</button>
+            </div>
           </div>
 
           <div class="studio-body">
+            <!-- Sync Web Button -->
             <button class="btn-sync-web" id="btn-fetch-web-data">
               <span>📥 Ambil Gambar & Scene dari Web AffiliateGo</span>
             </button>
 
+            <!-- 3 Image Slots with Crop -->
             <div class="card-section">
               <div style="display:flex; justify-content:space-between; align-items:center; font-size:9.5px; font-weight:bold; color:#f59e0b;">
                 <span>📷 3 Slot Gambar (Klik foto untuk Crop)</span>
@@ -384,6 +434,7 @@
               </div>
             </div>
 
+            <!-- Parameters & Flow AI Exact Durations -->
             <div class="card-section">
               <div class="grid-2">
                 <div>
@@ -414,6 +465,7 @@
               </button>
             </div>
 
+            <!-- Scenes List -->
             <div class="card-section">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-size:9.5px; font-weight:bold; color:#fff;">🎬 Daftar Scene Storyboard</span>
@@ -434,6 +486,7 @@
               </div>
             </div>
 
+            <!-- Inject Actions -->
             <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:6px;">
               <button class="btn-inject" id="btn-inject-page" title="Inject langsung ke kotak chat prompt Flow AI">
                 <span>🎯 Inject ke Chat Flow AI</span>
@@ -444,8 +497,33 @@
             </div>
 
           </div>
+
+          <!-- Bottom-Right Dynamic Resize Gripper -->
+          <div class="resize-handle" id="gripper-resize" title="Tarik untuk mengubah ukuran"></div>
         </div>
       `;
+
+      // Zoom & Scale Controls
+      wrapper.querySelector('#btn-zoom-in').addEventListener('click', () => {
+        if (currentZoom < 1.4) {
+          currentZoom = Math.round((currentZoom + 0.1) * 10) / 10;
+          const st = wrapper.querySelector('#main-floating-studio');
+          if (st) st.style.transform = `scale(${currentZoom})`;
+        }
+      });
+
+      wrapper.querySelector('#btn-zoom-out').addEventListener('click', () => {
+        if (currentZoom > 0.6) {
+          currentZoom = Math.round((currentZoom - 0.1) * 10) / 10;
+          const st = wrapper.querySelector('#main-floating-studio');
+          if (st) st.style.transform = `scale(${currentZoom})`;
+        }
+      });
+
+      wrapper.querySelector('#btn-toggle-maximize').addEventListener('click', () => {
+        isMaximized = !isMaximized;
+        render();
+      });
 
       wrapper.querySelector('#btn-minimize-studio').addEventListener('click', () => {
         isMinimized = true;
@@ -530,6 +608,7 @@
 
       setupImageSlots();
       makeDraggable(wrapper.querySelector('.floating-studio'), wrapper.querySelector('#studio-drag-bar'));
+      setupResizeHandler(wrapper.querySelector('.floating-studio'), wrapper.querySelector('#gripper-resize'));
     }
   }
 
@@ -671,6 +750,36 @@
     function closeDragElement() {
       document.onmouseup = null;
       document.onmousemove = null;
+    }
+  }
+
+  function setupResizeHandler(studio, gripper) {
+    if (!studio || !gripper) return;
+    let startX, startY, startWidth, startHeight;
+
+    gripper.onmousedown = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      startX = e.clientX;
+      startY = e.clientY;
+      startWidth = parseInt(document.defaultView.getComputedStyle(studio).width, 10);
+      startHeight = parseInt(document.defaultView.getComputedStyle(studio).height, 10);
+      document.onmousemove = doResize;
+      document.onmouseup = stopResize;
+    };
+
+    function doResize(e) {
+      const newW = Math.max(280, Math.min(window.innerWidth - 40, startWidth + e.clientX - startX));
+      const newH = Math.max(280, Math.min(window.innerHeight - 40, startHeight + e.clientY - startY));
+      studio.style.width = newW + 'px';
+      studio.style.height = newH + 'px';
+      savedWidth = newW + 'px';
+      savedHeight = newH + 'px';
+    }
+
+    function stopResize() {
+      document.onmousemove = null;
+      document.onmouseup = null;
     }
   }
 
