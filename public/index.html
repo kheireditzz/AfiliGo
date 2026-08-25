@@ -533,6 +533,12 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <button onclick="openFlowAccountsModal()" class="px-2.5 sm:px-3 py-2 rounded-xl bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 hover:text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow transition active:scale-95" title="Google & Flow AI Session Switcher">
+          <i class="fa-brands fa-google text-emerald-400 text-xs"></i>
+          <span class="inline">Akun Flow</span>
+          <span id="topbar-flow-badge" class="px-1.5 py-0.2 rounded-full bg-emerald-900 text-emerald-200 text-[9px] font-mono border border-emerald-400/40">1</span>
+        </button>
+
         <button onclick="openExtensionModal()" class="px-3 py-2 rounded-xl bg-slate-850 hover:bg-slate-800 border border-orange-500/40 text-amber-300 hover:text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow transition" title="Buka & Unduh Flow Ai Extension">
           <i class="fa-solid fa-puzzle-piece text-orange-400 text-xs animate-pulse"></i>
           <span class="hidden sm:inline">Flow Ai Extension</span>
@@ -581,6 +587,17 @@
             <button onclick="selectMenu('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 font-semibold text-xs transition">
               <i class="fa-solid fa-chart-pie w-4 text-center text-amber-400 text-sm"></i>
               <span>Dashboard Utama</span>
+            </button>
+
+            <!-- GOOGLE & FLOW AI SESSION SWITCHER -->
+            <button onclick="openFlowAccountsModal()" id="nav-flow-accounts" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 font-semibold text-xs transition">
+              <div class="flex items-center gap-3">
+                <i class="fa-brands fa-google w-4 text-center text-emerald-400 text-sm"></i>
+                <span class="font-bold text-white">Akun Google / Flow</span>
+              </div>
+              <span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[8px] font-mono font-bold border border-emerald-500/30">
+                SWITCHER
+              </span>
             </button>
 
             <button onclick="selectMenu('storyboard-creator')" id="nav-storyboard-creator" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 font-semibold text-xs transition">
@@ -871,6 +888,22 @@
                 <i class="fa-solid fa-clock-rotate-left text-xs"></i>
               </button>
             </div>
+          </div>
+
+          <!-- ACTIVE GOOGLE / FLOW AI ACCOUNT STATUS BANNER -->
+          <div class="flex items-center justify-between p-2 sm:p-2.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 shadow-sm">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-xs flex-shrink-0">
+                <i class="fa-brands fa-google"></i>
+              </div>
+              <div class="min-w-0 truncate">
+                <span class="text-[10px] text-slate-400 font-mono">Sesi Flow AI:</span>
+                <span id="active-flow-account-display" class="text-xs font-bold text-emerald-300 font-mono ml-1 truncate">kheir.creator@gmail.com</span>
+              </div>
+            </div>
+            <button onclick="openFlowAccountsModal()" class="px-2.5 py-1 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold text-[11px] shadow transition active:scale-95 flex items-center gap-1 flex-shrink-0">
+              <i class="fa-solid fa-arrows-rotate text-[10px]"></i> Beralih Akun / Cookie
+            </button>
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-2">

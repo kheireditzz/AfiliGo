@@ -3011,8 +3011,10 @@ function toggleFlowPasswordVisibility() {
 async function loadFlowAccounts() {
   const list = document.getElementById("flow-accounts-modal-list");
   const badge = document.getElementById("flow-accounts-badge");
+  const topbarBadge = document.getElementById("topbar-flow-badge");
+  const sidebarBadge = document.getElementById("sidebar-flow-accounts-badge");
+  const activeDisplay = document.getElementById("active-flow-account-display");
   const statusText = document.getElementById("flow-accounts-status-text");
-  if (!list) return;
 
   try {
     const res = await fetch("/api/flow-accounts");
@@ -3020,7 +3022,16 @@ async function loadFlowAccounts() {
 
     if (data.success && data.accounts) {
       if (badge) badge.innerText = data.accounts.length;
+      if (topbarBadge) topbarBadge.innerText = data.accounts.length;
+      if (sidebarBadge) sidebarBadge.innerText = data.accounts.length;
       if (statusText) statusText.innerText = `${data.accounts.length} Akun Tersimpan`;
+
+      const activeAcc = data.accounts.find(a => a.isActive) || data.accounts[0];
+      if (activeDisplay && activeAcc) {
+        activeDisplay.innerText = `${activeAcc.email} (${activeAcc.label || 'Aktif'})`;
+      }
+
+      if (!list) return;
 
       if (data.accounts.length === 0) {
         list.innerHTML = `<div class="p-4 rounded-xl bg-[#060c12] border border-slate-800 text-center text-xs text-slate-400">Belum ada akun Google / Flow AI. Silakan tambahkan di form atas.</div>`;
