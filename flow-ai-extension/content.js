@@ -1,4 +1,4 @@
-// Flow Ai Extension v4.0 - Compact Top-Center Sequential Per-Scene & Image Injector
+// Flow Ai Extension v4.5 - Auto-Sequential Scene Runner & Robust Event Listeners
 (function() {
   if (window.__FLOW_AI_EXTENSION_INJECTED__) {
     const existing = document.getElementById('flow-ai-extension-host');
@@ -22,7 +22,6 @@
   style.textContent = `
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
-    /* Minimized Capsule (Top Center) */
     .floating-pill {
       display: flex;
       align-items: center;
@@ -64,11 +63,10 @@
       border: 1px solid rgba(249, 115, 22, 0.4);
     }
 
-    /* Compact Floating Studio (Small & Sleek Top-Center) */
     .floating-studio {
-      width: 350px;
+      width: 360px;
       max-width: calc(100vw - 20px);
-      max-height: 82vh;
+      max-height: 85vh;
       background: linear-gradient(180deg, #0d121f 0%, #070911 100%);
       border: 1.5px solid rgba(249, 115, 22, 0.55);
       border-radius: 18px;
@@ -153,7 +151,7 @@
     .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
     .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; }
 
-    /* Scene Navigation Pills (Per-Scene Runner) */
+    /* Scene Navigation Pills */
     .scene-nav-bar {
       display: flex;
       align-items: center;
@@ -162,8 +160,8 @@
       padding-bottom: 2px;
     }
     .scene-tab-pill {
-      padding: 4px 9px;
-      border-radius: 8px;
+      padding: 4px 8px;
+      border-radius: 7px;
       font-size: 9px;
       font-weight: 800;
       font-family: monospace;
@@ -225,12 +223,10 @@
       justify-content: center;
       gap: 5px;
       box-shadow: 0 4px 12px rgba(6, 182, 212, 0.25);
-      transition: all 0.15s;
     }
     .btn-action-primary:hover { background: #0891b2; color: #fff; }
-    .btn-action-primary:active { transform: scale(0.97); }
 
-    .btn-next-scene {
+    .btn-auto-sequence {
       background: linear-gradient(135deg, #15803d, #16a34a);
       border: 1.5px solid #4ade80;
       color: #fff;
@@ -244,10 +240,24 @@
       justify-content: center;
       gap: 5px;
       box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-      transition: all 0.15s;
     }
-    .btn-next-scene:hover { opacity: 0.95; }
-    .btn-next-scene:active { transform: scale(0.97); }
+    .btn-auto-sequence:hover { opacity: 0.95; }
+    .btn-auto-sequence.running {
+      background: linear-gradient(135deg, #b91c1c, #dc2626);
+      border-color: #f87171;
+    }
+
+    .status-banner {
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      font-size: 9px;
+      color: #fed7aa;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
     .resize-handle {
       position: absolute;
@@ -287,8 +297,10 @@
   shadow.appendChild(style);
 
   let isMinimized = true;
-  let activeSceneIndex = 0; // Per-scene pointer (Scene 1, Scene 2, etc.)
+  let activeSceneIndex = 0;
   let currentZoom = 1.0;
+  let isAutoRunning = false;
+  let autoTimerInterval = null;
 
   let scenes = [
     {
@@ -375,7 +387,7 @@
         <div class="floating-pill" id="btn-expand-pill" title="Klik untuk membuka Flow Ai Studio">
           <div class="pill-icon">⚡</div>
           <span>Flow Ai Extension</span>
-          <span class="pill-badge">v4.0</span>
+          <span class="pill-badge">v4.5</span>
         </div>
       `;
       wrapper.querySelector('#btn-expand-pill').addEventListener('click', () => {
@@ -412,13 +424,23 @@
             <div style="display:flex; align-items:center; justify-content:space-between; gap:4px;">
               <div class="scene-nav-bar" id="scene-pills-bar">
                 ${scenes.map((s, i) => `
-                  <button class="scene-tab-pill ${i === activeSceneIndex ? 'active' : ''}" onclick="this.getRootNode().host.switchScene(${i})">
+                  <button class="scene-tab-pill ${i === activeSceneIndex ? 'active' : ''}" data-idx="${i}">
                     SCENE ${i+1}
                   </button>
                 `).join("")}
                 <button class="scene-tab-pill" id="btn-add-scene-compact" style="color:#fbbf24; background:#1e293b;">+ Scene</button>
               </div>
               <button id="btn-sync-web-compact" style="background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.4); color:#6ee7b7; border-radius:6px; padding:3px 6px; font-size:8.5px; font-weight:bold; cursor:pointer; white-space:nowrap;">📥 Sync Web</button>
+            </div>
+
+            <!-- Active Status Banner (Auto Runner) -->
+            <div class="status-banner" id="auto-runner-banner">
+              <span id="runner-status-text">
+                ${isAutoRunning ? `🔄 Auto-Runner Aktif: Sedang di Scene ${activeSceneIndex + 1}...` : `⚡ Scene Aktif: Scene ${activeSceneIndex + 1} dari ${scenes.length}`}
+              </span>
+              <span id="runner-countdown" style="font-family:monospace; font-weight:bold; color:#f97316;">
+                ${currentScene.duration}s
+              </span>
             </div>
 
             <!-- Active Scene Visual Image Slot with Crop -->
@@ -430,7 +452,7 @@
               
               <div style="display:grid; grid-template-columns: 80px 1fr; gap:8px;">
                 <div class="image-slot-compact" id="slot-scene-active" style="height:80px; width:80px;">
-                  ${activeImg ? `<img src="${activeImg}"><button class="btn-slot-crop" onclick="this.getRootNode().host.openCropActiveScene()">Crop</button>` : `<div style="font-size:8px; color:#94a3b8;">+ Foto Scene</div>`}
+                  ${activeImg ? `<img src="${activeImg}"><button class="btn-slot-crop" id="btn-crop-scene-active">Crop</button>` : `<div style="font-size:8px; color:#94a3b8;">+ Foto Scene</div>`}
                   <input type="file" id="input-file-scene-active" accept="image/*" style="display:none">
                 </div>
 
@@ -442,31 +464,32 @@
                       <option value="veo-3.1-fast">Veo 3.1 - Fast</option>
                       <option value="veo-3.1-quality">Veo 3.1 - Quality</option>
                     </select>
-                    <select class="select-input" id="inp-scene-dur" style="font-size:9px; padding:3px 5px;" onchange="this.getRootNode().host.updateCurrentDuration(this.value)">
+                    <select class="select-input" id="inp-scene-dur" style="font-size:9px; padding:3px 5px;">
                       <option value="4" ${currentScene.duration == 4 ? 'selected' : ''}>4s (4 Detik)</option>
                       <option value="6" ${currentScene.duration == 6 ? 'selected' : ''}>6s (6 Detik)</option>
                       <option value="8" ${currentScene.duration == 8 ? 'selected' : ''}>8s (8 Detik)</option>
                       <option value="10" ${currentScene.duration == 10 ? 'selected' : ''}>10s (10 Detik)</option>
                     </select>
                   </div>
-                  <input type="text" class="input-text" style="font-size:9px;" value="${currentScene.shotType}" placeholder="Tipe Shot" onchange="this.getRootNode().host.updateCurrentSceneField('shotType', this.value)">
+                  <input type="text" class="input-text" id="inp-shot-type" style="font-size:9px;" value="${currentScene.shotType}" placeholder="Tipe Shot">
                 </div>
               </div>
 
               <!-- Prompt Video & Voiceover for Active Scene -->
               <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px;">
-                <textarea rows="2" class="input-text" style="font-size:9px; resize:none; font-family:monospace; color:#fef08a;" placeholder="Prompt Video Motion Scene ${activeSceneIndex+1}" onchange="this.getRootNode().host.updateCurrentSceneField('promptVideo', this.value)">${currentScene.promptVideo}</textarea>
-                <input type="text" class="input-text" style="font-size:9px; color:#34d399;" value="${currentScene.voiceover}" placeholder="Naskah Voiceover Scene ${activeSceneIndex+1}" onchange="this.getRootNode().host.updateCurrentSceneField('voiceover', this.value)">
+                <textarea rows="2" class="input-text" id="inp-prompt-video" style="font-size:9px; resize:none; font-family:monospace; color:#fef08a;" placeholder="Prompt Video Motion Scene ${activeSceneIndex+1}">${currentScene.promptVideo}</textarea>
+                <input type="text" class="input-text" id="inp-voiceover" style="font-size:9px; color:#34d399;" value="${currentScene.voiceover}" placeholder="Naskah Voiceover Scene ${activeSceneIndex+1}">
               </div>
             </div>
 
             <!-- Sequential Execution Action Bar -->
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
               <button class="btn-action-primary" id="btn-inject-current-scene" title="Kirim Prompt dan Upload Gambar Scene ${activeSceneIndex + 1} ke Chat Flow AI">
-                <span>🎯 Inject Scene ${activeSceneIndex + 1} + Gambar</span>
+                <span>🎯 Inject Scene ${activeSceneIndex + 1}</span>
               </button>
-              <button class="btn-next-scene" id="btn-next-step-scene" title="Lanjut ke Scene Berikutnya">
-                <span>Lanjut Scene ${activeSceneIndex + 2 <= scenes.length ? activeSceneIndex + 2 : 1} ➔</span>
+              
+              <button class="btn-auto-sequence ${isAutoRunning ? 'running' : ''}" id="btn-toggle-auto-runner" title="Otomatis lanjut ke scene berikutnya saat selesai">
+                <span>${isAutoRunning ? '⏹️ Stop Auto' : '🚀 Auto Lanjut Scene'}</span>
               </button>
             </div>
 
@@ -476,15 +499,15 @@
                 📦 3 Slot Foto Utama (Produk / Model / Lokasi)
               </div>
               <div class="grid-3">
-                <div class="image-slot-compact" id="slot-product" style="height:50px;">
+                <div class="image-slot-compact" id="slot-product" style="height:48px;">
                   ${images.product ? `<img src="${images.product}">` : `<div style="font-size:7.5px; color:#64748b;">+ Produk</div>`}
                   <input type="file" id="input-file-prod" accept="image/*" style="display:none">
                 </div>
-                <div class="image-slot-compact" id="slot-model" style="height:50px;">
+                <div class="image-slot-compact" id="slot-model" style="height:48px;">
                   ${images.model ? `<img src="${images.model}">` : `<div style="font-size:7.5px; color:#64748b;">+ Model</div>`}
                   <input type="file" id="input-file-mod" accept="image/*" style="display:none">
                 </div>
-                <div class="image-slot-compact" id="slot-location" style="height:50px;">
+                <div class="image-slot-compact" id="slot-location" style="height:48px;">
                   ${images.location ? `<img src="${images.location}">` : `<div style="font-size:7.5px; color:#64748b;">+ Lokasi</div>`}
                   <input type="file" id="input-file-loc" accept="image/*" style="display:none">
                 </div>
@@ -496,6 +519,19 @@
           <div class="resize-handle" id="gripper-resize" title="Tarik untuk mengubah ukuran"></div>
         </div>
       `;
+
+      // Attach Event Listeners to every Scene Tab Pill dynamically (Fixing scene switching!)
+      const pills = wrapper.querySelectorAll('.scene-tab-pill[data-idx]');
+      pills.forEach(pill => {
+        pill.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const targetIdx = parseInt(pill.getAttribute('data-idx'), 10);
+          if (!isNaN(targetIdx) && targetIdx >= 0 && targetIdx < scenes.length) {
+            activeSceneIndex = targetIdx;
+            render();
+          }
+        });
+      });
 
       // Zoom Controls
       wrapper.querySelector('#btn-zoom-in').addEventListener('click', () => {
@@ -523,7 +559,7 @@
           id: scenes.length + 1,
           shotType: "Close-Up",
           duration: 6,
-          promptVideo: "Smooth camera motion showing product benefits, 4k 60fps",
+          promptVideo: "Smooth dynamic camera motion showing product benefits, 4k 60fps",
           voiceover: "Klik keranjang kuning sekarang mumpung diskon spesial!",
           imageUrl: images.product || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"
         });
@@ -540,19 +576,56 @@
         }
       });
 
-      // Inject current scene & upload image
+      // Inputs onchange handlers
+      const durSelect = wrapper.querySelector('#inp-scene-dur');
+      if (durSelect) {
+        durSelect.addEventListener('change', (e) => {
+          scenes[activeSceneIndex].duration = parseInt(e.target.value) || 6;
+        });
+      }
+
+      const shotInput = wrapper.querySelector('#inp-shot-type');
+      if (shotInput) {
+        shotInput.addEventListener('input', (e) => {
+          scenes[activeSceneIndex].shotType = e.target.value;
+        });
+      }
+
+      const promptArea = wrapper.querySelector('#inp-prompt-video');
+      if (promptArea) {
+        promptArea.addEventListener('input', (e) => {
+          scenes[activeSceneIndex].promptVideo = e.target.value;
+        });
+      }
+
+      const voiceInput = wrapper.querySelector('#inp-voiceover');
+      if (voiceInput) {
+        voiceInput.addEventListener('input', (e) => {
+          scenes[activeSceneIndex].voiceover = e.target.value;
+        });
+      }
+
+      // Crop button
+      const cropBtn = wrapper.querySelector('#btn-crop-scene-active');
+      if (cropBtn) {
+        cropBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openCropActiveScene();
+        });
+      }
+
+      // Inject single scene
       wrapper.querySelector('#btn-inject-current-scene').addEventListener('click', async () => {
         await injectSingleSceneWithImage(activeSceneIndex);
       });
 
-      // Next scene runner
-      wrapper.querySelector('#btn-next-step-scene').addEventListener('click', () => {
-        if (activeSceneIndex + 1 < scenes.length) {
-          activeSceneIndex++;
+      // Toggle Auto Sequence Runner
+      wrapper.querySelector('#btn-toggle-auto-runner').addEventListener('click', () => {
+        if (isAutoRunning) {
+          stopAutoRunner();
         } else {
-          activeSceneIndex = 0;
+          startAutoRunner();
         }
-        render();
       });
 
       setupSceneImageUpload();
@@ -560,6 +633,67 @@
       makeDraggable(wrapper.querySelector('.floating-studio'), wrapper.querySelector('#studio-drag-bar'));
       setupResizeHandler(wrapper.querySelector('.floating-studio'), wrapper.querySelector('#gripper-resize'));
     }
+  }
+
+  // Auto Sequential Runner Logic (Automatically advance to next scene when video is done or timer completes)
+  function startAutoRunner() {
+    isAutoRunning = true;
+    render();
+    runCurrentSceneInSequence();
+  }
+
+  function stopAutoRunner() {
+    isAutoRunning = false;
+    if (autoTimerInterval) clearInterval(autoTimerInterval);
+    render();
+  }
+
+  async function runCurrentSceneInSequence() {
+    if (!isAutoRunning) return;
+
+    // 1. Inject current scene + Image
+    await injectSingleSceneWithImage(activeSceneIndex);
+
+    // 2. Start monitoring Flow AI for generation completion
+    const curDur = scenes[activeSceneIndex].duration || 6;
+    let secondsLeft = curDur + 25; // estimated generation time
+
+    const bannerText = shadow.getElementById('runner-status-text');
+    const countdownEl = shadow.getElementById('runner-countdown');
+
+    if (autoTimerInterval) clearInterval(autoTimerInterval);
+
+    autoTimerInterval = setInterval(() => {
+      if (!isAutoRunning) {
+        clearInterval(autoTimerInterval);
+        return;
+      }
+
+      secondsLeft--;
+      if (countdownEl) countdownEl.innerText = secondsLeft + 's';
+      if (bannerText) bannerText.innerText = '⏳ Scene ' + (activeSceneIndex + 1) + ' Sedang Diproses Flow AI...';
+
+      // Check if Flow AI video is generated in page
+      const videos = document.querySelectorAll('video');
+      const hasNewVideo = videos.length > 0;
+
+      if (secondsLeft <= 0 || (secondsLeft < 15 && hasNewVideo)) {
+        clearInterval(autoTimerInterval);
+        if (bannerText) bannerText.innerText = '✅ Scene ' + (activeSceneIndex + 1) + ' Selesai! Lanjut Scene ' + (activeSceneIndex + 2 <= scenes.length ? activeSceneIndex + 2 : 1) + '...';
+
+        setTimeout(() => {
+          if (!isAutoRunning) return;
+          if (activeSceneIndex + 1 < scenes.length) {
+            activeSceneIndex++;
+            render();
+            runCurrentSceneInSequence();
+          } else {
+            alert('🎉 Semua Scene (Scene 1 s/d ' + scenes.length + ') Selesai Diproses Secara Brutal!');
+            stopAutoRunner();
+          }
+        }, 3000);
+      }
+    }, 1000);
   }
 
   function setupSceneImageUpload() {
@@ -603,7 +737,6 @@
     });
   }
 
-  // Convert base64 / URL to File Object
   async function urlOrBase64ToFile(urlOrData, filename = 'scene-visual.jpg') {
     if (!urlOrData) return null;
     try {
@@ -628,17 +761,15 @@
     }
   }
 
-  // Precision Single Scene & Image Injector for Flow AI
   async function injectSingleSceneWithImage(sceneIdx) {
     const sc = scenes[sceneIdx] || scenes[0];
     const promptText = "[Scene " + (sceneIdx + 1) + " (" + sc.duration + "s)]: " + sc.promptVideo;
     const imgSource = sc.imageUrl || images.product || images.model || images.location;
 
-    // 1. Upload/Attach Image into Flow AI's File Input
+    // 1. Upload Image to Flow AI
     if (imgSource) {
       const fileObj = await urlOrBase64ToFile(imgSource, "scene-" + (sceneIdx + 1) + ".jpg");
       if (fileObj) {
-        // Find Flow AI image file inputs
         const fileInputs = Array.from(document.querySelectorAll('input[type="file"]'));
         if (fileInputs.length > 0) {
           const targetFileInput = fileInputs[0];
@@ -651,7 +782,7 @@
       }
     }
 
-    // 2. Inject Prompt text into Flow AI Chat Prompt Textarea (excluding search bars)
+    // 2. Inject Prompt text into Flow AI Chat Prompt Textarea
     const promptSelectors = [
       'textarea[placeholder*="prompt" i]',
       'textarea[placeholder*="describe" i]',
@@ -688,15 +819,12 @@
         targetInput.innerText = promptText;
         targetInput.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: promptText }));
       }
-      alert("✅ Scene " + (sceneIdx + 1) + " + Gambar berhasil di-inject ke Chat Flow AI! Klik generate di Flow AI, lalu klik 'Lanjut Scene' di ekstensi saat selesai.");
     } else {
       navigator.clipboard.writeText(promptText);
-      alert("📋 Prompt Scene " + (sceneIdx + 1) + " disalin! Silakan paste langsung ke Flow AI.");
     }
   }
 
-  // Crop handler
-  host.openCropActiveScene = function() {
+  function openCropActiveScene() {
     const sc = scenes[activeSceneIndex];
     const imgSrc = sc.imageUrl || images.product;
     if (!imgSrc) return;
@@ -733,24 +861,7 @@
       };
       img.src = imgSrc;
     });
-  };
-
-  host.switchScene = function(idx) {
-    activeSceneIndex = idx;
-    render();
-  };
-
-  host.updateCurrentDuration = function(val) {
-    if (scenes[activeSceneIndex]) {
-      scenes[activeSceneIndex].duration = parseInt(val) || 6;
-    }
-  };
-
-  host.updateCurrentSceneField = function(field, val) {
-    if (scenes[activeSceneIndex]) {
-      scenes[activeSceneIndex][field] = val;
-    }
-  };
+  }
 
   function makeDraggable(element, handle) {
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
