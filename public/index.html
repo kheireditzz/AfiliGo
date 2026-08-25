@@ -1257,50 +1257,54 @@
         </div>
 
         <!-- ============================================== -->
-        <!-- TAB: GEMINI AI CHAT GATEWAY (PREMIUM MINIMALIST AI GATEWAY) -->
-        <!-- ========================================================== -->
-        <div id="tab-gemini-chat" class="tab-content hidden h-[calc(100vh-115px)] flex flex-col space-y-2.5">
+        <!-- TAB: GEMINI AI CHAT GATEWAY (100% RESPONSIVE NO-OVERFLOW MOBILE AI GATEWAY) -->
+        <!-- =========================================================================== -->
+        <div id="tab-gemini-chat" class="tab-content hidden w-full max-w-full overflow-hidden h-[calc(100dvh-125px)] sm:h-[calc(100vh-115px)] flex flex-col space-y-2">
+          
+          <!-- MOBILE BACKDROP OVERLAY FOR SIDEBAR -->
+          <div id="gemini-chat-backdrop" onclick="toggleChatHistorySidebar(true)" class="hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-xs transition-opacity md:hidden"></div>
+
           <!-- TOP HEADER BAR -->
-          <div class="flex items-center justify-between gap-3 bg-[#0c101d] px-3.5 py-2.5 rounded-2xl border border-slate-800 shadow-md flex-shrink-0">
-            <div class="flex items-center gap-2.5">
+          <div class="w-full max-w-full overflow-hidden flex items-center justify-between gap-2 bg-[#0c101d] px-3 py-2 rounded-2xl border border-slate-800 shadow-md flex-shrink-0">
+            <div class="flex items-center gap-2 min-w-0">
               <!-- History Drawer Toggle Button -->
-              <button onclick="toggleChatHistorySidebar()" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-cyan-950/50 border border-slate-700/80 hover:border-cyan-500/50 text-slate-300 hover:text-cyan-300 flex items-center gap-1.5 text-xs font-bold transition active:scale-95 shadow-sm" title="Buka Riwayat Obrolan">
-                <i class="fa-solid fa-clock-rotate-left text-cyan-400"></i>
+              <button onclick="toggleChatHistorySidebar()" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-cyan-950/50 border border-slate-700/80 hover:border-cyan-500/50 text-slate-300 hover:text-cyan-300 flex items-center gap-1.5 text-xs font-bold transition active:scale-95 flex-shrink-0" title="Buka Riwayat Obrolan">
+                <i class="fa-solid fa-clock-rotate-left text-cyan-400 text-xs"></i>
                 <span class="hidden sm:inline">Riwayat</span>
               </button>
 
-              <div class="h-4 w-px bg-slate-800 hidden sm:block"></div>
+              <div class="h-4 w-px bg-slate-800 hidden sm:block flex-shrink-0"></div>
 
-              <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white text-xs shadow-md shadow-cyan-500/20">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white text-[11px] shadow-sm shadow-cyan-500/20 flex-shrink-0">
                   <i class="fa-solid fa-sparkles"></i>
                 </div>
-                <h2 class="text-sm font-black text-white font-display tracking-tight">
+                <h2 class="text-xs sm:text-sm font-black text-white font-display tracking-tight truncate">
                   Gemini <span class="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">AI</span>
                 </h2>
               </div>
             </div>
 
             <!-- Header Controls: Model Selector, New Chat, API Key -->
-            <div class="flex items-center gap-2">
-              <select id="chat-model-select" onchange="changeChatModel(this.value)" class="bg-[#050811] border border-slate-800 hover:border-cyan-500/50 rounded-xl px-2.5 py-1.5 text-[11px] text-cyan-300 font-bold outline-none cursor-pointer transition">
-                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <select id="chat-model-select" onchange="changeChatModel(this.value)" class="bg-[#050811] border border-slate-800 hover:border-cyan-500/50 rounded-xl px-2 py-1 text-[10.5px] text-cyan-300 font-bold outline-none cursor-pointer max-w-[120px] sm:max-w-none transition">
+                <option value="gemini-2.5-flash">Flash 2.5</option>
+                <option value="gemini-2.5-pro">Pro 2.5</option>
               </select>
 
-              <button onclick="startNewChatSession()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs flex items-center gap-1.5 transition active:scale-95 shadow-sm">
+              <button onclick="startNewChatSession()" class="px-2.5 py-1 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-[11px] flex items-center gap-1 transition active:scale-95 shadow-sm" title="Obrolan Baru">
                 <i class="fa-solid fa-plus text-[10px]"></i>
                 <span class="hidden sm:inline">Baru</span>
               </button>
 
-              <button onclick="selectMenu('settings')" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-cyan-300 transition active:scale-95" title="API Key">
+              <button onclick="selectMenu('settings')" class="p-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-cyan-300 transition active:scale-95" title="API Key">
                 <i class="fa-solid fa-key text-xs"></i>
               </button>
             </div>
           </div>
 
           <!-- CHAT INTERFACE CONTAINER -->
-          <div class="flex-1 flex gap-2.5 overflow-hidden min-h-0 relative">
+          <div class="flex-1 flex gap-2.5 overflow-hidden min-h-0 w-full max-w-full relative">
             
             <!-- Left: Chat Sessions History Sidebar -->
             <div id="gemini-chat-sidebar" class="w-64 bg-[#0c101d] rounded-2xl border border-slate-800/90 p-3 flex flex-col justify-between hidden md:flex flex-shrink-0 shadow-2xl transition-all duration-300 z-20">
@@ -1309,9 +1313,14 @@
                   <span class="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
                     <i class="fa-solid fa-clock-rotate-left text-cyan-400 text-[10px]"></i> Riwayat Obrolan
                   </span>
-                  <button onclick="loadChatSessions()" class="text-slate-500 hover:text-cyan-400 text-xs transition" title="Refresh">
-                    <i class="fa-solid fa-arrows-rotate"></i>
-                  </button>
+                  <div class="flex items-center gap-2">
+                    <button onclick="loadChatSessions()" class="text-slate-500 hover:text-cyan-400 text-xs transition" title="Refresh">
+                      <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                    <button onclick="toggleChatHistorySidebar(true)" class="md:hidden text-slate-400 hover:text-rose-400 text-xs p-1" title="Tutup">
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1332,54 +1341,54 @@
             </div>
 
             <!-- Right: Chat Messages Stream & Input Area -->
-            <div class="flex-1 bg-[#070b14] rounded-2xl border border-slate-800/80 flex flex-col justify-between overflow-hidden relative shadow-xl">
+            <div class="flex-1 min-w-0 w-full max-w-full bg-[#070b14] rounded-2xl border border-slate-800/80 flex flex-col justify-between overflow-hidden relative shadow-xl">
               
               <!-- Messages Scroll Body -->
-              <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5 custom-scrollbar relative z-0">
+              <div id="chat-messages-container" class="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 space-y-3 custom-scrollbar relative z-0 w-full max-w-full">
                 
                 <!-- Minimalist Clean Welcome Screen -->
-                <div id="chat-empty-welcome" class="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto space-y-5 p-4 my-auto">
-                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500/20 to-indigo-600/20 border border-cyan-500/30 text-cyan-300 flex items-center justify-center text-2xl shadow-lg shadow-cyan-500/10">
+                <div id="chat-empty-welcome" class="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto space-y-4 p-2 sm:p-4 my-auto w-full">
+                  <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500/20 to-indigo-600/20 border border-cyan-500/30 text-cyan-300 flex items-center justify-center text-xl shadow-lg shadow-cyan-500/10 flex-shrink-0">
                     <i class="fa-solid fa-sparkles animate-pulse"></i>
                   </div>
 
-                  <div class="space-y-1">
-                    <h3 class="text-base sm:text-lg font-black text-white font-display tracking-tight">
+                  <div class="space-y-1 px-2">
+                    <h3 class="text-sm sm:text-base font-black text-white font-display tracking-tight">
                       Apa yang bisa saya bantu hari ini?
                     </h3>
-                    <p class="text-[11px] text-slate-400 max-w-xs mx-auto">
+                    <p class="text-[10.5px] text-slate-400 max-w-xs mx-auto leading-relaxed">
                       Tanya ide konten, naskah video affiliate, copywriting, atau prompt gambar.
                     </p>
                   </div>
 
                   <!-- 4 Concise Quick Prompt Cards -->
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full pt-1">
-                    <button onclick="injectChatPrompt('Buatkan skrip video TikTok affiliate viral lengkap dengan hook 3 detik & CTA!')" class="p-2.5 rounded-xl bg-[#0c101d] hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/40 text-left transition shadow-sm group">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full pt-1 px-1">
+                    <button onclick="injectChatPrompt('Buatkan skrip video TikTok affiliate viral lengkap dengan hook 3 detik & CTA!')" class="p-2.5 rounded-xl bg-[#0c101d] hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/40 text-left transition shadow-sm group w-full">
                       <div class="text-cyan-400 font-bold text-[11px] flex items-center gap-1.5 group-hover:text-cyan-300">
                         <i class="fa-solid fa-film text-[10px]"></i> Skrip Video TikTok
                       </div>
-                      <div class="text-[9.5px] text-slate-400 mt-0.5">Hook pembuka & naskah jualan</div>
+                      <div class="text-[9.5px] text-slate-400 mt-0.5 truncate">Hook pembuka & naskah jualan</div>
                     </button>
 
-                    <button onclick="injectChatPrompt('Tuliskan 5 ide hook copywriting yang memicu rasa penasaran untuk produk viral!')" class="p-2.5 rounded-xl bg-[#0c101d] hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/40 text-left transition shadow-sm group">
+                    <button onclick="injectChatPrompt('Tuliskan 5 ide hook copywriting yang memicu rasa penasaran untuk produk viral!')" class="p-2.5 rounded-xl bg-[#0c101d] hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/40 text-left transition shadow-sm group w-full">
                       <div class="text-sky-400 font-bold text-[11px] flex items-center gap-1.5 group-hover:text-sky-300">
                         <i class="fa-solid fa-bolt text-[10px]"></i> 5 Hook Penjualan
                       </div>
-                      <div class="text-[9.5px] text-slate-400 mt-0.5">Kalimat pemikat audiens</div>
+                      <div class="text-[9.5px] text-slate-400 mt-0.5 truncate">Kalimat pemikat audiens</div>
                     </button>
 
-                    <button onclick="injectChatPrompt('Analisis keunggulan produk skincare dan buatkan tabel USP vs kompetitor')" class="p-2.5 rounded-xl bg-[#0c101d] hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/40 text-left transition shadow-sm group">
+                    <button onclick="injectChatPrompt('Analisis keunggulan produk skincare dan buatkan tabel USP vs kompetitor')" class="p-2.5 rounded-xl bg-[#0c101d] hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/40 text-left transition shadow-sm group w-full">
                       <div class="text-emerald-400 font-bold text-[11px] flex items-center gap-1.5 group-hover:text-emerald-300">
                         <i class="fa-solid fa-chart-line text-[10px]"></i> Riset Produk & USP
                       </div>
-                      <div class="text-[9.5px] text-slate-400 mt-0.5">Analisa nilai jual produk</div>
+                      <div class="text-[9.5px] text-slate-400 mt-0.5 truncate">Analisa nilai jual produk</div>
                     </button>
 
-                    <button onclick="injectChatPrompt('Buatkan prompt foto produk estetik studio 8k di atas meja kayu dengan lighting natural')" class="p-2.5 rounded-xl bg-[#0c101d] hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/40 text-left transition shadow-sm group">
+                    <button onclick="injectChatPrompt('Buatkan prompt foto produk estetik studio 8k di atas meja kayu dengan lighting natural')" class="p-2.5 rounded-xl bg-[#0c101d] hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/40 text-left transition shadow-sm group w-full">
                       <div class="text-purple-400 font-bold text-[11px] flex items-center gap-1.5 group-hover:text-purple-300">
                         <i class="fa-solid fa-image text-[10px]"></i> Prompt Gambar 8K
                       </div>
-                      <div class="text-[9.5px] text-slate-400 mt-0.5">Deskripsi visual siap render</div>
+                      <div class="text-[9.5px] text-slate-400 mt-0.5 truncate">Deskripsi visual siap render</div>
                     </button>
                   </div>
                 </div>
@@ -1387,16 +1396,16 @@
               </div>
 
               <!-- Chat Input Bar -->
-              <div class="p-3 bg-[#0b0f1b] border-t border-slate-800/90 backdrop-blur-md relative z-10">
-                <form id="chat-form" onsubmit="handleSendChatMessage(event)" class="relative flex items-center">
-                  <input type="text" id="chat-input-text" autocomplete="off" placeholder="Tanya sesuatu ke Gemini..." class="w-full bg-[#050811] border border-slate-700/80 hover:border-slate-600 focus:border-cyan-500 rounded-2xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none pr-12 transition">
+              <div class="p-2.5 sm:p-3 bg-[#0b0f1b] border-t border-slate-800/90 backdrop-blur-md relative z-10 w-full max-w-full">
+                <form id="chat-form" onsubmit="handleSendChatMessage(event)" class="relative flex items-center w-full">
+                  <input type="text" id="chat-input-text" autocomplete="off" placeholder="Tanya sesuatu ke Gemini..." class="w-full bg-[#050811] border border-slate-700/80 hover:border-slate-600 focus:border-cyan-500 rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none pr-10 sm:pr-12 transition">
                   
-                  <button type="submit" id="btn-send-chat" class="absolute right-1.5 w-8 h-8 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 active:scale-95 text-white flex items-center justify-center shadow-md transition disabled:opacity-40" title="Kirim">
-                    <i class="fa-solid fa-arrow-up text-xs"></i>
+                  <button type="submit" id="btn-send-chat" class="absolute right-1 sm:right-1.5 w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 active:scale-95 text-white flex items-center justify-center shadow-md transition disabled:opacity-40" title="Kirim">
+                    <i class="fa-solid fa-arrow-up text-[11px] sm:text-xs"></i>
                   </button>
                 </form>
 
-                <div class="flex items-center justify-between text-[9px] text-slate-500 px-1 pt-1.5 font-mono">
+                <div class="flex items-center justify-between text-[9px] text-slate-500 px-1 pt-1 font-mono">
                   <span>Gemini AI Engine</span>
                   <span id="chat-stream-status" class="text-slate-400">Siap</span>
                 </div>

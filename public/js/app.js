@@ -2465,15 +2465,22 @@ function startNewChatSession() {
   loadChatSessions();
 }
 
-function toggleChatHistorySidebar() {
+function toggleChatHistorySidebar(forceClose = false) {
   const sidebar = document.getElementById('gemini-chat-sidebar');
-  if (sidebar) {
+  const backdrop = document.getElementById('gemini-chat-backdrop');
+  if (!sidebar) return;
+
+  if (window.innerWidth < 768) {
+    if (forceClose || !sidebar.classList.contains('hidden')) {
+      sidebar.classList.add('hidden');
+      if (backdrop) backdrop.classList.add('hidden');
+    } else {
+      sidebar.classList.remove('hidden');
+      sidebar.classList.add('fixed', 'inset-y-0', 'left-0', 'z-50', 'w-72', 'max-w-[85vw]', 'bg-[#0c101d]', 'shadow-2xl', 'p-3.5', 'flex', 'flex-col', 'border-r', 'border-slate-800');
+      if (backdrop) backdrop.classList.remove('hidden');
+    }
+  } else {
     sidebar.classList.toggle('hidden');
-    sidebar.classList.toggle('absolute');
-    sidebar.classList.toggle('inset-y-0');
-    sidebar.classList.toggle('left-0');
-    sidebar.classList.toggle('z-30');
-    sidebar.classList.toggle('bg-[#0d1424]');
   }
 }
 
@@ -2486,12 +2493,12 @@ async function loadChatSessions() {
 
     if (data.success && data.chats && data.chats.length > 0) {
       list.innerHTML = data.chats.map(c => `
-        <div onclick="openChatSession('${c.id}')" class="group p-2.5 rounded-xl bg-slate-900/60 hover:bg-cyan-950/40 border ${currentChatId === c.id ? 'border-cyan-500/60 bg-cyan-950/30' : 'border-slate-800/80'} hover:border-cyan-500/40 cursor-pointer flex items-center justify-between transition shadow-sm">
-          <div class="min-w-0 flex items-center gap-2">
-            <i class="fa-solid fa-message text-[10px] text-cyan-400"></i>
+        <div onclick="openChatSession('${c.id}')" class="group p-2.5 rounded-xl bg-[#090d17] hover:bg-cyan-950/40 border ${currentChatId === c.id ? 'border-cyan-500/60 bg-cyan-950/30' : 'border-slate-800/80'} hover:border-cyan-500/40 cursor-pointer flex items-center justify-between transition shadow-sm">
+          <div class="min-w-0 flex items-center gap-2 flex-1 pr-1">
+            <i class="fa-solid fa-message text-[10px] text-cyan-400 flex-shrink-0"></i>
             <div class="text-[11px] font-bold text-slate-300 truncate group-hover:text-cyan-300">${c.title || 'New Chat'}</div>
           </div>
-          <button onclick="event.stopPropagation(); deleteChatSession('${c.id}')" class="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 text-[10px] p-1 transition" title="Hapus Chat">
+          <button onclick="event.stopPropagation(); deleteChatSession('${c.id}')" class="text-slate-500 hover:text-rose-400 text-xs p-1 transition flex-shrink-0" title="Hapus Chat">
             <i class="fa-solid fa-trash"></i>
           </button>
         </div>
@@ -2522,6 +2529,11 @@ async function openChatSession(id) {
         chat.messages.forEach(m => {
           appendMessageToUI(m.role, m.content);
         });
+
+        // Close mobile drawer if open
+        if (window.innerWidth < 768) {
+          toggleChatHistorySidebar(true);
+        }
 
         // Highlight active session
         loadChatSessions();
@@ -2570,26 +2582,26 @@ function appendMessageToUI(role, content) {
   const msgDiv = document.createElement('div');
   const isUser = role === 'user';
   
-  msgDiv.className = `flex items-start gap-3 ${isUser ? 'justify-end' : 'justify-start'}`;
+  msgDiv.className = `flex items-start gap-2 ${isUser ? 'justify-end' : 'justify-start'} w-full max-w-full`;
 
   const formattedContent = formatChatMarkdown(content);
   const rawTextEscaped = encodeURIComponent(content);
 
   msgDiv.innerHTML = `
-    ${!isUser ? '<div class="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 text-cyan-300 border border-cyan-500/30 flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow"><i class="fa-solid fa-sparkles"></i></div>' : ''}
-    <div class="group relative max-w-[85%] sm:max-w-[75%] p-3.5 rounded-2xl ${isUser ? 'bg-gradient-to-r from-cyan-600 via-sky-600 to-blue-600 text-white rounded-tr-sm font-medium shadow-md shadow-cyan-900/20' : 'bg-slate-900/90 border border-slate-800 text-slate-200 rounded-tl-sm shadow-md'} text-xs leading-relaxed">
-      ${formattedContent}
+    ${!isUser ? '<div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 text-cyan-300 border border-cyan-500/30 flex items-center justify-center text-[10px] sm:text-xs flex-shrink-0 mt-0.5 shadow-sm"><i class="fa-solid fa-sparkles"></i></div>' : ''}
+    <div class="group relative max-w-[88%] sm:max-w-[80%] min-w-0 p-3 rounded-2xl ${isUser ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-tr-xs font-medium shadow-md shadow-cyan-950/20' : 'bg-[#0c101d] border border-slate-800/90 text-slate-200 rounded-tl-xs shadow-sm'} text-xs leading-relaxed break-words overflow-hidden">
+      <div class="break-words max-w-full overflow-hidden">${formattedContent}</div>
       ${!isUser ? `
-        <div class="flex items-center gap-2 pt-2 mt-2 border-t border-slate-800/80 text-[10px] text-slate-400">
+        <div class="flex items-center gap-2 pt-1.5 mt-1.5 border-t border-slate-800/60 text-[9.5px] text-slate-400">
           <button onclick="copyChatMessage(this, decodeURIComponent('${rawTextEscaped}'))" class="hover:text-cyan-300 transition flex items-center gap-1">
             <i class="fa-regular fa-copy"></i> Salin
           </button>
           <span class="text-slate-700">•</span>
-          <span class="text-slate-500 font-mono text-[9px]">Google Gemini</span>
+          <span class="text-slate-500 font-mono text-[9px]">Gemini AI</span>
         </div>
       ` : ''}
     </div>
-    ${isUser ? '<div class="w-8 h-8 rounded-xl bg-slate-800/90 text-slate-300 border border-slate-700 flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow"><i class="fa-solid fa-user"></i></div>' : ''}
+    ${isUser ? '<div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-slate-800 text-slate-300 border border-slate-700 flex items-center justify-center text-[10px] sm:text-xs flex-shrink-0 mt-0.5 shadow-sm"><i class="fa-solid fa-user"></i></div>' : ''}
   `;
 
   container.appendChild(msgDiv);
@@ -2618,13 +2630,13 @@ async function handleSendChatMessage(event) {
   // Setup streaming model response container
   const container = document.getElementById('chat-messages-container');
   const modelMsgDiv = document.createElement('div');
-  modelMsgDiv.className = 'flex items-start gap-3 justify-start';
+  modelMsgDiv.className = 'flex items-start gap-2 justify-start w-full max-w-full';
   modelMsgDiv.innerHTML = `
-    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 text-cyan-300 border border-cyan-500/30 flex items-center justify-center text-xs flex-shrink-0 mt-0.5 animate-pulse shadow"><i class="fa-solid fa-sparkles"></i></div>
-    <div class="ai-reply-body max-w-[85%] sm:max-w-[75%] p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 text-slate-200 rounded-tl-sm text-xs leading-relaxed shadow-md">
-      <div class="flex items-center gap-2 text-cyan-400 font-mono text-[11px]">
-        <span class="inline-block w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-        <span>Gemini sedang berpikir & memproses jawaban...</span>
+    <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 text-cyan-300 border border-cyan-500/30 flex items-center justify-center text-[10px] sm:text-xs flex-shrink-0 mt-0.5 animate-pulse shadow-sm"><i class="fa-solid fa-sparkles"></i></div>
+    <div class="ai-reply-body max-w-[88%] sm:max-w-[80%] min-w-0 p-3 rounded-2xl bg-[#0c101d] border border-slate-800/90 text-slate-200 rounded-tl-xs text-xs leading-relaxed shadow-sm break-words overflow-hidden">
+      <div class="flex items-center gap-1.5 text-cyan-400 font-mono text-[10.5px]">
+        <span class="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+        <span>Gemini sedang berpikir...</span>
       </div>
     </div>
   `;
