@@ -2273,6 +2273,8 @@ function startNewChatSession() {
     }
   }
   loadChatSessions();
+}
+
 function toggleChatHistorySidebar() {
   const sidebar = document.getElementById('gemini-chat-sidebar');
   if (sidebar) {
