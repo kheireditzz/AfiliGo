@@ -1109,64 +1109,193 @@ function applyCrop() {
 async function triggerVisionAnalysis() {
   const badge = document.getElementById("autosave-status-badge");
   if (badge) {
-    badge.innerHTML = "<i class=\"fa-solid fa-wand-magic-sparkles text-amber-400 fa-spin\"></i> Google AI Menganalisa Foto...";
+    badge.innerHTML = "<i class=\"fa-solid fa-wand-magic-sparkles text-amber-400 fa-spin\"></i> Google Vision AI Menganalisa...";
     badge.classList.remove("hidden");
   }
 
-  showToastNotification("info", "Vision AI Menganalisa...", "Mendeteksi nama dan keunggulan produk dari foto...");
+  showToastNotification("info", "Vision AI Menganalisa...", "Mendeteksi nama, USP, varian prompt video & caption...");
 
   const currentTitle = document.getElementById("sb-product-title")?.value.trim() || "";
+  const targetPlatform = document.getElementById("sb-platform")?.value || "TikTok / Reels (9:16)";
 
   try {
-    const res = await fetch("/api/analyze-uploaded-visuals", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        productImgBase64: uploadedImages.product || null,
-        modelImgBase64: uploadedImages.model || null,
-        locationImgBase64: uploadedImages.location || null,
-        currentTitle: currentTitle
-      })
-    });
+    let data = null;
 
-    const data = await res.json();
-    if (data.success) {
+    if (uploadedImages.product) {
+      try {
+        const res = await fetch("/api/ai/analyze-affiliate-product", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            image: uploadedImages.product,
+            target_platform: targetPlatform,
+            additional_context: currentTitle
+          })
+        });
+        data = await res.json();
+      } catch (e) {
+        console.warn("Primary affiliate endpoint error, falling back:", e);
+      }
+    }
+
+    if (!data || !data.success) {
+      const fallbackRes = await fetch("/api/analyze-uploaded-visuals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productImgBase64: uploadedImages.product || null,
+          modelImgBase64: uploadedImages.model || null,
+          locationImgBase64: uploadedImages.location || null,
+          currentTitle: currentTitle
+        })
+      });
+      data = await fallbackRes.json();
+    }
+
+    if (data && data.success) {
       const titleEl = document.getElementById("sb-product-title");
       const uspEl = document.getElementById("sb-product-usp");
       const modelEl = document.getElementById("sb-model-desc");
       const locationEl = document.getElementById("sb-location-setting");
 
-      if (titleEl && data.suggestedTitle) {
-        titleEl.value = data.suggestedTitle;
+      const detectedTitle = (data.analisa_produk && data.analisa_produk.nama_produk) || data.suggestedTitle;
+      const detectedUsp = (data.analisa_produk && (data.analisa_produk.fitur_menonjol + " - " + (data.analisa_produk.deskripsi_singkat || ""))) || data.suggestedUsp;
+
+      if (titleEl && detectedTitle) {
+        titleEl.value = detectedTitle;
         titleEl.classList.add("ring-2", "ring-emerald-400", "border-emerald-400");
         setTimeout(() => titleEl.classList.remove("ring-2", "ring-emerald-400", "border-emerald-400"), 3500);
       }
 
-      if (uspEl && data.suggestedUsp) {
-        uspEl.value = data.suggestedUsp;
+      if (uspEl && detectedUsp) {
+        uspEl.value = detectedUsp;
         uspEl.classList.add("ring-2", "ring-emerald-400/50", "border-emerald-400");
         setTimeout(() => uspEl.classList.remove("ring-2", "ring-emerald-400/50", "border-emerald-400"), 3500);
       }
 
-      if (modelEl && uploadedImages.model && data.suggestedModel) {
+      if (modelEl && data.suggestedModel) {
         modelEl.value = data.suggestedModel;
       }
-      if (locationEl && uploadedImages.location && data.suggestedLocation) {
+      if (locationEl && data.suggestedLocation) {
         locationEl.value = data.suggestedLocation;
       }
+
+      // Render the rich Vision Results & Script Vault Card
+      renderAffiliateVisionResults(data);
 
       if (badge) {
         badge.innerHTML = "<i class=\"fa-solid fa-check text-emerald-400\"></i> Google AI Selesai Menganalisa";
         setTimeout(() => badge.classList.add("hidden"), 2500);
       }
 
-      showToastNotification("success", "Produk Terdeteksi!", 'Vision AI mengenali: "' + (data.suggestedTitle || 'Produk') + '"');
+      showToastNotification("success", "Produk Terdeteksi!", 'Vision AI mengenali: "' + (detectedTitle || "Produk") + '"');
       triggerAutoSave();
     }
   } catch (err) {
     console.error("Vision analysis error:", err);
     if (badge) badge.classList.add("hidden");
   }
+}
+
+function toggleVisionCardCollapse() {
+  const body = document.getElementById("vision-analysis-body");
+  const icon = document.getElementById("vision-collapse-icon");
+  if (!body) return;
+  if (body.classList.contains("hidden")) {
+    body.classList.remove("hidden");
+    if (icon) icon.className = "fa-solid fa-chevron-up text-[10px]";
+  } else {
+    body.classList.add("hidden");
+    if (icon) icon.className = "fa-solid fa-chevron-down text-[10px]";
+  }
+}
+
+function renderAffiliateVisionResults(data) {
+  const container = document.getElementById("vision-analysis-results-container");
+  const analysisBox = document.getElementById("vision-product-analysis-box");
+  const promptsBox = document.getElementById("vision-video-prompts-box");
+  const captionsBox = document.getElementById("vision-captions-box");
+
+  if (!container) return;
+  container.classList.remove("hidden");
+
+  // 1. Analisa Produk Box
+  if (analysisBox && data.analisa_produk) {
+    const ap = data.analisa_produk;
+    analysisBox.innerHTML = `
+      <div class="grid grid-cols-2 gap-2 text-slate-300">
+        <div><span class="text-slate-400 font-semibold">Jenis:</span> <span class="text-white font-medium">${ap.jenis || "-"}</span></div>
+        <div><span class="text-slate-400 font-semibold">Warna:</span> <span class="text-white font-medium">${ap.warna || "-"}</span></div>
+      </div>
+      <div class="text-slate-300"><span class="text-slate-400 font-semibold">Fitur:</span> <span class="text-emerald-300 font-medium">${ap.fitur_menonjol || "-"}</span></div>
+      <div class="text-slate-300"><span class="text-slate-400 font-semibold">Target Pasar:</span> <span class="text-amber-300 font-medium">${ap.target_pasar || "-"}</span></div>
+      ${ap.deskripsi_singkat ? `<div class="text-slate-400 italic text-[10px] border-t border-slate-800 pt-1">"${ap.deskripsi_singkat}"</div>` : ""}
+    `;
+  }
+
+  // 2. Video Prompts Box
+  if (promptsBox && Array.isArray(data.prompt_video) && data.prompt_video.length > 0) {
+    promptsBox.innerHTML = data.prompt_video.map((pv, idx) => `
+      <div class="p-2 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 space-y-1.5 transition">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            ${idx + 1}. ${pv.gaya || "Varian " + (idx + 1)}
+          </span>
+          <div class="flex items-center gap-1">
+            <button type="button" onclick="copyPromptText('${encodeURIComponent(pv.prompt_en || "")}')" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] font-semibold flex items-center gap-1 transition" title="Salin Prompt Video">
+              <i class="fa-solid fa-copy text-[9px]"></i> Salin
+            </button>
+            <button type="button" onclick="applyPromptToScene('${encodeURIComponent(pv.prompt_en || "")}')" class="px-2 py-0.5 rounded bg-orange-600/30 hover:bg-orange-600/60 text-orange-200 text-[10px] font-semibold flex items-center gap-1 border border-orange-500/40 transition" title="Gunakan di Scene 1">
+              <i class="fa-solid fa-arrow-right-to-bracket text-[9px]"></i> Pakai
+            </button>
+          </div>
+        </div>
+        <p class="text-[10px] font-mono text-slate-300 bg-slate-950/80 p-1.5 rounded border border-slate-800/80 break-words leading-relaxed">${pv.prompt_en || ""}</p>
+        ${pv.instruksi_kreator ? `<div class="text-[9px] text-slate-400 flex items-center gap-1"><i class="fa-solid fa-lightbulb text-amber-400 text-[8px]"></i> <span>${pv.instruksi_kreator}</span></div>` : ""}
+      </div>
+    `).join("");
+  }
+
+  // 3. Captions Box
+  if (captionsBox && Array.isArray(data.caption) && data.caption.length > 0) {
+    captionsBox.innerHTML = data.caption.map((cap, idx) => `
+      <div class="p-2 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 space-y-1.5 transition">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+            ${cap.tipe || "Opsi " + (idx + 1)}
+          </span>
+          <button type="button" onclick="copyCaptionText('${encodeURIComponent((cap.hook ? cap.hook + "\n\n" : "") + (cap.teks_lengkap || "") + (cap.hashtags ? "\n\n" + cap.hashtags : ""))}')" class="px-2 py-0.5 rounded bg-cyan-950 hover:bg-cyan-900 text-cyan-200 text-[10px] font-semibold flex items-center gap-1 border border-cyan-500/30 transition">
+            <i class="fa-solid fa-copy text-[9px]"></i> Salin Caption
+          </button>
+        </div>
+        ${cap.hook ? `<div class="text-[11px] font-bold text-white bg-slate-950/60 p-1 rounded border border-slate-800">${cap.hook}</div>` : ""}
+        <p class="text-[10px] text-slate-300 leading-relaxed">${cap.teks_lengkap || ""}</p>
+        ${cap.hashtags ? `<div class="text-[9px] font-mono text-cyan-400">${cap.hashtags}</div>` : ""}
+      </div>
+    `).join("");
+  }
+}
+
+function applyPromptToScene(encodedPrompt) {
+  const promptText = decodeURIComponent(encodedPrompt);
+  if (!promptText) return;
+  const promptInput = document.getElementById("scene-prompt-1") || document.getElementById("scene-video-prompt-1");
+  if (promptInput) {
+    promptInput.value = promptText;
+    promptInput.classList.add("ring-2", "ring-orange-400", "border-orange-400");
+    setTimeout(() => promptInput.classList.remove("ring-2", "ring-orange-400", "border-orange-400"), 2500);
+    showToastNotification("success", "Prompt Diterapkan!", "Prompt berhasil dimasukkan ke Scene 1.");
+  } else {
+    showToastNotification("info", "Prompt Disalin", "Prompt telah disalin ke clipboard.");
+    navigator.clipboard.writeText(promptText);
+  }
+}
+
+function copyCaptionText(encodedCaption) {
+  const captionText = decodeURIComponent(encodedCaption);
+  if (!captionText) return;
+  navigator.clipboard.writeText(captionText);
+  showToastNotification("success", "Caption Disalin!", "Caption lengkap & hashtag siap diposting di TikTok/Reels.");
 }
 
 function triggerAutoSave() {

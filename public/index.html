@@ -848,6 +848,48 @@
                 </div>
               </div>
 
+              <!-- VISION AI ANALYSIS & SCRIPT VAULT DISPLAY (EXPANDABLE CARD) -->
+              <div id="vision-analysis-results-container" class="hidden space-y-2 p-3 rounded-2xl bg-gradient-to-b from-slate-900/95 via-slate-950/95 to-slate-900/90 border border-emerald-500/40 shadow-xl relative backdrop-blur-xl transition-all">
+                <div class="flex items-center justify-between border-b border-emerald-500/20 pb-2">
+                  <div class="flex items-center gap-1.5 text-xs font-extrabold text-emerald-400 font-display">
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-400 animate-pulse"></i>
+                    <span>Analisa Gemini Vision & Script Vault</span>
+                  </div>
+                  <button type="button" onclick="toggleVisionCardCollapse()" class="text-slate-400 hover:text-white text-xs p-1">
+                    <i id="vision-collapse-icon" class="fa-solid fa-chevron-up text-[10px]"></i>
+                  </button>
+                </div>
+
+                <div id="vision-analysis-body" class="space-y-3 pt-1">
+                  <!-- 1. Analisa Produk Box -->
+                  <div id="vision-product-analysis-box" class="p-2.5 rounded-xl bg-slate-950/90 border border-slate-800/80 space-y-1.5 text-[11px]">
+                    <!-- Dynamically Injected -->
+                  </div>
+
+                  <!-- 2. Video Prompts Accordion/Tabs -->
+                  <div class="space-y-1.5">
+                    <div class="text-[11px] font-bold text-amber-300 flex items-center justify-between">
+                      <span><i class="fa-solid fa-film text-orange-400"></i> 3 Varian Prompt Video AI</span>
+                      <span class="text-[9px] text-slate-400 font-mono">Veo / Kling / Runway</span>
+                    </div>
+                    <div id="vision-video-prompts-box" class="space-y-2">
+                      <!-- Dynamically Injected -->
+                    </div>
+                  </div>
+
+                  <!-- 3. Captions Box -->
+                  <div class="space-y-1.5">
+                    <div class="text-[11px] font-bold text-cyan-300 flex items-center justify-between">
+                      <span><i class="fa-solid fa-hashtag text-cyan-400"></i> 3 Opsi Caption & Hook</span>
+                      <span class="text-[9px] text-slate-400 font-mono">TikTok / Reels / Shorts</span>
+                    </div>
+                    <div id="vision-captions-box" class="space-y-2">
+                      <!-- Dynamically Injected -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- 2. NAMA PRODUK -->
               <div>
                 <label class="block text-xs font-bold text-slate-300 mb-1">Nama Produk <span class="text-orange-500">*</span></label>
