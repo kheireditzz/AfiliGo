@@ -1,4 +1,4 @@
-// Flow Ai Extension v3.8 - In-Page Floating Studio with Dynamic Resizing & Zoom
+// Flow Ai Extension v4.0 - Compact Top-Center Sequential Per-Scene & Image Injector
 (function() {
   if (window.__FLOW_AI_EXTENSION_INJECTED__) {
     const existing = document.getElementById('flow-ai-extension-host');
@@ -10,9 +10,9 @@
   host.id = 'flow-ai-extension-host';
   host.style.position = 'fixed';
   host.style.zIndex = '2147483647';
-  host.style.top = '50%';
+  host.style.top = '14px';
   host.style.left = '50%';
-  host.style.transform = 'translate(-50%, -50%)';
+  host.style.transform = 'translateX(-50%)';
   host.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   document.body.appendChild(host);
 
@@ -22,78 +22,74 @@
   style.textContent = `
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
-    /* Minimized Floating Pill */
+    /* Minimized Capsule (Top Center) */
     .floating-pill {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 9px 16px;
+      gap: 7px;
+      padding: 7px 14px;
       background: linear-gradient(135deg, rgba(13, 17, 30, 0.96), rgba(20, 26, 46, 0.96));
       border: 1.5px solid rgba(249, 115, 22, 0.7);
       border-radius: 9999px;
       color: #fff;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 800;
       cursor: grab;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.65), 0 0 18px rgba(249, 115, 22, 0.35);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7), 0 0 16px rgba(249, 115, 22, 0.35);
       backdrop-filter: blur(14px);
       transition: transform 0.2s, box-shadow 0.2s;
       user-select: none;
     }
     .floating-pill:hover {
-      transform: scale(1.05);
+      transform: scale(1.04);
       border-color: #f97316;
-      box-shadow: 0 12px 30px rgba(249, 115, 22, 0.45);
     }
     .pill-icon {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       background: linear-gradient(135deg, #f59e0b, #ea580c);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
+      font-size: 10px;
     }
     .pill-badge {
       background: rgba(249, 115, 22, 0.25);
       color: #fb923c;
-      padding: 2px 7px;
-      border-radius: 6px;
-      font-size: 9px;
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-size: 8.5px;
       font-family: monospace;
       border: 1px solid rgba(249, 115, 22, 0.4);
     }
 
-    /* Main Floating Studio Box (Resizable & Expandable) */
+    /* Compact Floating Studio (Small & Sleek Top-Center) */
     .floating-studio {
-      width: 420px;
-      min-width: 280px;
-      max-width: 95vw;
-      height: 580px;
-      min-height: 280px;
-      max-height: 92vh;
-      background: linear-gradient(180deg, #0b0f19 0%, #070a12 100%);
-      border: 1.5px solid rgba(249, 115, 22, 0.5);
-      border-radius: 22px;
+      width: 350px;
+      max-width: calc(100vw - 20px);
+      max-height: 82vh;
+      background: linear-gradient(180deg, #0d121f 0%, #070911 100%);
+      border: 1.5px solid rgba(249, 115, 22, 0.55);
+      border-radius: 18px;
       color: #f8fafc;
-      box-shadow: 0 25px 65px rgba(0,0,0,0.9), 0 0 30px rgba(249, 115, 22, 0.2);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 25px rgba(249, 115, 22, 0.2);
       backdrop-filter: blur(20px);
       display: flex;
       flex-direction: column;
       overflow: hidden;
       position: relative;
       resize: both;
-      animation: popIn 0.2s ease-out;
+      animation: popIn 0.18s ease-out;
     }
     @keyframes popIn {
-      from { opacity: 0; transform: scale(0.94); }
+      from { opacity: 0; transform: scale(0.95); }
       to { opacity: 1; transform: scale(1); }
     }
 
     .studio-header {
-      padding: 10px 14px;
-      background: rgba(15, 23, 42, 0.9);
+      padding: 8px 12px;
+      background: rgba(15, 23, 42, 0.95);
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
@@ -103,66 +99,91 @@
       flex-shrink: 0;
     }
     .studio-body {
-      padding: 12px;
+      padding: 10px;
       overflow-y: auto;
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
-    .studio-body::-webkit-scrollbar { width: 4px; }
+    .studio-body::-webkit-scrollbar { width: 3px; }
     .studio-body::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
 
-    /* Header Controls (+, -, Maximize, Minimize) */
     .ctrl-group {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
     }
     .btn-ctrl {
       background: #1e293b;
       color: #cbd5e1;
-      width: 24px;
-      height: 24px;
-      border-radius: 6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: bold;
-      transition: all 0.15s;
     }
     .btn-ctrl:hover { background: #334155; color: #fff; }
-    .btn-ctrl:active { transform: scale(0.92); }
 
     .card-section {
       background: rgba(13, 19, 34, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 14px;
-      padding: 10px;
+      border-radius: 12px;
+      padding: 8px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
     .input-text, .select-input {
       width: 100%;
       background: #030712;
       border: 1px solid #1f2937;
-      border-radius: 8px;
+      border-radius: 7px;
       color: #fff;
-      padding: 6px 9px;
-      font-size: 11px;
+      padding: 5px 8px;
+      font-size: 10px;
       outline: none;
     }
     .input-text:focus, .select-input:focus { border-color: #f97316; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; }
 
-    .image-slot {
+    /* Scene Navigation Pills (Per-Scene Runner) */
+    .scene-nav-bar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .scene-tab-pill {
+      padding: 4px 9px;
+      border-radius: 8px;
+      font-size: 9px;
+      font-weight: 800;
+      font-family: monospace;
+      cursor: pointer;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #94a3b8;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .scene-tab-pill.active {
+      background: linear-gradient(135deg, #ea580c, #c2410c);
+      color: #fff;
+      border-color: #f97316;
+      box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
+    }
+
+    .image-slot-compact {
       aspect-ratio: 1;
-      border-radius: 10px;
+      border-radius: 8px;
       background: #030712;
       border: 1px dashed #374151;
       display: flex;
@@ -174,91 +195,69 @@
       text-align: center;
       position: relative;
     }
-    .image-slot:hover { border-color: #f97316; }
-    .image-slot img { width: 100%; height: 100%; object-fit: cover; }
+    .image-slot-compact:hover { border-color: #f97316; }
+    .image-slot-compact img { width: 100%; height: 100%; object-fit: cover; }
     .btn-slot-crop {
       position: absolute;
-      top: 3px;
-      right: 3px;
+      top: 2px;
+      right: 2px;
       background: rgba(0,0,0,0.85);
       color: #f59e0b;
       border: 1px solid rgba(255,255,255,0.2);
-      font-size: 8px;
+      font-size: 7px;
       font-weight: bold;
-      padding: 2px 5px;
-      border-radius: 4px;
+      padding: 1px 4px;
+      border-radius: 3px;
       cursor: pointer;
     }
 
-    .btn-brutal {
-      background: linear-gradient(135deg, #f59e0b, #ea580c, #dc2626);
-      color: #fff;
-      padding: 9px;
-      border-radius: 10px;
-      font-weight: 800;
-      font-size: 11px;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(234, 88, 12, 0.35);
-      transition: transform 0.1s;
-    }
-    .btn-brutal:active { transform: scale(0.98); }
-
-    .btn-sync-web {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 95, 70, 0.4));
-      border: 1px solid rgba(16, 185, 129, 0.5);
-      color: #6ee7b7;
-      padding: 6px 10px;
-      border-radius: 8px;
-      font-size: 9.5px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      transition: all 0.2s;
-    }
-    .btn-sync-web:hover { background: rgba(16, 185, 129, 0.35); color: #fff; }
-
-    .btn-inject {
+    .btn-action-primary {
       background: linear-gradient(135deg, #083344, #0e7490);
       border: 1.5px solid #06b6d4;
       color: #a5f3fc;
-      padding: 9px;
-      border-radius: 10px;
+      padding: 8px 10px;
+      border-radius: 9px;
       font-weight: 800;
-      font-size: 11px;
+      font-size: 10.5px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 5px;
       box-shadow: 0 4px 12px rgba(6, 182, 212, 0.25);
+      transition: all 0.15s;
     }
-    .btn-inject:hover { background: #0891b2; color: #fff; }
+    .btn-action-primary:hover { background: #0891b2; color: #fff; }
+    .btn-action-primary:active { transform: scale(0.97); }
 
-    .scene-card {
-      background: #0f172a;
-      border: 1px solid #1e293b;
-      border-radius: 10px;
-      padding: 8px;
+    .btn-next-scene {
+      background: linear-gradient(135deg, #15803d, #16a34a);
+      border: 1.5px solid #4ade80;
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 9px;
+      font-weight: 800;
+      font-size: 10.5px;
+      cursor: pointer;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       gap: 5px;
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+      transition: all 0.15s;
     }
+    .btn-next-scene:hover { opacity: 0.95; }
+    .btn-next-scene:active { transform: scale(0.97); }
 
-    /* Resize Handle Gripper in Bottom-Right */
     .resize-handle {
       position: absolute;
       bottom: 2px;
       right: 2px;
-      width: 14px;
-      height: 14px;
+      width: 12px;
+      height: 12px;
       cursor: nwse-resize;
       background: linear-gradient(135deg, transparent 50%, #f97316 50%);
-      border-bottom-right-radius: 18px;
-      pointer-events: auto;
+      border-bottom-right-radius: 16px;
     }
 
     .crop-modal-overlay {
@@ -275,23 +274,21 @@
     .crop-dialog {
       background: #0d121f;
       border: 1.5px solid #ea580c;
-      border-radius: 16px;
-      padding: 14px;
-      width: 320px;
+      border-radius: 14px;
+      padding: 12px;
+      width: 300px;
       max-width: 95vw;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       color: #fff;
     }
   `;
   shadow.appendChild(style);
 
   let isMinimized = true;
-  let isMaximized = false;
+  let activeSceneIndex = 0; // Per-scene pointer (Scene 1, Scene 2, etc.)
   let currentZoom = 1.0;
-  let savedWidth = "420px";
-  let savedHeight = "580px";
 
   let scenes = [
     {
@@ -357,8 +354,9 @@
           if (latest.scenes[0] && latest.scenes[0].imageUrl) {
             images.product = latest.scenes[0].imageUrl;
           }
+          activeSceneIndex = 0;
           render();
-          alert("Berhasil mengimpor Scene 1..N dan Gambar dari Storyboard AffiliateGo!");
+          alert("✅ Berhasil mengimpor Scene 1.." + scenes.length + " dan Gambar dari Storyboard AffiliateGo!");
           return;
         }
       }
@@ -370,12 +368,14 @@
 
   function render() {
     if (isMinimized) {
-      host.style.transform = 'translate(-50%, -50%)';
+      host.style.top = '14px';
+      host.style.left = '50%';
+      host.style.transform = 'translateX(-50%)';
       wrapper.innerHTML = `
-        <div class="floating-pill" id="btn-expand-pill" title="Klik untuk membuka Flow Ai Extension">
+        <div class="floating-pill" id="btn-expand-pill" title="Klik untuk membuka Flow Ai Studio">
           <div class="pill-icon">⚡</div>
           <span>Flow Ai Extension</span>
-          <span class="pill-badge">v3.8</span>
+          <span class="pill-badge">v4.0</span>
         </div>
       `;
       wrapper.querySelector('#btn-expand-pill').addEventListener('click', () => {
@@ -384,126 +384,120 @@
       });
       makeDraggable(wrapper.querySelector('.floating-pill'));
     } else {
-      const studioWidth = isMaximized ? "92vw" : savedWidth;
-      const studioHeight = isMaximized ? "90vh" : savedHeight;
+      if (activeSceneIndex >= scenes.length) activeSceneIndex = 0;
+      const currentScene = scenes[activeSceneIndex] || scenes[0];
+      const activeImg = currentScene.imageUrl || images.product || images.model || images.location || "";
 
       wrapper.innerHTML = `
-        <div class="floating-studio" id="main-floating-studio" style="width:${studioWidth}; height:${studioHeight}; transform:scale(${currentZoom}); transform-origin:center center;">
-          <!-- Drag Header with Zoom & Sizing Controls -->
+        <div class="floating-studio" id="main-floating-studio" style="transform:scale(${currentZoom}); transform-origin:top center;">
+          <!-- Compact Header -->
           <div class="studio-header" id="studio-drag-bar">
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div style="display:flex; align-items:center; gap:6px;">
               <div class="pill-icon">⚡</div>
               <div>
-                <div style="font-size:11.5px; font-weight:800; color:#fff;">Flow Ai Extension</div>
-                <div style="font-size:8.5px; color:#94a3b8;">Bisa Diperbesar / Diperkecil (Drag Sudut)</div>
+                <div style="font-size:11px; font-weight:800; color:#fff;">Flow Ai Extension</div>
+                <div style="font-size:8px; color:#fb923c; font-family:monospace;">Mode Per-Scene (Top-Center)</div>
               </div>
             </div>
             
             <div class="ctrl-group">
-              <button class="btn-ctrl" id="btn-zoom-out" title="Perkecil Ukuran (Zoom Out)">🔍-</button>
-              <button class="btn-ctrl" id="btn-zoom-in" title="Perbesar Ukuran (Zoom In)">🔍+</button>
-              <button class="btn-ctrl" id="btn-toggle-maximize" title="Layar Penuh / Pulihkan">${isMaximized ? "🗗" : "🗖"}</button>
+              <button class="btn-ctrl" id="btn-zoom-out" title="Perkecil">🔍-</button>
+              <button class="btn-ctrl" id="btn-zoom-in" title="Perbesar">🔍+</button>
               <button class="btn-ctrl" id="btn-minimize-studio" title="Perkecil ke Kapsul" style="background:#ea580c; color:#fff;">-</button>
             </div>
           </div>
 
           <div class="studio-body">
-            <!-- Sync Web Button -->
-            <button class="btn-sync-web" id="btn-fetch-web-data">
-              <span>📥 Ambil Gambar & Scene dari Web AffiliateGo</span>
-            </button>
+            <!-- Sync & Per-Scene Navigator Bar -->
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:4px;">
+              <div class="scene-nav-bar" id="scene-pills-bar">
+                ${scenes.map((s, i) => `
+                  <button class="scene-tab-pill ${i === activeSceneIndex ? 'active' : ''}" onclick="this.getRootNode().host.switchScene(${i})">
+                    SCENE ${i+1}
+                  </button>
+                `).join("")}
+                <button class="scene-tab-pill" id="btn-add-scene-compact" style="color:#fbbf24; background:#1e293b;">+ Scene</button>
+              </div>
+              <button id="btn-sync-web-compact" style="background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.4); color:#6ee7b7; border-radius:6px; padding:3px 6px; font-size:8.5px; font-weight:bold; cursor:pointer; white-space:nowrap;">📥 Sync Web</button>
+            </div>
 
-            <!-- 3 Image Slots with Crop -->
+            <!-- Active Scene Visual Image Slot with Crop -->
             <div class="card-section">
-              <div style="display:flex; justify-content:space-between; align-items:center; font-size:9.5px; font-weight:bold; color:#f59e0b;">
-                <span>📷 3 Slot Gambar (Klik foto untuk Crop)</span>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:9px; font-weight:bold; color:#f59e0b;">
+                <span>🖼️ Gambar Scene ${activeSceneIndex + 1} (Klik foto untuk Ganti/Crop)</span>
+                <span style="font-size:8px; color:#94a3b8; font-family:monospace;">${currentScene.duration}s</span>
+              </div>
+              
+              <div style="display:grid; grid-template-columns: 80px 1fr; gap:8px;">
+                <div class="image-slot-compact" id="slot-scene-active" style="height:80px; width:80px;">
+                  ${activeImg ? `<img src="${activeImg}"><button class="btn-slot-crop" onclick="this.getRootNode().host.openCropActiveScene()">Crop</button>` : `<div style="font-size:8px; color:#94a3b8;">+ Foto Scene</div>`}
+                  <input type="file" id="input-file-scene-active" accept="image/*" style="display:none">
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <div class="grid-2">
+                    <select class="select-input" id="inp-model-ai" style="font-size:9px; padding:3px 5px;">
+                      <option value="omni-flash" selected>Omni Flash</option>
+                      <option value="veo-3.1-lite">Veo 3.1 - Lite</option>
+                      <option value="veo-3.1-fast">Veo 3.1 - Fast</option>
+                      <option value="veo-3.1-quality">Veo 3.1 - Quality</option>
+                    </select>
+                    <select class="select-input" id="inp-scene-dur" style="font-size:9px; padding:3px 5px;" onchange="this.getRootNode().host.updateCurrentDuration(this.value)">
+                      <option value="4" ${currentScene.duration == 4 ? 'selected' : ''}>4s (4 Detik)</option>
+                      <option value="6" ${currentScene.duration == 6 ? 'selected' : ''}>6s (6 Detik)</option>
+                      <option value="8" ${currentScene.duration == 8 ? 'selected' : ''}>8s (8 Detik)</option>
+                      <option value="10" ${currentScene.duration == 10 ? 'selected' : ''}>10s (10 Detik)</option>
+                    </select>
+                  </div>
+                  <input type="text" class="input-text" style="font-size:9px;" value="${currentScene.shotType}" placeholder="Tipe Shot" onchange="this.getRootNode().host.updateCurrentSceneField('shotType', this.value)">
+                </div>
+              </div>
+
+              <!-- Prompt Video & Voiceover for Active Scene -->
+              <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px;">
+                <textarea rows="2" class="input-text" style="font-size:9px; resize:none; font-family:monospace; color:#fef08a;" placeholder="Prompt Video Motion Scene ${activeSceneIndex+1}" onchange="this.getRootNode().host.updateCurrentSceneField('promptVideo', this.value)">${currentScene.promptVideo}</textarea>
+                <input type="text" class="input-text" style="font-size:9px; color:#34d399;" value="${currentScene.voiceover}" placeholder="Naskah Voiceover Scene ${activeSceneIndex+1}" onchange="this.getRootNode().host.updateCurrentSceneField('voiceover', this.value)">
+              </div>
+            </div>
+
+            <!-- Sequential Execution Action Bar -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+              <button class="btn-action-primary" id="btn-inject-current-scene" title="Kirim Prompt dan Upload Gambar Scene ${activeSceneIndex + 1} ke Chat Flow AI">
+                <span>🎯 Inject Scene ${activeSceneIndex + 1} + Gambar</span>
+              </button>
+              <button class="btn-next-scene" id="btn-next-step-scene" title="Lanjut ke Scene Berikutnya">
+                <span>Lanjut Scene ${activeSceneIndex + 2 <= scenes.length ? activeSceneIndex + 2 : 1} ➔</span>
+              </button>
+            </div>
+
+            <!-- 3 General Slots (Produk, Model, Lokasi) Compact -->
+            <div class="card-section">
+              <div style="font-size:8.5px; font-weight:bold; color:#94a3b8;">
+                📦 3 Slot Foto Utama (Produk / Model / Lokasi)
               </div>
               <div class="grid-3">
-                <div class="image-slot" id="slot-product">
-                  ${images.product ? `<img src="${images.product}"><button class="btn-slot-crop" onclick="this.getRootNode().host.openCropModal('product')">Crop</button>` : `<div style="font-size:8px; color:#94a3b8;">+ Foto Produk</div>`}
+                <div class="image-slot-compact" id="slot-product" style="height:50px;">
+                  ${images.product ? `<img src="${images.product}">` : `<div style="font-size:7.5px; color:#64748b;">+ Produk</div>`}
                   <input type="file" id="input-file-prod" accept="image/*" style="display:none">
                 </div>
-                <div class="image-slot" id="slot-model">
-                  ${images.model ? `<img src="${images.model}"><button class="btn-slot-crop" onclick="this.getRootNode().host.openCropModal('model')">Crop</button>` : `<div style="font-size:8px; color:#94a3b8;">+ Foto Model</div>`}
+                <div class="image-slot-compact" id="slot-model" style="height:50px;">
+                  ${images.model ? `<img src="${images.model}">` : `<div style="font-size:7.5px; color:#64748b;">+ Model</div>`}
                   <input type="file" id="input-file-mod" accept="image/*" style="display:none">
                 </div>
-                <div class="image-slot" id="slot-location">
-                  ${images.location ? `<img src="${images.location}"><button class="btn-slot-crop" onclick="this.getRootNode().host.openCropModal('location')">Crop</button>` : `<div style="font-size:8px; color:#94a3b8;">+ Foto Lokasi</div>`}
+                <div class="image-slot-compact" id="slot-location" style="height:50px;">
+                  ${images.location ? `<img src="${images.location}">` : `<div style="font-size:7.5px; color:#64748b;">+ Lokasi</div>`}
                   <input type="file" id="input-file-loc" accept="image/*" style="display:none">
                 </div>
               </div>
             </div>
 
-            <!-- Parameters & Flow AI Exact Durations -->
-            <div class="card-section">
-              <div class="grid-2">
-                <div>
-                  <label style="font-size:8.5px; color:#94a3b8; font-weight:bold; display:block; margin-bottom:2px;">Model Flow AI</label>
-                  <select class="select-input" id="inp-model-ai">
-                    <option value="omni-flash" selected>Omni Flash</option>
-                    <option value="veo-3.1-lite">Veo 3.1 - Lite</option>
-                    <option value="veo-3.1-fast">Veo 3.1 - Fast</option>
-                    <option value="veo-3.1-quality">Veo 3.1 - Quality</option>
-                  </select>
-                </div>
-                <div>
-                  <label style="font-size:8.5px; color:#94a3b8; font-weight:bold; display:block; margin-bottom:2px;">Durasi Flow AI</label>
-                  <select class="select-input" id="inp-duration">
-                    <option value="4">4s (4 Detik)</option>
-                    <option value="6" selected>6s (6 Detik)</option>
-                    <option value="8">8s (8 Detik)</option>
-                    <option value="10">10s (10 Detik)</option>
-                  </select>
-                </div>
-              </div>
-
-              <input type="text" class="input-text" id="inp-title" placeholder="Nama Produk (contoh: Wireless Earbuds ANC Pro)">
-              <input type="text" class="input-text" id="inp-usp" placeholder="Keunggulan / USP Produk (contoh: Noise cancelling hening)">
-
-              <button class="btn-brutal" id="btn-generate-now">
-                <span>⚡ Generate Brutal Video di Flow AI</span>
-              </button>
-            </div>
-
-            <!-- Scenes List -->
-            <div class="card-section">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:9.5px; font-weight:bold; color:#fff;">🎬 Daftar Scene Storyboard</span>
-                <button id="btn-add-scene-inline" style="background:#1e293b; color:#fbbf24; border:none; border-radius:6px; padding:3px 8px; font-size:9px; font-weight:bold; cursor:pointer;">+ Tambah Scene</button>
-              </div>
-
-              <div id="scenes-list-inline" style="display:flex; flex-direction:column; gap:6px;">
-                ${scenes.map((sc, i) => `
-                  <div class="scene-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:3px;">
-                      <span style="font-size:8.5px; font-weight:bold; color:#ea580c; font-family:monospace;">SCENE ${i+1} (${sc.duration}s)</span>
-                      <button onclick="this.getRootNode().host.deleteSceneHandler(${i})" style="background:transparent; border:none; color:#f87171; font-size:8.5px; cursor:pointer;">Hapus</button>
-                    </div>
-                    <input type="text" class="input-text" style="font-size:8.5px;" value="${sc.promptVideo}" placeholder="Prompt Video Motion" onchange="this.getRootNode().host.updateSceneHandler(${i}, 'promptVideo', this.value)">
-                    <input type="text" class="input-text" style="font-size:8.5px; color:#34d399;" value="${sc.voiceover}" placeholder="Voiceover" onchange="this.getRootNode().host.updateSceneHandler(${i}, 'voiceover', this.value)">
-                  </div>
-                `).join("")}
-              </div>
-            </div>
-
-            <!-- Inject Actions -->
-            <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:6px;">
-              <button class="btn-inject" id="btn-inject-page" title="Inject langsung ke kotak chat prompt Flow AI">
-                <span>🎯 Inject ke Chat Flow AI</span>
-              </button>
-              <button class="btn-inject" id="btn-download-all-inline" style="background:#064e3b; border-color:#10b981; color:#6ee7b7;">
-                <span>📦 Unduh JSON</span>
-              </button>
-            </div>
-
           </div>
 
-          <!-- Bottom-Right Dynamic Resize Gripper -->
           <div class="resize-handle" id="gripper-resize" title="Tarik untuk mengubah ukuran"></div>
         </div>
       `;
 
-      // Zoom & Scale Controls
+      // Zoom Controls
       wrapper.querySelector('#btn-zoom-in').addEventListener('click', () => {
         if (currentZoom < 1.4) {
           currentZoom = Math.round((currentZoom + 0.1) * 10) / 10;
@@ -511,7 +505,6 @@
           if (st) st.style.transform = `scale(${currentZoom})`;
         }
       });
-
       wrapper.querySelector('#btn-zoom-out').addEventListener('click', () => {
         if (currentZoom > 0.6) {
           currentZoom = Math.round((currentZoom - 0.1) * 10) / 10;
@@ -519,108 +512,83 @@
           if (st) st.style.transform = `scale(${currentZoom})`;
         }
       });
-
-      wrapper.querySelector('#btn-toggle-maximize').addEventListener('click', () => {
-        isMaximized = !isMaximized;
-        render();
-      });
-
       wrapper.querySelector('#btn-minimize-studio').addEventListener('click', () => {
         isMinimized = true;
         render();
       });
 
-      wrapper.querySelector('#btn-fetch-web-data').addEventListener('click', () => {
+      // Add scene
+      wrapper.querySelector('#btn-add-scene-compact').addEventListener('click', () => {
+        scenes.push({
+          id: scenes.length + 1,
+          shotType: "Close-Up",
+          duration: 6,
+          promptVideo: "Smooth camera motion showing product benefits, 4k 60fps",
+          voiceover: "Klik keranjang kuning sekarang mumpung diskon spesial!",
+          imageUrl: images.product || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"
+        });
+        activeSceneIndex = scenes.length - 1;
+        render();
+      });
+
+      wrapper.querySelector('#btn-sync-web-compact').addEventListener('click', () => {
         if (!tryAutoSyncFromWeb()) {
           fetchStoryboardFromAffiliateGo();
         } else {
           render();
-          alert("Berhasil menyinkronkan data & gambar dari halaman AffiliateGo!");
+          alert("✅ Berhasil menyinkronkan data dari AffiliateGo!");
         }
       });
 
-      wrapper.querySelector('#btn-add-scene-inline').addEventListener('click', () => {
-        const dur = parseInt(wrapper.querySelector('#inp-duration').value) || 6;
-        scenes.push({
-          id: scenes.length + 1,
-          shotType: "Close-Up",
-          duration: dur,
-          promptVideo: "Smooth dynamic camera pan showing product benefits and texture, 4k 60fps",
-          voiceover: "Klik keranjang kuning sekarang mumpung diskon spesial!"
-        });
+      // Inject current scene & upload image
+      wrapper.querySelector('#btn-inject-current-scene').addEventListener('click', async () => {
+        await injectSingleSceneWithImage(activeSceneIndex);
+      });
+
+      // Next scene runner
+      wrapper.querySelector('#btn-next-step-scene').addEventListener('click', () => {
+        if (activeSceneIndex + 1 < scenes.length) {
+          activeSceneIndex++;
+        } else {
+          activeSceneIndex = 0;
+        }
         render();
       });
 
-      wrapper.querySelector('#btn-generate-now').addEventListener('click', async () => {
-        const title = wrapper.querySelector('#inp-title').value.trim() || 'Produk Affiliate';
-        const usp = wrapper.querySelector('#inp-usp').value.trim() || 'Kualitas terbaik';
-        const modelAi = wrapper.querySelector('#inp-model-ai').value;
-        const dur = parseInt(wrapper.querySelector('#inp-duration').value) || 6;
-        const genBtn = wrapper.querySelector('#btn-generate-now');
-        genBtn.innerText = '⏳ Merancang (' + modelAi + ')...';
-        genBtn.disabled = true;
-
-        try {
-          const res = await fetch('https://affiliatego.vercel.app/api/generate-storyboard-ai', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              productTitle: title,
-              usp: usp,
-              numScenes: scenes.length,
-              duration: dur * scenes.length
-            })
-          });
-          const data = await res.json();
-          if (data && data.scenes) {
-            scenes = data.scenes.map((s, idx) => ({
-              id: idx + 1,
-              shotType: s.shotType || ("Scene " + (idx + 1)),
-              duration: dur,
-              promptVideo: s.visualDescription,
-              voiceover: s.voiceover
-            }));
-          }
-        } catch(e) {
-          scenes.forEach(s => {
-            s.duration = dur;
-            s.promptVideo = "Cinematic " + s.shotType + " of " + title + ", " + usp + ", 4k 60fps [" + modelAi + "]";
-          });
-        } finally {
-          genBtn.innerText = '⚡ Generate Brutal Video di Flow AI';
-          genBtn.disabled = false;
-          render();
-        }
-      });
-
-      wrapper.querySelector('#btn-inject-page').addEventListener('click', () => {
-        injectPrecisionPromptToFlowAI();
-      });
-
-      wrapper.querySelector('#btn-download-all-inline').addEventListener('click', () => {
-        const data = { app: "Flow Ai Extension", scenes: scenes };
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'FlowAI-Prompts.json';
-        a.click();
-      });
-
-      setupImageSlots();
+      setupSceneImageUpload();
+      setupMainImageUploads();
       makeDraggable(wrapper.querySelector('.floating-studio'), wrapper.querySelector('#studio-drag-bar'));
       setupResizeHandler(wrapper.querySelector('.floating-studio'), wrapper.querySelector('#gripper-resize'));
     }
   }
 
-  function setupImageSlots() {
+  function setupSceneImageUpload() {
+    const slot = wrapper.querySelector('#slot-scene-active');
+    const inp = wrapper.querySelector('#input-file-scene-active');
+    if (slot && inp) {
+      slot.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'BUTTON') inp.click();
+      });
+      inp.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          scenes[activeSceneIndex].imageUrl = evt.target.result;
+          render();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  }
+
+  function setupMainImageUploads() {
     ['prod', 'mod', 'loc'].forEach((k, idx) => {
       const keyMap = ['product', 'model', 'location'][idx];
       const slot = wrapper.querySelector('#slot-' + keyMap);
       const inp = wrapper.querySelector('#input-file-' + k);
       if (slot && inp) {
-        slot.addEventListener('click', (e) => {
-          if (e.target.tagName !== 'BUTTON') inp.click();
-        });
+        slot.addEventListener('click', () => inp.click());
         inp.addEventListener('change', (e) => {
           const file = e.target.files[0];
           if (!file) return;
@@ -635,50 +603,55 @@
     });
   }
 
-  host.openCropModal = function(key) {
-    if (!images[key]) return;
-    const cropOverlay = document.createElement('div');
-    cropOverlay.className = 'crop-modal-overlay';
-    cropOverlay.innerHTML = `
-      <div class="crop-dialog">
-        <div style="font-size:11px; font-weight:bold; color:#f59e0b;">✂️ Crop Foto (${key.toUpperCase()})</div>
-        <div style="width:100%; aspect-ratio:1; overflow:hidden; border-radius:10px; background:#000; display:flex; align-items:center; justify-content:center;">
-          <img id="crop-preview-img" src="${images[key]}" style="max-width:100%; max-height:100%; object-fit:contain;">
-        </div>
-        <div style="display:flex; justify-content:space-between; gap:6px;">
-          <button id="btn-crop-cancel" style="flex:1; background:#1e293b; color:#cbd5e1; border:none; border-radius:8px; padding:6px; font-size:10px; font-weight:bold; cursor:pointer;">Batal</button>
-          <button id="btn-crop-apply-square" style="flex:1; background:#ea580c; color:#fff; border:none; border-radius:8px; padding:6px; font-size:10px; font-weight:bold; cursor:pointer;">Crop 1:1</button>
-        </div>
-      </div>
-    `;
-    shadow.appendChild(cropOverlay);
+  // Convert base64 / URL to File Object
+  async function urlOrBase64ToFile(urlOrData, filename = 'scene-visual.jpg') {
+    if (!urlOrData) return null;
+    try {
+      if (urlOrData.startsWith('data:')) {
+        const arr = urlOrData.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+      } else {
+        const res = await fetch(urlOrData);
+        const blob = await res.blob();
+        return new File([blob], filename, { type: blob.type || 'image/jpeg' });
+      }
+    } catch(e) {
+      console.warn("Failed to convert image to file:", e);
+      return null;
+    }
+  }
 
-    cropOverlay.querySelector('#btn-crop-cancel').addEventListener('click', () => {
-      cropOverlay.remove();
-    });
+  // Precision Single Scene & Image Injector for Flow AI
+  async function injectSingleSceneWithImage(sceneIdx) {
+    const sc = scenes[sceneIdx] || scenes[0];
+    const promptText = "[Scene " + (sceneIdx + 1) + " (" + sc.duration + "s)]: " + sc.promptVideo;
+    const imgSource = sc.imageUrl || images.product || images.model || images.location;
 
-    cropOverlay.querySelector('#btn-crop-apply-square').addEventListener('click', () => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const size = Math.min(img.width, img.height);
-        canvas.width = 600;
-        canvas.height = 600;
-        const ctx = canvas.getContext('2d');
-        const sx = (img.width - size) / 2;
-        const sy = (img.height - size) / 2;
-        ctx.drawImage(img, sx, sy, size, size, 0, 0, 600, 600);
-        images[key] = canvas.toDataURL('image/jpeg', 0.92);
-        cropOverlay.remove();
-        render();
-      };
-      img.src = images[key];
-    });
-  };
+    // 1. Upload/Attach Image into Flow AI's File Input
+    if (imgSource) {
+      const fileObj = await urlOrBase64ToFile(imgSource, "scene-" + (sceneIdx + 1) + ".jpg");
+      if (fileObj) {
+        // Find Flow AI image file inputs
+        const fileInputs = Array.from(document.querySelectorAll('input[type="file"]'));
+        if (fileInputs.length > 0) {
+          const targetFileInput = fileInputs[0];
+          const dt = new DataTransfer();
+          dt.items.add(fileObj);
+          targetFileInput.files = dt.files;
+          targetFileInput.dispatchEvent(new Event('input', { bubbles: true }));
+          targetFileInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+    }
 
-  function injectPrecisionPromptToFlowAI() {
-    const fullScript = scenes.map((s, idx) => "[Scene " + (idx+1) + " (" + s.duration + "s)]: " + s.promptVideo).join("\n");
-    
+    // 2. Inject Prompt text into Flow AI Chat Prompt Textarea (excluding search bars)
     const promptSelectors = [
       'textarea[placeholder*="prompt" i]',
       'textarea[placeholder*="describe" i]',
@@ -708,19 +681,76 @@
     if (targetInput) {
       targetInput.focus();
       if (targetInput.tagName === "TEXTAREA" || targetInput.tagName === "INPUT") {
-        targetInput.value = fullScript;
+        targetInput.value = promptText;
         targetInput.dispatchEvent(new Event("input", { bubbles: true }));
         targetInput.dispatchEvent(new Event("change", { bubbles: true }));
       } else {
-        targetInput.innerText = fullScript;
-        targetInput.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: fullScript }));
+        targetInput.innerText = promptText;
+        targetInput.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: promptText }));
       }
-      alert("✅ Prompt video Flow AI berhasil dimasukkan tepat ke kotak chat generator!");
+      alert("✅ Scene " + (sceneIdx + 1) + " + Gambar berhasil di-inject ke Chat Flow AI! Klik generate di Flow AI, lalu klik 'Lanjut Scene' di ekstensi saat selesai.");
     } else {
-      navigator.clipboard.writeText(fullScript);
-      alert("📋 Prompt berhasil disalin! Silakan paste (Ctrl+V) langsung ke kotak prompt Flow AI.");
+      navigator.clipboard.writeText(promptText);
+      alert("📋 Prompt Scene " + (sceneIdx + 1) + " disalin! Silakan paste langsung ke Flow AI.");
     }
   }
+
+  // Crop handler
+  host.openCropActiveScene = function() {
+    const sc = scenes[activeSceneIndex];
+    const imgSrc = sc.imageUrl || images.product;
+    if (!imgSrc) return;
+
+    const cropOverlay = document.createElement('div');
+    cropOverlay.className = 'crop-modal-overlay';
+    cropOverlay.innerHTML = `
+      <div class="crop-dialog">
+        <div style="font-size:11px; font-weight:bold; color:#f59e0b;">✂️ Crop Foto Scene ${activeSceneIndex + 1}</div>
+        <div style="width:100%; aspect-ratio:1; overflow:hidden; border-radius:8px; background:#000; display:flex; align-items:center; justify-content:center;">
+          <img id="crop-preview-img" src="${imgSrc}" style="max-width:100%; max-height:100%; object-fit:contain;">
+        </div>
+        <div style="display:flex; justify-content:space-between; gap:6px;">
+          <button id="btn-crop-cancel" style="flex:1; background:#1e293b; color:#cbd5e1; border:none; border-radius:6px; padding:6px; font-size:10px; font-weight:bold; cursor:pointer;">Batal</button>
+          <button id="btn-crop-apply" style="flex:1; background:#ea580c; color:#fff; border:none; border-radius:6px; padding:6px; font-size:10px; font-weight:bold; cursor:pointer;">Crop 1:1</button>
+        </div>
+      </div>
+    `;
+    shadow.appendChild(cropOverlay);
+
+    cropOverlay.querySelector('#btn-crop-cancel').addEventListener('click', () => cropOverlay.remove());
+    cropOverlay.querySelector('#btn-crop-apply').addEventListener('click', () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const size = Math.min(img.width, img.height);
+        canvas.width = 600;
+        canvas.height = 600;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, (img.width - size)/2, (img.height - size)/2, size, size, 0, 0, 600, 600);
+        scenes[activeSceneIndex].imageUrl = canvas.toDataURL('image/jpeg', 0.92);
+        cropOverlay.remove();
+        render();
+      };
+      img.src = imgSrc;
+    });
+  };
+
+  host.switchScene = function(idx) {
+    activeSceneIndex = idx;
+    render();
+  };
+
+  host.updateCurrentDuration = function(val) {
+    if (scenes[activeSceneIndex]) {
+      scenes[activeSceneIndex].duration = parseInt(val) || 6;
+    }
+  };
+
+  host.updateCurrentSceneField = function(field, val) {
+    if (scenes[activeSceneIndex]) {
+      scenes[activeSceneIndex][field] = val;
+    }
+  };
 
   function makeDraggable(element, handle) {
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -769,12 +799,10 @@
     };
 
     function doResize(e) {
-      const newW = Math.max(280, Math.min(window.innerWidth - 40, startWidth + e.clientX - startX));
-      const newH = Math.max(280, Math.min(window.innerHeight - 40, startHeight + e.clientY - startY));
+      const newW = Math.max(280, Math.min(window.innerWidth - 30, startWidth + e.clientX - startX));
+      const newH = Math.max(250, Math.min(window.innerHeight - 30, startHeight + e.clientY - startY));
       studio.style.width = newW + 'px';
       studio.style.height = newH + 'px';
-      savedWidth = newW + 'px';
-      savedHeight = newH + 'px';
     }
 
     function stopResize() {
@@ -782,15 +810,6 @@
       document.onmouseup = null;
     }
   }
-
-  host.deleteSceneHandler = function(idx) {
-    if (scenes.length <= 1) return;
-    scenes.splice(idx, 1);
-    render();
-  };
-  host.updateSceneHandler = function(idx, field, val) {
-    if (scenes[idx]) scenes[idx][field] = val;
-  };
 
   tryAutoSyncFromWeb();
   render();
