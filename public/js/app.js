@@ -2957,6 +2957,7 @@ document.addEventListener('DOMContentLoaded', () => {
   checkUserApiKeyStatus();
   loadChatSessions();
   loadGeminiKeysPool();
+  loadFlowAccounts();
 });
 
 // Flow AI Brutal Extension Modal Helpers
@@ -2974,5 +2975,231 @@ function closeExtensionModal() {
     modal.classList.add("hidden");
     modal.classList.remove("flex");
   }
+}
+
+// ==========================================================
+// GOOGLE & FLOW AI MULTI-ACCOUNT / SESSION SWITCHER CONTROLLER
+// ==========================================================
+function openFlowAccountsModal() {
+  const modal = document.getElementById("modal-flow-accounts");
+  if (modal) {
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    loadFlowAccounts();
+  }
+}
+
+function closeFlowAccountsModal() {
+  const modal = document.getElementById("modal-flow-accounts");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
+}
+
+let isFlowPassVisible = false;
+function toggleFlowPasswordVisibility() {
+  const passInput = document.getElementById("input-flow-password");
+  const icon = document.getElementById("icon-toggle-flow-pass");
+  if (!passInput || !icon) return;
+  
+  isFlowPassVisible = !isFlowPassVisible;
+  passInput.type = isFlowPassVisible ? "text" : "password";
+  icon.className = isFlowPassVisible ? "fa-solid fa-eye-slash" : "fa-solid fa-eye";
+}
+
+async function loadFlowAccounts() {
+  const list = document.getElementById("flow-accounts-modal-list");
+  const badge = document.getElementById("flow-accounts-badge");
+  const statusText = document.getElementById("flow-accounts-status-text");
+  if (!list) return;
+
+  try {
+    const res = await fetch("/api/flow-accounts");
+    const data = await res.json();
+
+    if (data.success && data.accounts) {
+      if (badge) badge.innerText = data.accounts.length;
+      if (statusText) statusText.innerText = `${data.accounts.length} Akun Tersimpan`;
+
+      if (data.accounts.length === 0) {
+        list.innerHTML = `<div class="p-4 rounded-xl bg-[#060c12] border border-slate-800 text-center text-xs text-slate-400">Belum ada akun Google / Flow AI. Silakan tambahkan di form atas.</div>`;
+        return;
+      }
+
+      list.innerHTML = data.accounts.map(acc => {
+        const isActive = acc.isActive;
+        const quota = acc.quotaStatus || "ready";
+        
+        let quotaBadge = "";
+        if (quota === "ready") {
+          quotaBadge = `<span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/40 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Kuota Siap</span>`;
+        } else if (quota === "low") {
+          quotaBadge = `<span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/40 flex items-center gap-1"><i class="fa-solid fa-battery-half text-[9px]"></i> Menipis</span>`;
+        } else {
+          quotaBadge = `<span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 text-[10px] font-bold border border-rose-500/40 flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation text-[9px]"></i> Limit</span>`;
+        }
+
+        const activeTag = isActive 
+          ? `<span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 text-[9px] font-bold border border-emerald-400/60 flex items-center gap-1"><i class="fa-solid fa-circle-check text-[10px] text-emerald-400"></i> Aktif Digunakan</span>`
+          : "";
+
+        return `
+          <div class="p-3 rounded-2xl ${isActive ? 'bg-emerald-950/30 border-emerald-500/50 shadow-md shadow-emerald-950/30' : 'bg-[#060c12] border-slate-800/80'} border flex flex-col gap-2.5 transition">
+            
+            <!-- Top Row: Label, Active Tag, Quota -->
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-6 h-6 rounded-lg bg-emerald-900/60 border border-emerald-500/30 flex items-center justify-center text-[10px] text-emerald-300 flex-shrink-0">
+                  <i class="fa-brands fa-google"></i>
+                </div>
+                <span class="text-xs font-extrabold text-white truncate">${acc.label || 'Akun Google'}</span>
+                ${activeTag}
+              </div>
+              <div class="flex-shrink-0">
+                ${quotaBadge}
+              </div>
+            </div>
+
+            <!-- Email and Credentials Display -->
+            <div class="bg-[#030609] p-2.5 rounded-xl border border-slate-800 space-y-1.5 font-mono text-[11px]">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400 truncate"><i class="fa-regular fa-envelope text-slate-500 text-[10px] mr-1"></i> ${acc.email}</span>
+                <button onclick="copyFlowCredential('Email', '${acc.email.replace(/'/g, "\\'")}')" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-emerald-900/60 text-slate-300 hover:text-emerald-300 text-[10px] font-bold transition flex items-center gap-1">
+                  <i class="fa-regular fa-copy text-[9px]"></i> Salin Email
+                </button>
+              </div>
+
+              ${acc.hasPassword ? `
+                <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-900">
+                  <span class="text-slate-400 flex items-center gap-1"><i class="fa-solid fa-lock text-slate-500 text-[10px]"></i> Sandi: <span class="text-slate-300">${acc.passwordMasked}</span></span>
+                  <button onclick="copyFlowCredential('Kata Sandi', '${acc.rawPassword.replace(/'/g, "\\'")}')" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-emerald-900/60 text-slate-300 hover:text-emerald-300 text-[10px] font-bold transition flex items-center gap-1">
+                    <i class="fa-regular fa-copy text-[9px]"></i> Salin Sandi
+                  </button>
+                </div>
+              ` : ''}
+
+              ${acc.hasCookie ? `
+                <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-900">
+                  <span class="text-emerald-400/90 text-[10px] truncate"><i class="fa-solid fa-cookie-bite text-amber-400 text-[10px] mr-1"></i> Cookie: ${acc.cookieSnippet}</span>
+                  <button onclick="copyFlowCredential('Cookie Sesi', '${acc.rawCookie.replace(/'/g, "\\'")}')" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-emerald-900/60 text-slate-300 hover:text-emerald-300 text-[10px] font-bold transition flex items-center gap-1">
+                    <i class="fa-regular fa-copy text-[9px]"></i> Salin Cookie
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Actions Row -->
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-[9px] text-slate-500">ID: ${acc.id}</span>
+              <div class="flex items-center gap-1.5">
+                ${!isActive ? `
+                  <button onclick="setActiveFlowAccount('${acc.id}')" class="px-3 py-1 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-bold text-[11px] shadow-sm transition flex items-center gap-1">
+                    <i class="fa-solid fa-bolt text-[10px]"></i> Beralih ke Akun Ini
+                  </button>
+                ` : `
+                  <span class="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                    <i class="fa-solid fa-check"></i> Sesi Aktif
+                  </span>
+                `}
+                <button onclick="deleteFlowAccount('${acc.id}')" class="p-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-500/40 text-xs transition" title="Hapus Akun">
+                  <i class="fa-solid fa-trash text-[11px]"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        `;
+      }).join("");
+    }
+  } catch(e) {
+    if (statusText) statusText.innerText = "Gagal memuat";
+  }
+}
+
+async function submitNewFlowAccount() {
+  const emailInput = document.getElementById("input-flow-email");
+  const labelInput = document.getElementById("input-flow-label");
+  const passInput = document.getElementById("input-flow-password");
+  const quotaInput = document.getElementById("input-flow-quota");
+  const cookieInput = document.getElementById("input-flow-cookie");
+
+  const email = emailInput ? emailInput.value.trim() : "";
+  const label = labelInput ? labelInput.value.trim() : "";
+  const password = passInput ? passInput.value.trim() : "";
+  const quotaStatus = quotaInput ? quotaInput.value : "ready";
+  const cookie = cookieInput ? cookieInput.value.trim() : "";
+
+  if (!email) {
+    showToastNotification("error", "Gagal", "Email Google wajib diisi.");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/flow-accounts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, label, password, quotaStatus, cookie })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToastNotification("success", "Akun Disimpan", data.message || "Akun Google / Flow AI berhasil ditambahkan!");
+      if (emailInput) emailInput.value = "";
+      if (labelInput) labelInput.value = "";
+      if (passInput) passInput.value = "";
+      if (cookieInput) cookieInput.value = "";
+      loadFlowAccounts();
+    } else {
+      showToastNotification("error", "Gagal", data.message || "Gagal menyimpan akun.");
+    }
+  } catch(e) {
+    showToastNotification("error", "Error", e.message);
+  }
+}
+
+async function setActiveFlowAccount(id) {
+  try {
+    const res = await fetch("/api/flow-accounts/set-active", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToastNotification("success", "Sesi Berganti", data.message);
+      loadFlowAccounts();
+    }
+  } catch(e) {
+    showToastNotification("error", "Error", e.message);
+  }
+}
+
+async function deleteFlowAccount(id) {
+  if (!confirm("Apakah Anda yakin ingin menghapus akun Google / Flow AI ini?")) return;
+  try {
+    const res = await fetch(`/api/flow-accounts/${id}`, {
+      method: "DELETE"
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToastNotification("info", "Dihapus", data.message || "Akun berhasil dihapus.");
+      loadFlowAccounts();
+    }
+  } catch(e) {
+    showToastNotification("error", "Error", e.message);
+  }
+}
+
+function copyFlowCredential(type, text) {
+  if (!text) {
+    showToastNotification("info", "Kosong", `${type} belum diisi untuk akun ini.`);
+    return;
+  }
+  navigator.clipboard.writeText(text).then(() => {
+    showToastNotification("success", "Disalin ke Clipboard", `${type} siap ditempelkan di browser!`);
+  }).catch(() => {
+    showToastNotification("info", "Disalin", `${type}: ${text}`);
+  });
 }
 

@@ -1105,6 +1105,12 @@
                 <span class="hidden sm:inline">API Key</span>
                 <span id="gemini-keys-badge" class="px-1.5 py-0.2 rounded-full bg-cyan-950 text-cyan-300 text-[9px] font-mono border border-cyan-500/40">1</span>
               </button>
+
+              <button onclick="openFlowAccountsModal()" class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-emerald-950/40 border border-slate-700/80 hover:border-emerald-500/50 text-emerald-300 flex items-center gap-1.5 text-[11px] font-bold transition active:scale-95 shadow-sm" title="Google & Flow AI Session Switcher">
+                <i class="fa-brands fa-google text-[10px] text-emerald-400"></i>
+                <span class="hidden sm:inline">Akun Flow</span>
+                <span id="flow-accounts-badge" class="px-1.5 py-0.2 rounded-full bg-emerald-950 text-emerald-300 text-[9px] font-mono border border-emerald-500/40">1</span>
+              </button>
             </div>
           </div>
 
@@ -2068,6 +2074,101 @@
     </div>
   </div>
 
-  <script src="/js/app.js?v=20260825_2235"></script>
+  <!-- ========================================================== -->
+  <!-- GOOGLE & FLOW AI MULTI-ACCOUNT & SESSION SWITCHER MODAL -->
+  <!-- ========================================================== -->
+  <div id="modal-flow-accounts" class="fixed inset-0 z-[10000] bg-black/85 hidden items-center justify-center p-3 sm:p-4">
+    <div class="w-full max-w-lg bg-[#0a1118] border border-emerald-500/30 rounded-3xl p-5 sm:p-6 shadow-2xl shadow-black relative text-white space-y-4 max-h-[92vh] flex flex-col">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white text-sm shadow-md shadow-emerald-500/20">
+            <i class="fa-brands fa-google"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm font-display text-white flex items-center gap-2">
+              Google & Flow AI Session Switcher
+              <span class="px-2 py-0.5 rounded-full bg-emerald-950 border border-emerald-500/40 text-[9px] text-emerald-300 font-mono">Multi-Akun</span>
+            </h3>
+            <p class="text-[10px] text-emerald-400 font-mono">Beralih Akun & Cookie Sesi Flow AI Tanpa Login Ulang</p>
+          </div>
+        </div>
+        <button onclick="closeFlowAccountsModal()" class="w-7 h-7 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Add New Account Form -->
+      <div class="p-3.5 rounded-2xl bg-[#060c12] border border-slate-800/90 space-y-2.5 flex-shrink-0">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold text-slate-300 flex items-center gap-1.5 font-mono">
+            <i class="fa-solid fa-user-plus text-emerald-400 text-[10px]"></i> Tambah Akun Google / Flow AI
+          </span>
+          <span class="text-[9px] text-slate-500">Tersimpan di Lokal Termux</span>
+        </div>
+        
+        <div class="space-y-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input type="email" id="input-flow-email" placeholder="Email Google (contoh@gmail.com)" class="w-full bg-[#04080c] border border-slate-700 hover:border-emerald-500/60 focus:border-emerald-400 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 outline-none transition font-mono">
+            <input type="text" id="input-flow-label" placeholder="Label (misal: Akun Utama / Cadangan 1)" class="w-full bg-[#04080c] border border-slate-700 hover:border-emerald-500/60 focus:border-emerald-400 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 outline-none transition">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div class="relative">
+              <input type="password" id="input-flow-password" placeholder="Kata Sandi / App Password (Opsional)" class="w-full bg-[#04080c] border border-slate-700 hover:border-emerald-500/60 focus:border-emerald-400 rounded-xl px-3 py-2 pr-8 text-xs text-white placeholder-slate-500 outline-none transition font-mono">
+              <button type="button" onclick="toggleFlowPasswordVisibility()" class="absolute right-2.5 top-2.5 text-slate-500 hover:text-slate-300 text-xs">
+                <i id="icon-toggle-flow-pass" class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+            <select id="input-flow-quota" class="w-full bg-[#04080c] border border-slate-700 hover:border-emerald-500/60 focus:border-emerald-400 rounded-xl px-3 py-2 text-xs text-emerald-300 font-mono outline-none transition">
+              <option value="ready">🟢 Kuota Siap (Aktif)</option>
+              <option value="low">🟡 Kuota Menipis</option>
+              <option value="limit">🔴 Limit Kuota Tercapai</option>
+            </select>
+          </div>
+
+          <!-- Optional Session Cookie Input -->
+          <div class="space-y-1">
+            <textarea id="input-flow-cookie" rows="2" placeholder="Session Cookie / Token Flow AI (Opsional: paste Cookie dari browser untuk 1-click bypass login)" class="w-full bg-[#04080c] border border-slate-700 hover:border-emerald-500/60 focus:border-emerald-400 rounded-xl p-2 text-[10px] text-emerald-200 placeholder-slate-600 outline-none transition font-mono leading-relaxed"></textarea>
+          </div>
+
+          <div class="flex justify-end pt-1">
+            <button onclick="submitNewFlowAccount()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-95 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5">
+              <i class="fa-solid fa-plus text-[10px]"></i> Tambah Profil Akun
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Accounts List -->
+      <div class="space-y-2 flex-1 overflow-hidden flex flex-col min-h-0">
+        <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 px-1">
+          <span>Daftar Akun Google & Flow Tersimpan</span>
+          <span id="flow-accounts-status-text" class="text-[10px] text-emerald-400 font-mono">Memuat...</span>
+        </div>
+
+        <div id="flow-accounts-modal-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+          <!-- Populated dynamically by JS -->
+        </div>
+      </div>
+
+      <!-- Info Banner -->
+      <div class="p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-[10px] text-emerald-200/90 leading-relaxed flex items-start gap-2 flex-shrink-0">
+        <i class="fa-solid fa-shield-halved text-emerald-400 text-xs mt-0.5"></i>
+        <span>Kredensial disimpan 100% lokal di Termux perangkat Anda. Anda dapat menyalin email/sandi atau beralih sesi Google/Flow AI secara instan.</span>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="flex justify-end gap-2 pt-1 flex-shrink-0 border-t border-slate-800">
+        <button onclick="closeFlowAccountsModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition">
+          Selesai
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/app.js?v=20260825_2315"></script>
 </body>
 </html>

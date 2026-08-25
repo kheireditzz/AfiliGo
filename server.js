@@ -816,6 +816,120 @@ app.delete('/api/gemini-keys/:id', async (req, res) => {
 });
 
 // ==========================================
+// GOOGLE & FLOW AI ACCOUNT & SESSION SWITCHER ENGINE
+// ==========================================
+const DB_FLOW_ACCOUNTS = path.join(DB_DIR, 'flow_sessions.json');
+initFile(DB_FLOW_ACCOUNTS, [
+  {
+    id: 'flow-acc-1',
+    email: 'kheir.creator@gmail.com',
+    password: '',
+    cookie: '',
+    label: 'Akun Utama Google Flow',
+    quotaStatus: 'ready',
+    isActive: true,
+    notes: 'Akun Google utama untuk Flow AI Video Generator',
+    lastUsed: new Date().toISOString(),
+    createdAt: new Date().toISOString()
+  }
+]);
+
+app.get('/api/flow-accounts', (req, res) => {
+  const accounts = readJson(DB_FLOW_ACCOUNTS);
+  const safeList = accounts.map(acc => ({
+    id: acc.id,
+    email: acc.email,
+    label: acc.label || 'Akun Google',
+    hasPassword: Boolean(acc.password),
+    hasCookie: Boolean(acc.cookie),
+    passwordMasked: acc.password ? '••••••••••••' : '',
+    rawPassword: acc.password || '',
+    cookieSnippet: acc.cookie ? (acc.cookie.slice(0, 12) + '...' + acc.cookie.slice(-8)) : '',
+    rawCookie: acc.cookie || '',
+    quotaStatus: acc.quotaStatus || 'ready',
+    isActive: Boolean(acc.isActive),
+    notes: acc.notes || '',
+    lastUsed: acc.lastUsed || acc.createdAt
+  }));
+  res.json({ success: true, accounts: safeList });
+});
+
+app.post('/api/flow-accounts', (req, res) => {
+  const { id, email, password, cookie, label, quotaStatus, notes } = req.body;
+  if (!email || !email.trim()) {
+    return res.status(400).json({ success: false, message: 'Email Google wajib diisi.' });
+  }
+
+  let accounts = readJson(DB_FLOW_ACCOUNTS);
+  if (id) {
+    const existingIdx = accounts.findIndex(a => a.id === id);
+    if (existingIdx !== -1) {
+      accounts[existingIdx] = {
+        ...accounts[existingIdx],
+        email: email.trim(),
+        label: label ? label.trim() : accounts[existingIdx].label,
+        password: password !== undefined ? password.trim() : accounts[existingIdx].password,
+        cookie: cookie !== undefined ? cookie.trim() : accounts[existingIdx].cookie,
+        quotaStatus: quotaStatus || accounts[existingIdx].quotaStatus || 'ready',
+        notes: notes !== undefined ? notes.trim() : accounts[existingIdx].notes,
+        updatedAt: new Date().toISOString()
+      };
+      writeJson(DB_FLOW_ACCOUNTS, accounts);
+      return res.json({ success: true, message: 'Akun Google / Flow AI berhasil diperbarui!' });
+    }
+  }
+
+  const newAccount = {
+    id: 'flow-acc-' + Date.now(),
+    email: email.trim(),
+    password: password ? password.trim() : '',
+    cookie: cookie ? cookie.trim() : '',
+    label: label ? label.trim() : `Akun Google ${accounts.length + 1}`,
+    quotaStatus: quotaStatus || 'ready',
+    isActive: accounts.length === 0,
+    notes: notes ? notes.trim() : '',
+    createdAt: new Date().toISOString()
+  };
+
+  accounts.push(newAccount);
+  writeJson(DB_FLOW_ACCOUNTS, accounts);
+  res.json({ success: true, message: 'Akun Google / Flow AI berhasil ditambahkan!', account: newAccount });
+});
+
+app.post('/api/flow-accounts/set-active', (req, res) => {
+  const { id } = req.body;
+  let accounts = readJson(DB_FLOW_ACCOUNTS);
+  let activeAcc = null;
+
+  accounts.forEach(a => {
+    if (a.id === id) {
+      a.isActive = true;
+      a.lastUsed = new Date().toISOString();
+      activeAcc = a;
+    } else {
+      a.isActive = false;
+    }
+  });
+
+  if (activeAcc) {
+    writeJson(DB_FLOW_ACCOUNTS, accounts);
+    return res.json({ success: true, message: `Berhasil beralih ke akun "${activeAcc.email}" (${activeAcc.label})!`, activeAccount: activeAcc });
+  }
+  res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
+});
+
+app.delete('/api/flow-accounts/:id', (req, res) => {
+  const { id } = req.params;
+  let accounts = readJson(DB_FLOW_ACCOUNTS);
+  accounts = accounts.filter(a => a.id !== id);
+  if (accounts.length > 0 && !accounts.some(a => a.isActive)) {
+    accounts[0].isActive = true;
+  }
+  writeJson(DB_FLOW_ACCOUNTS, accounts);
+  res.json({ success: true, message: 'Akun Google berhasil dihapus.' });
+});
+
+// ==========================================
 // DONGTUBE VIP PAYMENT GATEWAY & WEBHOOK ENGINE
 // ==========================================
 const DONGTUBE_API_KEY = 'DONGTUBE_20a06f2ab35b44ac';
