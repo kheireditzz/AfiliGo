@@ -641,6 +641,18 @@ function openTab(tabId) {
     activeNav.classList.add("bg-orange-600/20", "text-amber-300", "font-bold", "border", "border-orange-500/40");
   }
 
+  // Toggle header 'Buat' button: show only on dashboard, hide when in any feature
+  const headerCreateBtn = document.getElementById("header-btn-create");
+  if (headerCreateBtn) {
+    if (tabId === "dashboard") {
+      headerCreateBtn.classList.remove("hidden");
+      headerCreateBtn.style.display = "";
+    } else {
+      headerCreateBtn.classList.add("hidden");
+      headerCreateBtn.style.display = "none";
+    }
+  }
+
   const contentContainer = document.getElementById("content-scroll-container");
   if (contentContainer) contentContainer.scrollTop = 0;
 }
