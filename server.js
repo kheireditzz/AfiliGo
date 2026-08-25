@@ -1576,7 +1576,7 @@ async function callGeminiPro(promptText, customKey) {
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(7000),
+        signal: AbortSignal.timeout(25000),
         body: JSON.stringify({
           contents: [{ parts: [{ text: promptText }] }],
           generationConfig: {
@@ -1638,19 +1638,32 @@ const handleGenerateStoryboard = async (req, res) => {
   const modelText = modelDescription || 'Indonesian Female Content Creator, 22 years old, glowing natural skin, charming smile';
   const locationText = locationSetting || 'Aesthetic Modern Indonesian Coffee Shop, warm natural ambient bokeh lighting';
   const uspText = usp || 'Kualitas premium terlaris, formula unggulan terbukti viral.';
-  const realismBoost = 'hyperrealistic commercial photograph, true-to-life 8k UHD resolution, authentic skin pores and micro-textures, natural soft daylight, subtle depth of field, captured on Sony A7R V with 50mm f/1.2 GM lens, color graded, cinematic film still, zero CGI, zero cartoon, raw authentic capture';
+  const realismBoost = 'hyperrealistic cinematic commercial photograph, 8k UHD resolution, true-to-life skin texture, natural soft daylight, subtle depth of field, color graded, cinematic film still, zero CGI, zero cartoon, authentic lighting, no watermark, no text overlay, --ar 9:16';
 
-  const promptForGemini = `Kamu adalah AI storyboard artist & prompt engineer profesional. Buatkan storyboard untuk video pendek dengan tema produk: ${productTitle} (${uspText}).
+  const promptForGemini = `Kamu adalah AI Director & Lead Prompt Engineer profesional untuk iklan affiliate video pendek (TikTok / Reels / Shorts).
+Tugasmu adalah membuat naskah storyboard 4 scene yang saling BERSAMBUNG (continuity) untuk produk: ${productTitle} (${uspText}).
 
-ATURAN OUTPUT:
-1. Buat TEPAT 4 scene (Scene 1, Scene 2, Scene 3, Scene 4), alur cerita berurutan logis (awal/hook - isi/problem-solution - klimaks/demonstrasi - penutup/CTA).
-2. Untuk SETIAP scene, berikan dalam blok terpisah:
-   a. Judul scene singkat
-   b. Deskripsi visual (setting: ${locationText}, karakter: ${modelText}, aksi, ekspresi, pencahayaan, angle kamera)
-   c. Voice Over (VO) — naskah narasi/dialog persuasif bahasa Indonesia, durasi bicara pas untuk 10 detik (sekitar 20-25 kata)
-   d. Video Prompt — siap dipakai di AI video generator (Flow AI / Runway / Kling / Veo), termasuk gerakan kamera, transisi, format vertical 9:16, durasi 10 detik
-3. WAJIB: Buat 1 (SATU) PROMPT GAMBAR STORYBOARD GABUNGAN — hanya SATU gambar dengan 4 panel susun vertikal (rasio 9:16, garis pembatas, label SCENE 1/2/3/4 di tiap panel), menggambarkan 4 scene secara konsisten visual dan pencahayaan.
-4. Total durasi video: 40 detik (4 scene x 10 detik). Rasio aspek video & gambar: 9:16 vertical.
+Karakter & Setting:
+- Karakter: ${modelText}
+- Lokasi: ${locationText}
+
+ATURAN STRUKTUR PROMPT GAMBAR TIAP SCENE (WAJIB DIIKUTI):
+Setiap scene HARUS memiliki 1 (SATU) prompt gambar AI (aspect ratio 9:16 vertical) yang terbagi menjadi 4 panel horizontal (susun dari atas ke bawah), menampilkan urutan aksi berkesinambungan.
+Karakter, outfit, wajah, lighting, dan environment HARUS 100% IDENTIK & KONSISTEN di ke-4 panel.
+
+Format Prompt Tiap Scene:
+"A single 9:16 vertical commercial storyboard sheet divided into 4 horizontal stacked panels from top to bottom, identical character (${modelText}), same outfit, same lighting in (${locationText}):
+- Panel 1: [Aksi 1: Karakter melakukan apa, ekspresi, camera angle]
+- Panel 2: [Aksi 2: Aksi pergerakan/berjalan, camera angle]
+- Panel 3: [Aksi 3: Mempromosikan ${productTitle}, ekspresi antusias]
+- Panel 4: [Aksi 4: Pose/aksi akhir yang menjadi TITIK SAMBUNG logis ke Scene berikutnya]
+Style: Cinematic commercial photography, photorealistic 8k, consistent lighting, clean dividing borders, no watermark, no text, --ar 9:16"
+
+CATATAN SAMBUNGAN:
+- Scene 1: Hook & Pengenalan Masalah -> Pose akhir Panel 4 bersiap mencoba produk.
+- Scene 2: Pemakaian & Reaksi (Bersambung dari Scene 1) -> Pose akhir Panel 4 menunjuk untuk melihat detail formula.
+- Scene 3: Uji Tekstur & Bukti Formula (Bersambung dari Scene 2) -> Pose akhir Panel 4 memberi jempol bersiap ajakan beli.
+- Scene 4: Klimaks & Call to Action (Bersambung dari Scene 3) -> Pose akhir Panel 4 melambaikan tangan penutup.
 
 Return STRICT JSON formatted with this schema:
 {
@@ -1658,16 +1671,21 @@ Return STRICT JSON formatted with this schema:
   "totalDuration": 40,
   "hook": "Opening viral hook audio script in Indonesian (under 15 words)",
   "cta": "Closing CTA audio script in Indonesian (clear urgency, keranjang kuning)",
-  "unifiedStoryboardImagePrompt": "A single 9:16 vertical commercial storyboard sheet with 4 horizontal panels stacked vertically from top to bottom separated by clean borders labeled SCENE 1, SCENE 2, SCENE 3, SCENE 4, showing: Panel 1 (${productTitle} close up with ${modelText}), Panel 2 (${modelText} testing ${productTitle} in ${locationText}), Panel 3 (${productTitle} texture detail macro), Panel 4 (${modelText} smiling holding ${productTitle}), consistent cinematic photorealistic lighting, 8k resolution, aspect ratio 9:16 --ar 9:16",
-  "formattedTextOutput": "=== STORYBOARD: ${productTitle} (Total durasi: 40 detik) ===\\n\\n>>> SCENE 1: Hook Pembuka (10 detik) <<<\\nDeskripsi: ...\\nVoice Over: \\"...\\"\\nVideo Prompt: ...\\n>>> END SCENE 1 <<<\\n\\n>>> SCENE 2: Masalah & Solusi (10 detik) <<<\\nDeskripsi: ...\\nVoice Over: \\"...\\"\\nVideo Prompt: ...\\n>>> END SCENE 2 <<<\\n\\n>>> SCENE 3: Demonstrasi Keunggulan (10 detik) <<<\\nDeskripsi: ...\\nVoice Over: \\"...\\"\\nVideo Prompt: ...\\n>>> END SCENE 3 <<<\\n\\n>>> SCENE 4: Call to Action (10 detik) <<<\\nDeskripsi: ...\\nVoice Over: \\"...\\"\\nVideo Prompt: ...\\n>>> END SCENE 4 <<<\\n\\n>>> IMAGE PROMPT STORYBOARD (1 gambar, 4 panel susun vertikal, aspect ratio 9:16) <<<\\n...\\n>>> END IMAGE PROMPT <<<",
   "scenes": [
     {
       "sceneNumber": 1,
-      "shotType": "Scene 1: Hook Close-Up",
-      "visualDescription": "Deskripsi visual detail setting ${locationText}, karakter ${modelText}, aksi, ekspresi, angle kamera",
+      "shotType": "Scene 1: Hook & Penemuan Produk",
+      "durationSeconds": 10,
+      "aspectRatio": "9:16",
       "voiceover": "Naskah voiceover bahasa Indonesia durasi 10 detik",
-      "prompt": "Detailed English Flux 8K photography prompt for panel 1 featuring ${productTitle} and ${modelText} in ${locationText}",
-      "videoPrompt": "Cinematic AI video generation prompt for Kling/Veo: camera movement, model holding ${productTitle}, 9:16 aspect ratio, 10s duration"
+      "videoPrompt": "Prompt video AI generator (Kling/Veo/Runway) 9:16 10s",
+      "prompt": "Full English 4-panel image prompt for Midjourney/SDXL/Flux with --ar 9:16",
+      "panels": [
+        { "num": 1, "title": "Keadaan Awal", "desc": "Deskripsi aksi panel 1" },
+        { "num": 2, "title": "Aksi Berjalan", "desc": "Deskripsi aksi panel 2" },
+        { "num": 3, "title": "Mempromosikan", "desc": "Deskripsi aksi panel 3" },
+        { "num": 4, "title": "Aksi Lanjutan Bersambung", "desc": "Deskripsi aksi panel 4 titik sambung" }
+      ]
     }
   ]
 }`;
@@ -1679,28 +1697,31 @@ Return STRICT JSON formatted with this schema:
       const unifiedImgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(unifiedImgPrompt)}?width=768&height=1344&seed=${Math.floor(Math.random() * 9999999)}&nologo=true`;
 
       const processedScenes = aiResult.scenes.slice(0, 4).map((sc, idx) => {
-        const p1 = `${sc.prompt || `${productTitle} extreme macro close up held by ${modelText} at ${locationText}`}, aspect ratio 9:16, ${realismBoost}`;
-        const p2 = `Medium action UGC commercial shot of ${modelText} enthusiastically testing and presenting ${productTitle} inside ${locationText}, authentic soft daylight, aspect ratio 9:16, ${realismBoost}`;
-        const p3 = `45-degree high-end commercial texture showcase of ${productTitle} with bokeh lighting in ${locationText}, crisp details, aspect ratio 9:16, ${realismBoost}`;
-        const p4 = `Lifestyle dynamic commercial portrait of ${modelText} proudly smiling and holding ${productTitle} in ${locationText}, 8k UHD, aspect ratio 9:16, ${realismBoost}`;
-
-        const prompts = [p1, p2, p3, p4];
-        const images = prompts.map((p, pIdx) => 
-          `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=768&height=1344&seed=${Math.floor(Math.random() * 9000000 + (idx * 10 + pIdx) * 10000)}&nologo=true`
-        );
+        const fullPrompt = sc.prompt || `A single 9:16 vertical commercial storyboard sheet divided into 4 horizontal stacked panels from top to bottom, identical character (${modelText}), same outfit, same lighting in (${locationText}):
+- Panel 1: ${sc.panels?.[0]?.desc || 'Character engaging with problem in setting'}
+- Panel 2: ${sc.panels?.[1]?.desc || 'Character moving and searching for solution'}
+- Panel 3: ${sc.panels?.[2]?.desc || `Character holding ${productTitle} with enthusiasm`}
+- Panel 4: ${sc.panels?.[3]?.desc || 'Character posing as transition anchor to next scene'}
+Style: Cinematic commercial photography, photorealistic 8k, consistent lighting, clean dividing borders, no watermark, no text, --ar 9:16`;
 
         return {
           sceneNumber: idx + 1,
           shotType: sc.shotType || `Scene ${idx + 1}`,
           durationSeconds: 10,
           aspectRatio: '9:16',
-          visualDescription: sc.visualDescription || `Model memperlihatkan ${productTitle} di ${locationText}`,
+          visualDescription: sc.visualDescription || `4-Panel vertical sequence for Scene ${idx + 1}`,
           voiceover: sc.voiceover || `Lihat keunggulan ${productTitle} yang sangat praktis dan ${uspText}`,
-          prompt: p1,
-          videoPrompt: sc.videoPrompt || `Smooth slow motion camera movement of ${modelText} with ${productTitle} inside ${locationText}, vertical 9:16, 10s duration, 4k realistic footage`,
-          promptsList: prompts,
-          imagesList: images,
-          imageUrl: images[0]
+          prompt: fullPrompt,
+          videoPrompt: sc.videoPrompt || `Sequential 4-action commercial camera movement in ${locationText}, 9:16 vertical, 10s duration`,
+          panels: sc.panels || [
+            { num: 1, title: 'Keadaan Awal', desc: `${modelText} beraktivitas di ${locationText}.` },
+            { num: 2, title: 'Aksi Berjalan', desc: `${modelText} bergerak mencari solusi.` },
+            { num: 3, title: 'Mempromosikan', desc: `${modelText} memperlihatkan ${productTitle}.` },
+            { num: 4, title: 'Aksi Lanjutan', desc: `${modelText} bersiap menuju scene berikutnya.` }
+          ],
+          promptsList: [fullPrompt],
+          imagesList: [],
+          imageUrl: ""
         };
       });
 
