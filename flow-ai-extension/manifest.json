@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Flow Ai Extension",
+  "name": "Flow Ai Auto",
   "version": "3.1.0",
-  "description": "Flow Ai Extension - Brutal Video & Storyboard Generator with Omni Flash and Veo 3.1 (Lite, Fast, Quality).",
+  "description": "Ekstensi Resmi Flow Ai Auto - Otomasi Video Brutal Multi-Scene, Model Omni Flash & Veo 3.1 Suite dengan Injeksi Foto Produk, Model & Lokasi.",
   "permissions": [
     "storage",
     "activeTab",
