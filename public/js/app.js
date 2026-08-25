@@ -1077,6 +1077,8 @@ async function triggerVisionAnalysis() {
     badge.classList.remove("hidden");
   }
 
+  showToastNotification("info", "Vision AI Menganalisa...", "Mendeteksi nama dan keunggulan produk dari foto...");
+
   const currentTitle = document.getElementById("sb-product-title")?.value.trim() || "";
 
   try {
@@ -1093,22 +1095,28 @@ async function triggerVisionAnalysis() {
 
     const data = await res.json();
     if (data.success) {
+      const titleEl = document.getElementById("sb-product-title");
       const uspEl = document.getElementById("sb-product-usp");
       const modelEl = document.getElementById("sb-model-desc");
       const locationEl = document.getElementById("sb-location-setting");
-      const titleEl = document.getElementById("sb-product-title");
 
-      if (uspEl && (!uspEl.value.trim() || uspEl.value.length < 15)) {
-        uspEl.value = data.suggestedUsp;
+      if (titleEl && data.suggestedTitle) {
+        titleEl.value = data.suggestedTitle;
+        titleEl.classList.add("ring-2", "ring-emerald-400", "border-emerald-400");
+        setTimeout(() => titleEl.classList.remove("ring-2", "ring-emerald-400", "border-emerald-400"), 3500);
       }
+
+      if (uspEl && data.suggestedUsp) {
+        uspEl.value = data.suggestedUsp;
+        uspEl.classList.add("ring-2", "ring-emerald-400/50", "border-emerald-400");
+        setTimeout(() => uspEl.classList.remove("ring-2", "ring-emerald-400/50", "border-emerald-400"), 3500);
+      }
+
       if (modelEl && uploadedImages.model && data.suggestedModel) {
         modelEl.value = data.suggestedModel;
       }
       if (locationEl && uploadedImages.location && data.suggestedLocation) {
         locationEl.value = data.suggestedLocation;
-      }
-      if (titleEl && !titleEl.value.trim() && data.suggestedTitle) {
-        titleEl.value = data.suggestedTitle;
       }
 
       if (badge) {
@@ -1116,6 +1124,7 @@ async function triggerVisionAnalysis() {
         setTimeout(() => badge.classList.add("hidden"), 2500);
       }
 
+      showToastNotification("success", "Produk Terdeteksi!", 'Vision AI mengenali: "' + (data.suggestedTitle || 'Produk') + '"');
       triggerAutoSave();
     }
   } catch (err) {

@@ -762,10 +762,96 @@ app.get('/api/vip/status', (req, res) => {
   });
 });
 
-// Vision AI Auto-Analyzer
+// Vision AI Auto-Analyzer with Multimodal Google Gemini Vision
 app.post('/api/analyze-uploaded-visuals', async (req, res) => {
-  const { currentTitle } = req.body;
+  const { productImgBase64, modelImgBase64, locationImgBase64, currentTitle } = req.body;
 
+  const keyToUse = process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'YOUR_GEMINI_API_KEY'
+    ? process.env.GEMINI_API_KEY
+    : (readJson(DB_SETTINGS).geminiApiKey || 'AIzaSyC5n4K5LAJEZM7IZbhenCUvQt18k-nd3Aw');
+
+  // If product image is provided, run real Multimodal Vision AI with Gemini 2.5 Flash
+  if (productImgBase64 && productImgBase64.includes('base64,')) {
+    try {
+      const parts = [];
+      const match = productImgBase64.match(/^data:([^;]+);base64,(.+)$/);
+      if (match) {
+        parts.push({
+          inlineData: {
+            mimeType: match[1] || 'image/jpeg',
+            data: match[2]
+          }
+        });
+      }
+
+      if (modelImgBase64 && modelImgBase64.includes('base64,')) {
+        const mMatch = modelImgBase64.match(/^data:([^;]+);base64,(.+)$/);
+        if (mMatch) {
+          parts.push({
+            inlineData: {
+              mimeType: mMatch[1] || 'image/jpeg',
+              data: mMatch[2]
+            }
+          });
+        }
+      }
+
+      if (locationImgBase64 && locationImgBase64.includes('base64,')) {
+        const lMatch = locationImgBase64.match(/^data:([^;]+);base64,(.+)$/);
+        if (lMatch) {
+          parts.push({
+            inlineData: {
+              mimeType: lMatch[1] || 'image/jpeg',
+              data: lMatch[2]
+            }
+          });
+        }
+      }
+
+      parts.push({
+        text: `You are an expert Indonesian E-Commerce & Affiliate Marketing Vision AI for TikTok Shop, Shopee, and Instagram Reels.
+Analyze the uploaded product image very accurately.
+Identify the exact product name, brand/type, packaging details, and key benefits.
+Return a valid JSON object matching this schema:
+{
+  "suggestedTitle": "Precise, commercial Indonesian product name (e.g. 'Skintific 5X Ceramide Barrier Repair Moisture Gel', 'TWS Bluetooth Earphones ANC Wireless Bass', 'Tas Ransel Pria Anti Air Waterproof'). Be specific and accurate to what is visible in the photo.",
+  "suggestedUsp": "2-3 high-converting selling points / USP in Indonesian in 1-2 compelling sentences focusing on benefits.",
+  "suggestedModel": "Ideal Indonesian talent/model description (age, gender, stylish outfit, expression) best suited to promote this product on short video.",
+  "suggestedLocation": "Cinematic aesthetic background setting/location in English for generating 8K Flux visuals."
+}`
+      });
+
+      const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyToUse}`;
+      const visionRes = await fetch(visionUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: {
+            temperature: 0.2,
+            responseMimeType: 'application/json'
+          }
+        })
+      });
+
+      const visionData = await visionRes.json();
+      if (visionData.candidates && visionData.candidates[0]?.content?.parts?.[0]?.text) {
+        const parsed = JSON.parse(visionData.candidates[0].content.parts[0].text);
+        return res.json({
+          success: true,
+          suggestedTitle: parsed.suggestedTitle || currentTitle || 'Produk Unggulan',
+          suggestedUsp: parsed.suggestedUsp || 'Kualitas premium dengan performa terbaik untuk kebutuhan sehari-hari.',
+          suggestedModel: parsed.suggestedModel || 'Indonesian Youth Talent, 22 tahun, gaya kasual modis trendy, ekspresi percaya diri.',
+          suggestedLocation: parsed.suggestedLocation || 'Modern Minimalist Aesthetic Room with warm soft ambient lighting',
+          analyzedFromVision: true
+        });
+      }
+    } catch (visionErr) {
+      console.error('Vision AI analysis error:', visionErr);
+    }
+  }
+
+  // Fallback heuristic if no image or vision fails
   let inferredTitle = currentTitle || 'Smart Wireless Device';
   let inferredUsp = 'Desain ergonomis elegan, build quality premium, performa tinggi tahan lama, cocok untuk gaya hidup modern.';
   let inferredModel = 'Indonesian Youth Talent, 22 tahun, gaya kasual modis trendy, ekspresi percaya diri.';
@@ -805,12 +891,11 @@ app.post('/api/analyze-uploaded-visuals', async (req, res) => {
 // GOOGLE AI STUDIO PRO (GEMINI) DIRECT GENERATION ENGINE
 // =========================================================================
 async function callGeminiPro(promptText, apiKey) {
-  const keyToUse = process.env.GEMINI_API_KEY || apiKey || readJson(DB_SETTINGS).geminiApiKey;
-  if (!keyToUse || keyToUse === 'YOUR_GEMINI_API_KEY') {
-    console.warn('GEMINI_API_KEY not configured or using placeholder.');
-    return null;
-  }
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keyToUse}`;
+  const keyToUse = process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'YOUR_GEMINI_API_KEY'
+    ? process.env.GEMINI_API_KEY
+    : (apiKey || readJson(DB_SETTINGS).geminiApiKey || 'AIzaSyC5n4K5LAJEZM7IZbhenCUvQt18k-nd3Aw');
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyToUse}`;
 
   try {
     const response = await fetch(url, {
@@ -822,7 +907,7 @@ async function callGeminiPro(promptText, apiKey) {
           temperature: 0.7,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 3000,
+          maxOutputTokens: 4000,
           responseMimeType: "application/json"
         }
       })
