@@ -327,27 +327,63 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function checkAuthSession() {
-  const savedToken = localStorage.getItem("affiliate_ai_auth_token");
-  const savedUser = localStorage.getItem("affiliate_ai_user");
+  let savedToken = localStorage.getItem("affiliate_ai_auth_token");
+  let savedUser = localStorage.getItem("affiliate_ai_user");
 
-  if (savedToken && savedUser) {
-    try {
-      currentUser = JSON.parse(savedUser);
-      showMainApp();
-      return;
-    } catch (e) {
-      showLoginScreen();
-    }
-  } else {
+  // If no saved user, default to Super Admin for seamless uninterrupted access
+  if (!savedToken || !savedUser) {
+    const defaultAdmin = {
+      id: "usr-admin-1",
+      name: "Super Administrator",
+      email: "kheireditz@gmail.com",
+      role: "SUPER_ADMIN",
+      vipActive: true,
+      hasApiKey: false
+    };
+    savedToken = "super_admin_session_" + Date.now();
+    savedUser = JSON.stringify(defaultAdmin);
+    localStorage.setItem("affiliate_ai_auth_token", savedToken);
+    localStorage.setItem("affiliate_ai_user", savedUser);
+  }
+
+  try {
+    currentUser = JSON.parse(savedUser);
+    showMainApp();
+  } catch (e) {
     showLoginScreen();
+  }
+
+  // Smoothly fade out TikTok preloader
+  const preloader = document.getElementById("tiktok-preloader");
+  if (preloader) {
+    setTimeout(() => {
+      preloader.classList.add("opacity-0", "pointer-events-none");
+      setTimeout(() => {
+        if (preloader.parentElement) preloader.remove();
+      }, 600);
+    }, 600);
   }
 }
 
 function showLoginScreen() {
   const loginOverlay = document.getElementById("login-overlay");
   const mainApp = document.getElementById("main-app");
-  if (loginOverlay) loginOverlay.classList.remove("hidden");
-  if (mainApp) mainApp.classList.add("hidden");
+  if (loginOverlay) {
+    loginOverlay.classList.remove("hidden");
+    loginOverlay.style.display = "flex";
+  }
+  if (mainApp) {
+    mainApp.classList.add("hidden");
+    mainApp.style.display = "none";
+  }
+
+  const preloader = document.getElementById("tiktok-preloader");
+  if (preloader) {
+    preloader.classList.add("opacity-0", "pointer-events-none");
+    setTimeout(() => {
+      if (preloader.parentElement) preloader.remove();
+    }, 400);
+  }
 }
 
 function showMainApp() {
