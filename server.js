@@ -1213,7 +1213,7 @@ Return STRICT JSON formatted with this schema:
         hook: aiResult.hook || `Stop scrolling! Ini rahasia kenapa ${productTitle} viral banget!`,
         cta: aiResult.cta || 'Klik keranjang kuning sekarang mumpung diskon spesial!',
         scenes: processedScenes,
-        poweredBy: 'Google AI Studio Pro (Gemini 1.5 & Flux 8K Engine)'
+        poweredBy: 'Antigravity AI (Gemini 2.5 Pro & Video Prompt Director)'
       });
     }
   } catch (geminiError) {

@@ -1167,31 +1167,36 @@ async function triggerVisionAnalysis() {
       if (titleEl && detectedTitle) {
         titleEl.value = detectedTitle;
         titleEl.classList.add("ring-2", "ring-emerald-400", "border-emerald-400");
-        setTimeout(() => titleEl.classList.remove("ring-2", "ring-emerald-400", "border-emerald-400"), 3500);
+        setTimeout(() => titleEl.classList.remove("ring-2", "ring-emerald-400", "border-emerald-400"), 4000);
       }
 
       if (uspEl && detectedUsp) {
         uspEl.value = detectedUsp;
         uspEl.classList.add("ring-2", "ring-emerald-400/50", "border-emerald-400");
-        setTimeout(() => uspEl.classList.remove("ring-2", "ring-emerald-400/50", "border-emerald-400"), 3500);
+        setTimeout(() => uspEl.classList.remove("ring-2", "ring-emerald-400/50", "border-emerald-400"), 4000);
       }
 
       if (modelEl && data.suggestedModel) {
         modelEl.value = data.suggestedModel;
+        modelEl.classList.add("ring-2", "ring-cyan-400/50", "border-cyan-400");
+        setTimeout(() => modelEl.classList.remove("ring-2", "ring-cyan-400/50", "border-cyan-400"), 4000);
       }
+
       if (locationEl && data.suggestedLocation) {
         locationEl.value = data.suggestedLocation;
+        locationEl.classList.add("ring-2", "ring-amber-400/50", "border-amber-400");
+        setTimeout(() => locationEl.classList.remove("ring-2", "ring-amber-400/50", "border-amber-400"), 4000);
       }
 
       // Render the rich Vision Results & Script Vault Card
       renderAffiliateVisionResults(data);
 
       if (badge) {
-        badge.innerHTML = "<i class=\"fa-solid fa-check text-emerald-400\"></i> Google AI Selesai Menganalisa";
-        setTimeout(() => badge.classList.add("hidden"), 2500);
+        badge.innerHTML = "<i class=\"fa-solid fa-check text-emerald-400\"></i> Data Gambar Siap & Terisi";
+        setTimeout(() => badge.classList.add("hidden"), 3000);
       }
 
-      showToastNotification("success", "Produk Terdeteksi!", 'Vision AI mengenali: "' + (detectedTitle || "Produk") + '"');
+      showToastNotification("success", "Analisa Selesai!", "Nama produk, model, lokasi & USP terisi. Silakan edit bila perlu lalu klik tombol Generate.");
       triggerAutoSave();
     }
   } catch (err) {
@@ -1572,8 +1577,8 @@ function renderStoryboardPreview() {
           <div class="md:col-span-4 w-full">
             <div class="relative w-full rounded-2xl overflow-hidden bg-black aspect-[9/16] max-h-60 sm:max-h-64 border border-slate-800/90 shadow-inner flex items-center justify-center mx-auto group">
               <img id="scene-img-${idx}" src="${safeImageUrl}" class="w-full h-full object-cover" alt="Scene Visual" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400';">
-              <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[8px] font-mono text-amber-300 border border-white/10 shadow">
-                FLUX 8K
+              <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[8px] font-mono text-amber-300 border border-white/10 shadow flex items-center gap-1">
+                <i class="fa-solid fa-wand-magic-sparkles text-[7px] text-orange-400"></i> ANTIGRAVITY AI
               </div>
               <div class="absolute inset-x-2 bottom-2 p-1 rounded-xl bg-black/85 backdrop-blur-md border border-white/15 shadow-2xl flex items-center gap-1 z-10">
                 <select id="select-ratio-${idx}" class="flex-1 bg-slate-900/90 border border-slate-700/80 text-amber-300 rounded-lg px-1.5 py-1 text-[9px] font-mono focus:outline-none focus:border-orange-500">
@@ -1594,7 +1599,7 @@ function renderStoryboardPreview() {
             <div class="p-2.5 rounded-2xl bg-orange-950/20 border border-orange-500/30 space-y-1.5">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-bold text-amber-300 font-display flex items-center gap-1.5">
-                  <i class="fa-solid fa-wand-magic-sparkles text-orange-400"></i> Prompt Foto AI
+                  <i class="fa-solid fa-wand-magic-sparkles text-orange-400"></i> Prompt Visual Antigravity AI
                 </span>
                 <button onclick="copyPromptText('${encodedPrompt}')" class="text-[9px] text-slate-400 hover:text-amber-300 transition flex items-center gap-1 font-mono">
                   <i class="fa-solid fa-copy text-[8px]"></i> Salin
