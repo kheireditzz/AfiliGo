@@ -582,16 +582,50 @@ app.get('/api/settings', async (req, res) => {
   });
 });
 
-app.post('/api/settings', (req, res) => {
+async function syncSettingsToSupabase(settings) {
+  try {
+    const activeKey = getActiveGeminiKey();
+    const payload = {
+      id: 1,
+      updated_at: new Date().toISOString()
+    };
+    if (activeKey && !activeKey.includes('****')) payload.gemini_api_key = activeKey;
+    if (settings.huggingFaceKey && !settings.huggingFaceKey.includes('****')) payload.huggingface_key = settings.huggingFaceKey;
+    if (settings.geminiApiKeys) payload.gemini_api_keys = settings.geminiApiKeys;
+
+    await supabase.from('settings').upsert(payload);
+  } catch (e) {
+    console.error('Supabase settings sync error (fallback to local DB):', e.message);
+  }
+}
+
+app.post('/api/settings', async (req, res) => {
   const settings = readJson(DB_SETTINGS);
   if (req.body.geminiApiKey && !req.body.geminiApiKey.includes('****')) {
     settings.geminiApiKey = req.body.geminiApiKey;
+    let pool = settings.geminiApiKeys || getGeminiKeyPool();
+    let existing = pool.find(k => k.key === req.body.geminiApiKey.trim());
+    if (!existing) {
+      pool.push({
+        id: 'key-' + Date.now(),
+        key: req.body.geminiApiKey.trim(),
+        label: 'API Key Utama',
+        isActive: true,
+        status: 'active',
+        addedAt: new Date().toISOString()
+      });
+    }
+    pool.forEach(k => {
+      k.isActive = (k.key === req.body.geminiApiKey.trim());
+    });
+    settings.geminiApiKeys = pool;
   }
   if (req.body.huggingFaceKey && !req.body.huggingFaceKey.includes('****')) {
     settings.huggingFaceKey = req.body.huggingFaceKey;
   }
   writeJson(DB_SETTINGS, settings);
-  res.json({ success: true });
+  await syncSettingsToSupabase(settings);
+  res.json({ success: true, message: 'Pengaturan berhasil disimpan!' });
 });
 
 // ==========================================
@@ -669,6 +703,7 @@ function rotateGeminiKeyOnLimit(failedKey) {
     settings.geminiApiKeys = pool;
     settings.geminiApiKey = nextKey.key;
     writeJson(DB_SETTINGS, settings);
+    syncSettingsToSupabase(settings);
     console.log(`[Gemini Failover] Switched active key to: ${nextKey.label} (${maskApiKey(nextKey.key)})`);
     return nextKey.key;
   }
@@ -690,7 +725,7 @@ app.get('/api/gemini-keys', (req, res) => {
   res.json({ success: true, keys: safeList });
 });
 
-app.post('/api/gemini-keys', (req, res) => {
+app.post('/api/gemini-keys', async (req, res) => {
   const { key, label } = req.body;
   if (!key || key.length < 8) {
     return res.status(400).json({ success: false, message: 'Format Google Gemini API Key tidak valid.' });
@@ -720,11 +755,12 @@ app.post('/api/gemini-keys', (req, res) => {
     settings.geminiApiKey = newKeyObj.key;
   }
   writeJson(DB_SETTINGS, settings);
+  await syncSettingsToSupabase(settings);
 
-  res.json({ success: true, message: 'API Key berhasil ditambahkan!', key: { ...newKeyObj, maskedKey: maskApiKey(newKeyObj.key) } });
+  res.json({ success: true, message: 'API Key berhasil disimpan ke database & cloud!', key: { ...newKeyObj, maskedKey: maskApiKey(newKeyObj.key) } });
 });
 
-app.post('/api/gemini-keys/set-active', (req, res) => {
+app.post('/api/gemini-keys/set-active', async (req, res) => {
   const { id } = req.body;
   const settings = readJson(DB_SETTINGS);
   let pool = settings.geminiApiKeys || getGeminiKeyPool();
@@ -744,12 +780,13 @@ app.post('/api/gemini-keys/set-active', (req, res) => {
     settings.geminiApiKeys = pool;
     settings.geminiApiKey = target.key;
     writeJson(DB_SETTINGS, settings);
+    await syncSettingsToSupabase(settings);
     return res.json({ success: true, message: `Key "${target.label}" sekarang aktif!` });
   }
   res.status(404).json({ success: false, message: 'Key tidak ditemukan.' });
 });
 
-app.delete('/api/gemini-keys/:id', (req, res) => {
+app.delete('/api/gemini-keys/:id', async (req, res) => {
   const { id } = req.params;
   const settings = readJson(DB_SETTINGS);
   let pool = settings.geminiApiKeys || getGeminiKeyPool();
@@ -769,6 +806,7 @@ app.delete('/api/gemini-keys/:id', (req, res) => {
 
   settings.geminiApiKeys = pool;
   writeJson(DB_SETTINGS, settings);
+  await syncSettingsToSupabase(settings);
   res.json({ success: true, message: 'API Key berhasil dihapus.' });
 });
 
