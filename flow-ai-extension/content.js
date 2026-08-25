@@ -1,4 +1,4 @@
-// Flow Ai Extension v6.0 - Luxury Dark AffiliateGo Theme & Ultra-Compact Touch Studio
+// Flow Ai Extension v7.0 - Multi-Vector Image Injection, Aspect Ratio & Auto-Web Sync
 (function() {
   if (window.__FLOW_AI_EXTENSION_INJECTED__) {
     const existing = document.getElementById('flow-ai-extension-host');
@@ -10,7 +10,7 @@
   host.id = 'flow-ai-extension-host';
   host.style.position = 'fixed';
   host.style.zIndex = '2147483647';
-  host.style.top = '12px';
+  host.style.top = '10px';
   host.style.left = '50%';
   host.style.transform = 'translateX(-50%)';
   host.style.pointerEvents = 'auto';
@@ -23,20 +23,19 @@
   style.textContent = `
     * { box-sizing: border-box; margin: 0; padding: 0; pointer-events: auto; }
     
-    /* Minimized Capsule (Sleek Dark Pill) */
     .floating-pill {
       display: flex;
       align-items: center;
       gap: 6px;
       padding: 6px 12px;
-      background: linear-gradient(135deg, #0b0f19, #141b2d);
-      border: 1px solid rgba(249, 115, 22, 0.7);
+      background: linear-gradient(135deg, #090d16, #121829);
+      border: 1.5px solid rgba(249, 115, 22, 0.8);
       border-radius: 9999px;
       color: #fff;
       font-size: 10px;
       font-weight: 800;
       cursor: pointer;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85), 0 0 14px rgba(249, 115, 22, 0.3);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.9), 0 0 14px rgba(249, 115, 22, 0.35);
       backdrop-filter: blur(14px);
       user-select: none;
     }
@@ -51,15 +50,14 @@
       font-size: 9px;
     }
 
-    /* Luxury Formal Floating Studio (AffiliateGo Dark Palette) */
     .floating-studio {
-      width: 275px;
-      max-width: 95vw;
+      width: 295px;
+      max-width: 96vw;
       background: #090d16;
-      border: 1.5px solid rgba(249, 115, 22, 0.5);
+      border: 1.5px solid rgba(249, 115, 22, 0.6);
       border-radius: 14px;
       color: #f8fafc;
-      box-shadow: 0 16px 40px rgba(0,0,0,0.95), 0 0 25px rgba(249, 115, 22, 0.15);
+      box-shadow: 0 16px 45px rgba(0,0,0,0.95), 0 0 25px rgba(249, 115, 22, 0.2);
       backdrop-filter: blur(16px);
       display: flex;
       flex-direction: column;
@@ -74,7 +72,7 @@
 
     .studio-header {
       padding: 6px 10px;
-      background: linear-gradient(90deg, #0d1322, #141c30);
+      background: linear-gradient(90deg, #0e1424, #141c30);
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
@@ -88,7 +86,11 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      max-height: 80vh;
+      overflow-y: auto;
     }
+    .studio-body::-webkit-scrollbar { width: 3px; }
+    .studio-body::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
 
     .btn-ctrl {
       background: #1a2236;
@@ -104,7 +106,6 @@
       font-size: 10px;
       font-weight: bold;
     }
-    .btn-ctrl:active { transform: scale(0.92); }
 
     .card-section {
       background: #0d121f;
@@ -129,7 +130,6 @@
     .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
     .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 
-    /* Scene Navigation Pills */
     .scene-nav-bar {
       display: flex;
       align-items: center;
@@ -238,7 +238,7 @@
       border: 1.5px solid #ea580c;
       border-radius: 12px;
       padding: 10px;
-      width: 250px;
+      width: 260px;
       max-width: 95vw;
       display: flex;
       flex-direction: column;
@@ -248,7 +248,7 @@
   `;
   shadow.appendChild(style);
 
-  let isMinimized = false; // Opens directly so user can see and click immediately!
+  let isMinimized = false;
   let activeSceneIndex = 0;
   let isAutoRunning = false;
   let autoTimerInterval = null;
@@ -257,6 +257,7 @@
     {
       id: 1,
       shotType: "Hook Close-Up",
+      aspectRatio: "9:16",
       duration: 4,
       promptVideo: "Slow cinematic zoom in on product texture with studio bokeh lighting, 8k resolution",
       voiceover: "Stop scrolling! Ini produk paling worth it yang lagi viral!",
@@ -265,6 +266,7 @@
     {
       id: 2,
       shotType: "Action Demo",
+      aspectRatio: "9:16",
       duration: 6,
       promptVideo: "Medium camera pan showing creator demonstrating key features enthusiastically",
       voiceover: "Langsung checkout di keranjang kuning sekarang mumpung diskon!",
@@ -276,57 +278,35 @@
   const wrapper = document.createElement('div');
   shadow.appendChild(wrapper);
 
-  function tryAutoSyncFromWeb() {
+  // Auto-sync on script start from AffiliateGo
+  function autoSyncFromWeb() {
     try {
       const thumbProd = document.getElementById('img-thumb-product');
       const thumbMod = document.getElementById('img-thumb-model');
       const thumbLoc = document.getElementById('img-thumb-location');
 
-      let synced = false;
-      if (thumbProd && thumbProd.src && !thumbProd.classList.contains('hidden')) {
-        images.product = thumbProd.src;
-        synced = true;
-      }
-      if (thumbMod && thumbMod.src && !thumbMod.classList.contains('hidden')) {
-        images.model = thumbMod.src;
-        synced = true;
-      }
-      if (thumbLoc && thumbLoc.src && !thumbLoc.classList.contains('hidden')) {
-        images.location = thumbLoc.src;
-        synced = true;
-      }
-      return synced;
-    } catch(e) { return false; }
-  }
+      if (thumbProd && thumbProd.src && !thumbProd.classList.contains('hidden')) images.product = thumbProd.src;
+      if (thumbMod && thumbMod.src && !thumbMod.classList.contains('hidden')) images.model = thumbMod.src;
+      if (thumbLoc && thumbLoc.src && !thumbLoc.classList.contains('hidden')) images.location = thumbLoc.src;
 
-  async function fetchStoryboardFromAffiliateGo() {
-    try {
-      const res = await fetch('https://affiliatego.vercel.app/api/storyboards');
-      const list = await res.json();
-      if (Array.isArray(list) && list.length > 0) {
-        const latest = list[0];
-        if (latest.scenes && latest.scenes.length > 0) {
-          scenes = latest.scenes.map((s, idx) => ({
-            id: idx + 1,
-            shotType: s.shotType || ("Scene " + (idx + 1)),
-            duration: s.durationSeconds || 4,
-            promptVideo: s.visualDescription || s.prompt || "Cinematic video shot",
-            voiceover: s.voiceover || "",
-            imageUrl: s.imageUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"
-          }));
-          if (latest.scenes[0] && latest.scenes[0].imageUrl) {
-            images.product = latest.scenes[0].imageUrl;
+      fetch('https://affiliatego.vercel.app/api/storyboards')
+        .then(res => res.json())
+        .then(list => {
+          if (Array.isArray(list) && list.length > 0 && list[0].scenes) {
+            scenes = list[0].scenes.map((s, idx) => ({
+              id: idx + 1,
+              shotType: s.shotType || ("Scene " + (idx + 1)),
+              aspectRatio: s.aspectRatio || "9:16",
+              duration: s.durationSeconds || 4,
+              promptVideo: s.visualDescription || s.prompt || "Cinematic shot",
+              voiceover: s.voiceover || "",
+              imageUrl: s.imageUrl || images.product || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"
+            }));
+            if (scenes[0] && scenes[0].imageUrl) images.product = scenes[0].imageUrl;
+            render();
           }
-          activeSceneIndex = 0;
-          render();
-          alert("✅ Berhasil mengimpor Scene 1.." + scenes.length + " dari AffiliateGo!");
-          return;
-        }
-      }
-      alert("Belum ada storyboard tersimpan di AffiliateGo.");
-    } catch(err) {
-      alert("Gagal terhubung ke AffiliateGo.");
-    }
+        }).catch(() => {});
+    } catch(e) {}
   }
 
   function render() {
@@ -355,7 +335,7 @@
 
       wrapper.innerHTML = `
         <div class="floating-studio" id="main-floating-studio">
-          <!-- Luxury Formal Header -->
+          <!-- Header -->
           <div class="studio-header" id="studio-drag-bar">
             <div style="display:flex; align-items:center; gap:5px;">
               <div class="pill-icon">⚡</div>
@@ -381,14 +361,14 @@
 
             <!-- Active Scene Card -->
             <div class="card-section">
-              <div style="display:grid; grid-template-columns: 48px 1fr; gap:5px; align-items:center;">
-                <div class="image-slot-mini" id="slot-scene-active" style="height:48px; width:48px;">
+              <div style="display:grid; grid-template-columns: 52px 1fr; gap:5px; align-items:center;">
+                <div class="image-slot-mini" id="slot-scene-active" style="height:52px; width:52px;" title="Klik untuk ganti / upload gambar">
                   ${activeImg ? `<img src="${activeImg}"><button class="btn-slot-crop" id="btn-crop-scene-active">✂</button>` : `<div style="font-size:7px; color:#94a3b8;">+ Foto</div>`}
                   <input type="file" id="input-file-scene-active" accept="image/*" style="display:none">
                 </div>
 
                 <div style="display:flex; flex-direction:column; gap:3px;">
-                  <div class="grid-2">
+                  <div class="grid-3">
                     <select class="select-input" id="inp-model-ai">
                       <option value="omni-flash" selected>Omni Flash</option>
                       <option value="veo-3.1-lite">Veo Lite</option>
@@ -396,21 +376,30 @@
                       <option value="veo-3.1-quality">Veo Quality</option>
                     </select>
                     <select class="select-input" id="inp-scene-dur">
-                      <option value="4" ${currentScene.duration == 4 ? 'selected' : ''}>4 Detik</option>
-                      <option value="6" ${currentScene.duration == 6 ? 'selected' : ''}>6 Detik</option>
-                      <option value="8" ${currentScene.duration == 8 ? 'selected' : ''}>8 Detik</option>
-                      <option value="10" ${currentScene.duration == 10 ? 'selected' : ''}>10 Detik</option>
+                      <option value="4" ${currentScene.duration == 4 ? 'selected' : ''}>4s</option>
+                      <option value="6" ${currentScene.duration == 6 ? 'selected' : ''}>6s</option>
+                      <option value="8" ${currentScene.duration == 8 ? 'selected' : ''}>8s</option>
+                      <option value="10" ${currentScene.duration == 10 ? 'selected' : ''}>10s</option>
+                    </select>
+                    <!-- Aspect Ratio / Ukuran Video -->
+                    <select class="select-input" id="inp-aspect-ratio">
+                      <option value="9:16" ${currentScene.aspectRatio === '9:16' ? 'selected' : ''}>9:16 (TikTok)</option>
+                      <option value="16:9" ${currentScene.aspectRatio === '16:9' ? 'selected' : ''}>16:9 (Landscape)</option>
+                      <option value="1:1" ${currentScene.aspectRatio === '1:1' ? 'selected' : ''}>1:1 (Square)</option>
                     </select>
                   </div>
-                  <input type="text" class="input-text" id="inp-prompt-video" style="color:#fef08a;" value="${currentScene.promptVideo}" placeholder="Prompt Scene ${activeSceneIndex+1}">
+                  <input type="text" class="input-text" id="inp-prompt-video" style="color:#fef08a; font-size:8.5px;" value="${currentScene.promptVideo}" placeholder="Prompt Video Scene ${activeSceneIndex+1}">
                 </div>
               </div>
+              
+              <!-- Voiceover Input -->
+              <input type="text" class="input-text" id="inp-voiceover" style="color:#34d399; font-size:8.5px;" value="${currentScene.voiceover || ''}" placeholder="Voiceover Scene ${activeSceneIndex+1}">
             </div>
 
             <!-- Action Buttons Grid -->
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px;">
               <button class="btn-action-primary" id="btn-inject-current-scene">
-                <span>🎯 Inject S${activeSceneIndex + 1}</span>
+                <span>🎯 Inject S${activeSceneIndex + 1} + Foto</span>
               </button>
               
               <button class="btn-auto-sequence ${isAutoRunning ? 'running' : ''}" id="btn-toggle-auto-runner">
@@ -420,15 +409,15 @@
 
             <!-- 3 Mini Photo Slots -->
             <div class="grid-3">
-              <div class="image-slot-mini" id="slot-product" style="height:32px;">
+              <div class="image-slot-mini" id="slot-product" style="height:32px;" title="Foto Produk">
                 ${images.product ? `<img src="${images.product}">` : `<span style="font-size:6px; color:#64748b;">+Produk</span>`}
                 <input type="file" id="input-file-prod" accept="image/*" style="display:none">
               </div>
-              <div class="image-slot-mini" id="slot-model" style="height:32px;">
+              <div class="image-slot-mini" id="slot-model" style="height:32px;" title="Foto Model">
                 ${images.model ? `<img src="${images.model}">` : `<span style="font-size:6px; color:#64748b;">+Model</span>`}
                 <input type="file" id="input-file-mod" accept="image/*" style="display:none">
               </div>
-              <div class="image-slot-mini" id="slot-location" style="height:32px;">
+              <div class="image-slot-mini" id="slot-location" style="height:32px;" title="Foto Lokasi">
                 ${images.location ? `<img src="${images.location}">` : `<span style="font-size:6px; color:#64748b;">+Lokasi</span>`}
                 <input type="file" id="input-file-loc" accept="image/*" style="display:none">
               </div>
@@ -438,7 +427,7 @@
         </div>
       `;
 
-      // Scene Switching Event Listeners
+      // Scene Switching
       const pills = wrapper.querySelectorAll('.scene-tab-pill[data-idx]');
       pills.forEach(pill => {
         pill.addEventListener('click', (e) => {
@@ -462,6 +451,7 @@
         scenes.push({
           id: scenes.length + 1,
           shotType: "Close-Up",
+          aspectRatio: "9:16",
           duration: 6,
           promptVideo: "Smooth dynamic camera motion showing product benefits, 4k 60fps",
           voiceover: "Klik keranjang kuning sekarang mumpung diskon spesial!",
@@ -473,12 +463,8 @@
 
       wrapper.querySelector('#btn-sync-web-mini').addEventListener('click', (e) => {
         e.stopPropagation();
-        if (!tryAutoSyncFromWeb()) {
-          fetchStoryboardFromAffiliateGo();
-        } else {
-          render();
-          alert("✅ Data tersinkron!");
-        }
+        autoSyncFromWeb();
+        alert("✅ Data & Gambar berhasil disinkronkan dari web AffiliateGo!");
       });
 
       const durSelect = wrapper.querySelector('#inp-scene-dur');
@@ -488,10 +474,24 @@
         });
       }
 
+      const aspectSelect = wrapper.querySelector('#inp-aspect-ratio');
+      if (aspectSelect) {
+        aspectSelect.addEventListener('change', (e) => {
+          scenes[activeSceneIndex].aspectRatio = e.target.value;
+        });
+      }
+
       const promptArea = wrapper.querySelector('#inp-prompt-video');
       if (promptArea) {
         promptArea.addEventListener('input', (e) => {
           scenes[activeSceneIndex].promptVideo = e.target.value;
+        });
+      }
+
+      const voiceInput = wrapper.querySelector('#inp-voiceover');
+      if (voiceInput) {
+        voiceInput.addEventListener('input', (e) => {
+          scenes[activeSceneIndex].voiceover = e.target.value;
         });
       }
 
@@ -505,7 +505,7 @@
 
       wrapper.querySelector('#btn-inject-current-scene').addEventListener('click', async (e) => {
         e.stopPropagation();
-        await injectSingleSceneWithImage(activeSceneIndex);
+        await executeMultiVectorImageInjection(activeSceneIndex);
       });
 
       wrapper.querySelector('#btn-toggle-auto-runner').addEventListener('click', (e) => {
@@ -537,7 +537,7 @@
 
   async function runCurrentSceneInSequence() {
     if (!isAutoRunning) return;
-    await injectSingleSceneWithImage(activeSceneIndex);
+    await executeMultiVectorImageInjection(activeSceneIndex);
 
     const curDur = scenes[activeSceneIndex].duration || 6;
     let secondsLeft = curDur + 20;
@@ -563,7 +563,7 @@
             render();
             runCurrentSceneInSequence();
           } else {
-            alert('🎉 Semua Scene Selesai!');
+            alert('🎉 Semua Scene Selesai Digenerate!');
             stopAutoRunner();
           }
         }, 2500);
@@ -612,7 +612,7 @@
     });
   }
 
-  async function urlOrBase64ToFile(urlOrData, filename = 'scene-visual.jpg') {
+  async function urlOrBase64ToBlob(urlOrData) {
     if (!urlOrData) return null;
     try {
       if (urlOrData.startsWith('data:')) {
@@ -624,37 +624,81 @@
         while (n--) {
           u8arr[n] = bstr.charCodeAt(n);
         }
-        return new File([u8arr], filename, { type: mime });
+        return new Blob([u8arr], { type: mime });
       } else {
         const res = await fetch(urlOrData);
-        const blob = await res.blob();
-        return new File([blob], filename, { type: blob.type || 'image/jpeg' });
+        return await res.blob();
       }
     } catch(e) { return null; }
   }
 
-  async function injectSingleSceneWithImage(sceneIdx) {
+  // MULTI-VECTOR IMAGE & PROMPT INJECTION INTO FLOW AI
+  async function executeMultiVectorImageInjection(sceneIdx) {
     const sc = scenes[sceneIdx] || scenes[0];
-    const promptText = "[Scene " + (sceneIdx + 1) + " (" + sc.duration + "s)]: " + sc.promptVideo;
-    const imgSource = sc.imageUrl || images.product || images.model || images.location;
+    const aspect = sc.aspectRatio || "9:16";
+    const promptText = "[Scene " + (sceneIdx + 1) + " (" + sc.duration + "s, " + aspect + ")]: " + sc.promptVideo;
+    const imgSrc = sc.imageUrl || images.product || images.model || images.location;
 
-    // 1. Upload image
-    if (imgSource) {
-      const fileObj = await urlOrBase64ToFile(imgSource, "scene-" + (sceneIdx + 1) + ".jpg");
-      if (fileObj) {
-        const fileInputs = Array.from(document.querySelectorAll('input[type="file"]'));
-        if (fileInputs.length > 0) {
-          const targetFileInput = fileInputs[0];
-          const dt = new DataTransfer();
-          dt.items.add(fileObj);
-          targetFileInput.files = dt.files;
-          targetFileInput.dispatchEvent(new Event('input', { bubbles: true }));
-          targetFileInput.dispatchEvent(new Event('change', { bubbles: true }));
+    let imageInjected = false;
+
+    // Vector 1: Find Flow AI file upload inputs
+    if (imgSrc) {
+      try {
+        const blob = await urlOrBase64ToBlob(imgSrc);
+        if (blob) {
+          const file = new File([blob], "flow-ai-scene-" + (sceneIdx + 1) + ".jpg", { type: blob.type || "image/jpeg" });
+          
+          // 1. Dispatch to all input[type="file"]
+          const fileInputs = Array.from(document.querySelectorAll('input[type="file"]'));
+          for (const fi of fileInputs) {
+            try {
+              const dt = new DataTransfer();
+              dt.items.add(file);
+              fi.files = dt.files;
+              fi.dispatchEvent(new Event('change', { bubbles: true }));
+              fi.dispatchEvent(new Event('input', { bubbles: true }));
+              imageInjected = true;
+            } catch(err) {}
+          }
+
+          // 2. Synthetic Paste Event into Chat Area / Textarea
+          const dropZones = Array.from(document.querySelectorAll('textarea, [contenteditable="true"], form, main, .chat-container, [role="textbox"]'));
+          for (const dz of dropZones) {
+            try {
+              const dt = new DataTransfer();
+              dt.items.add(file);
+              const pasteEvt = new ClipboardEvent('paste', {
+                bubbles: true,
+                cancelable: true,
+                clipboardData: dt
+              });
+              dz.dispatchEvent(pasteEvt);
+              
+              const dropEvt = new DragEvent('drop', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: dt
+              });
+              dz.dispatchEvent(dropEvt);
+            } catch(e) {}
+          }
+
+          // 3. System Clipboard Image Copy (Direct Binary Clipboard)
+          try {
+            if (navigator.clipboard && navigator.clipboard.write) {
+              const pngBlob = blob.type === 'image/png' ? blob : await convertBlobToPng(blob);
+              if (pngBlob) {
+                await navigator.clipboard.write([
+                  new ClipboardItem({ 'image/png': pngBlob })
+                ]);
+              }
+            }
+          } catch(e) {}
         }
-      }
+      } catch(e) {}
     }
 
-    // 2. Inject text into prompt textarea (excluding search)
+    // Vector 2: Text Injection into Chat Prompt Box
     const promptSelectors = [
       'textarea[placeholder*="prompt" i]',
       'textarea[placeholder*="describe" i]',
@@ -690,9 +734,27 @@
         targetInput.innerText = promptText;
         targetInput.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: promptText }));
       }
+      alert("✅ Scene " + (sceneIdx + 1) + " + Foto berhasil dimasukkan ke Chat Flow AI! (Foto juga tersalin ke clipboard)");
     } else {
       navigator.clipboard.writeText(promptText);
+      alert("📋 Prompt & Foto Scene " + (sceneIdx + 1) + " siap! Paste (Ctrl+V) langsung ke Flow AI.");
     }
+  }
+
+  function convertBlobToPng(blob) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob((b) => resolve(b), 'image/png');
+      };
+      img.onerror = () => resolve(null);
+      img.src = URL.createObjectURL(blob);
+    });
   }
 
   function openCropActiveScene() {
@@ -708,33 +770,61 @@
         <div style="width:100%; aspect-ratio:1; overflow:hidden; border-radius:6px; background:#000; display:flex; align-items:center; justify-content:center;">
           <img id="crop-preview-img" src="${imgSrc}" style="max-width:100%; max-height:100%; object-fit:contain;">
         </div>
-        <div style="display:flex; justify-content:space-between; gap:4px;">
-          <button id="btn-crop-cancel" style="flex:1; background:#1e293b; color:#cbd5e1; border:none; border-radius:4px; padding:4px; font-size:9px; font-weight:bold; cursor:pointer;">Batal</button>
-          <button id="btn-crop-apply" style="flex:1; background:#ea580c; color:#fff; border:none; border-radius:4px; padding:4px; font-size:9px; font-weight:bold; cursor:pointer;">Crop 1:1</button>
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:3px;">
+          <button id="btn-crop-9-16" style="background:#ea580c; color:#fff; border:none; border-radius:4px; padding:4px; font-size:8px; font-weight:bold; cursor:pointer;">9:16 TikTok</button>
+          <button id="btn-crop-1-1" style="background:#f59e0b; color:#000; border:none; border-radius:4px; padding:4px; font-size:8px; font-weight:bold; cursor:pointer;">1:1 Square</button>
+          <button id="btn-crop-cancel" style="background:#1e293b; color:#cbd5e1; border:none; border-radius:4px; padding:4px; font-size:8px; font-weight:bold; cursor:pointer;">Batal</button>
         </div>
       </div>
     `;
     shadow.appendChild(cropOverlay);
 
     cropOverlay.querySelector('#btn-crop-cancel').addEventListener('click', () => cropOverlay.remove());
-    cropOverlay.querySelector('#btn-crop-apply').addEventListener('click', () => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const size = Math.min(img.width, img.height);
-        canvas.width = 600;
-        canvas.height = 600;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, (img.width - size)/2, (img.height - size)/2, size, size, 0, 0, 600, 600);
-        scenes[activeSceneIndex].imageUrl = canvas.toDataURL('image/jpeg', 0.92);
+
+    cropOverlay.querySelector('#btn-crop-1-1').addEventListener('click', () => {
+      cropImageToRatio(imgSrc, 1, 1, (res) => {
+        scenes[activeSceneIndex].imageUrl = res;
         cropOverlay.remove();
         render();
-      };
-      img.src = imgSrc;
+      });
+    });
+
+    cropOverlay.querySelector('#btn-crop-9-16').addEventListener('click', () => {
+      cropImageToRatio(imgSrc, 9, 16, (res) => {
+        scenes[activeSceneIndex].imageUrl = res;
+        cropOverlay.remove();
+        render();
+      });
     });
   }
 
-  // Smooth Dragging (Fix: Do not block click on tap!)
+  function cropImageToRatio(src, ratioW, ratioH, callback) {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let targetW, targetH;
+      const srcRatio = img.width / img.height;
+      const targetRatio = ratioW / ratioH;
+
+      if (srcRatio > targetRatio) {
+        targetH = img.height;
+        targetW = img.height * targetRatio;
+      } else {
+        targetW = img.width;
+        targetH = img.width / targetRatio;
+      }
+
+      canvas.width = 600;
+      canvas.height = Math.round(600 / targetRatio);
+      const ctx = canvas.getContext('2d');
+      const sx = (img.width - targetW) / 2;
+      const sy = (img.height - targetH) / 2;
+      ctx.drawImage(img, sx, sy, targetW, targetH, 0, 0, canvas.width, canvas.height);
+      callback(canvas.toDataURL('image/jpeg', 0.92));
+    };
+    img.src = src;
+  }
+
   function makeDraggable(element, handle) {
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
     const dragTarget = handle || element;
@@ -800,6 +890,6 @@
     }
   }
 
-  tryAutoSyncFromWeb();
+  autoSyncFromWeb();
   render();
 })();
