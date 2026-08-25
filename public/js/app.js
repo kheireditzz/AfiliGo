@@ -374,11 +374,6 @@ function showMainApp() {
   }
 
   openTab("dashboard");
-  const tabDash = document.getElementById("tab-dashboard");
-  if (tabDash) {
-    tabDash.classList.remove("hidden");
-    tabDash.style.display = "block";
-  }
 
   // Load data asynchronously without blocking UI
   setTimeout(() => {
@@ -621,7 +616,10 @@ function selectMenu(tabId) {
 }
 
 function openTab(tabId) {
-  document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+  document.querySelectorAll(".tab-content").forEach(el => {
+    el.classList.add("hidden");
+    el.style.display = "none";
+  });
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.classList.remove("bg-orange-600/20", "text-amber-300", "font-bold", "border", "border-orange-500/40");
     btn.classList.add("text-slate-400");
@@ -630,6 +628,11 @@ function openTab(tabId) {
   const target = document.getElementById("tab-" + tabId);
   if (target) {
     target.classList.remove("hidden");
+    if (tabId === "gemini-chat") {
+      target.style.display = "flex";
+    } else {
+      target.style.display = "block";
+    }
   }
 
   const activeNav = document.getElementById("nav-" + tabId);
