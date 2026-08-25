@@ -1,4 +1,4 @@
-// Flow Ai Auto v8.0 - Professional Studio with Multi-Image Slot (Product + Model + Location) & Anti-Duplicate Injection
+// Flow Ai Auto v9.0 - Unified Storyboard Scene & Full Auto-Generate Runner (Zero-Touch & Manual)
 (function() {
   if (window.__FLOW_AI_EXTENSION_INJECTED__) {
     const existing = document.getElementById('flow-ai-extension-host');
@@ -10,65 +10,65 @@
   host.id = 'flow-ai-extension-host';
   host.style.position = 'fixed';
   host.style.zIndex = '2147483647';
-  host.style.top = '12px';
+  host.style.top = '10px';
   host.style.left = '50%';
   host.style.transform = 'translateX(-50%)';
   host.style.pointerEvents = 'auto';
-  host.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif';
+  host.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   document.body.appendChild(host);
 
   const shadow = host.attachShadow({ mode: 'open' });
 
-  // Load Font Awesome icons for Shadow DOM
-  const faLink = document.createElement('link');
-  faLink.rel = 'stylesheet';
-  faLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css';
-  shadow.appendChild(faLink);
+  // Embedded Pure SVG Icons (100% CSP Safe & Crisp)
+  const ICONS = {
+    bolt: `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
+    image: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>`,
+    play: `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>`,
+    stop: `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>`,
+    sync: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>`,
+    crop: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.13 1L6 16a2 2 0 0 0 2 2h15M1 6.13L16 6a2 2 0 0 1 2 2v15"/></svg>`,
+    minus: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+    plus: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+    arrowRight: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`,
+    chevronUp: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>`
+  };
 
   const style = document.createElement('style');
   style.textContent = `
     * { box-sizing: border-box; margin: 0; padding: 0; pointer-events: auto; }
     
-    /* Minimized Capsule Bar */
     .floating-pill {
       display: flex;
       align-items: center;
-      gap: 7px;
-      padding: 7px 14px;
-      background: linear-gradient(135deg, rgba(10, 14, 26, 0.96), rgba(18, 24, 43, 0.96));
-      border: 1.5px solid rgba(249, 115, 22, 0.75);
+      gap: 6px;
+      padding: 6px 12px;
+      background: linear-gradient(135deg, #090d16, #121829);
+      border: 1.5px solid rgba(249, 115, 22, 0.85);
       border-radius: 9999px;
       color: #fff;
       font-size: 10.5px;
       font-weight: 800;
       cursor: pointer;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.85), 0 0 16px rgba(249, 115, 22, 0.35);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.9), 0 0 16px rgba(249, 115, 22, 0.35);
       backdrop-filter: blur(14px);
       user-select: none;
-      transition: transform 0.15s, border-color 0.15s;
-    }
-    .floating-pill:hover {
-      transform: scale(1.04);
-      border-color: #f97316;
     }
     .pill-icon {
-      width: 20px;
-      height: 20px;
-      border-radius: 6px;
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
       background: linear-gradient(135deg, #f59e0b, #ea580c);
       display: flex;
       align-items: center;
       justify-content: center;
       color: #fff;
-      font-size: 10px;
     }
 
-    /* Main Modern Luxury Studio */
     .floating-studio {
-      width: 310px;
+      width: 300px;
       max-width: 96vw;
       background: #080b13;
-      border: 1.5px solid rgba(249, 115, 22, 0.55);
+      border: 1.5px solid rgba(249, 115, 22, 0.6);
       border-radius: 16px;
       color: #f8fafc;
       box-shadow: 0 20px 50px rgba(0,0,0,0.95), 0 0 25px rgba(249, 115, 22, 0.2);
@@ -81,12 +81,12 @@
       transform-origin: top center;
     }
     @keyframes popIn {
-      from { opacity: 0; transform: scale(0.95); }
+      from { opacity: 0; transform: scale(0.96); }
       to { opacity: 1; transform: scale(1); }
     }
 
     .studio-header {
-      padding: 8px 12px;
+      padding: 7px 11px;
       background: linear-gradient(90deg, #0e1424, #161f36);
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
@@ -100,23 +100,19 @@
       padding: 9px;
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 6px;
       max-height: 82vh;
       overflow-y: auto;
     }
     .studio-body::-webkit-scrollbar { width: 3px; }
     .studio-body::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
 
-    .ctrl-group {
-      display: flex;
-      align-items: center;
-      gap: 3px;
-    }
+    .ctrl-group { display: flex; align-items: center; gap: 3px; }
     .btn-ctrl {
       background: #162035;
       color: #cbd5e1;
-      width: 21px;
-      height: 21px;
+      width: 20px;
+      height: 20px;
       border-radius: 5px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
@@ -124,7 +120,6 @@
       justify-content: center;
       cursor: pointer;
       font-size: 10px;
-      font-weight: bold;
       transition: all 0.15s;
     }
     .btn-ctrl:hover { background: #253352; color: #fff; }
@@ -145,8 +140,8 @@
       border: 1px solid #1f293d;
       border-radius: 6px;
       color: #fff;
-      padding: 4.5px 7px;
-      font-size: 9.5px;
+      padding: 4px 6px;
+      font-size: 9px;
       outline: none;
     }
     .input-text:focus, .select-input:focus { border-color: #f97316; }
@@ -157,12 +152,12 @@
     .scene-nav-bar {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       overflow-x: auto;
       padding-bottom: 2px;
     }
     .scene-tab-pill {
-      padding: 3.5px 8px;
+      padding: 3px 8px;
       border-radius: 6px;
       font-size: 8.5px;
       font-weight: 800;
@@ -181,9 +176,10 @@
       box-shadow: 0 0 8px rgba(249, 115, 22, 0.4);
     }
 
-    /* 3 Visual Reference Cards (Produk, Model, Lokasi) */
-    .image-slot-modern {
-      aspect-ratio: 1;
+    /* Unified Storyboard Visual Preview Slot */
+    .storyboard-slot {
+      aspect-ratio: 9/16;
+      height: 80px;
       border-radius: 8px;
       background: #040711;
       border: 1px dashed #334155;
@@ -195,23 +191,20 @@
       overflow: hidden;
       text-align: center;
       position: relative;
-      transition: border-color 0.15s;
     }
-    .image-slot-modern:hover { border-color: #f97316; }
-    .image-slot-modern img { width: 100%; height: 100%; object-fit: cover; }
-    .slot-label {
+    .storyboard-slot img { width: 100%; height: 100%; object-fit: cover; }
+    .slot-badge {
       position: absolute;
       bottom: 2px;
       left: 2px;
       right: 2px;
-      background: rgba(0,0,0,0.75);
+      background: rgba(0,0,0,0.8);
       border-radius: 3px;
-      font-size: 7px;
+      font-size: 6.5px;
       font-weight: bold;
-      color: #cbd5e1;
+      color: #fbd38d;
       padding: 1px 2px;
       text-align: center;
-      pointer-events: none;
     }
     .btn-slot-crop {
       position: absolute;
@@ -225,25 +218,44 @@
       padding: 1px 4px;
       border-radius: 3px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 2px;
     }
 
-    /* Action Buttons */
-    .btn-action-primary {
+    /* Primary Buttons */
+    .btn-auto-now {
+      background: linear-gradient(135deg, #ea580c, #dc2626);
+      border: 1px solid #f97316;
+      color: #fff;
+      padding: 7px 9px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 9.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35);
+      transition: all 0.15s;
+    }
+    .btn-auto-now:active { transform: scale(0.96); }
+
+    .btn-manual-inject {
       background: linear-gradient(135deg, #083344, #0e7490);
       border: 1px solid #06b6d4;
       color: #a5f3fc;
       padding: 7px 9px;
       border-radius: 8px;
       font-weight: 800;
-      font-size: 10px;
+      font-size: 9.5px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 5px;
-      transition: all 0.15s;
+      gap: 4px;
     }
-    .btn-action-primary:active { transform: scale(0.96); }
 
     .btn-auto-sequence {
       background: linear-gradient(135deg, #15803d, #16a34a);
@@ -252,20 +264,18 @@
       padding: 7px 9px;
       border-radius: 8px;
       font-weight: 800;
-      font-size: 10px;
+      font-size: 9.5px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 5px;
-      transition: all 0.15s;
+      gap: 4px;
     }
     .btn-auto-sequence.running {
       background: linear-gradient(135deg, #b91c1c, #dc2626);
       border-color: #f87171;
     }
 
-    /* Resize Gripper */
     .resize-handle {
       position: absolute;
       bottom: 2px;
@@ -309,59 +319,49 @@
   let autoTimerInterval = null;
   let currentZoom = 1.0;
 
+  // Unified Storyboard Scenes (Contains Combined Product + Model + Location in 1 complete frame)
   let scenes = [
     {
       id: 1,
       shotType: "Hook Close-Up",
       aspectRatio: "9:16",
       duration: 4,
-      promptVideo: "Slow cinematic zoom in on product texture with studio bokeh lighting, 8k resolution",
-      voiceover: "Stop scrolling! Ini produk paling worth it yang lagi viral!",
-      imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"
+      promptVideo: "Cinematic commercial macro shot of product in aesthetic setting, glowing studio bokeh, 8k 60fps",
+      voiceover: "Stop scrolling! Ini rahasia produk viral yang wajib kamu punya!",
+      imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600"
     },
     {
       id: 2,
       shotType: "Action Demo",
       aspectRatio: "9:16",
       duration: 6,
-      promptVideo: "Medium camera pan showing creator demonstrating key features enthusiastically",
-      voiceover: "Langsung checkout di keranjang kuning sekarang mumpung diskon!",
-      imageUrl: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400"
+      promptVideo: "Medium camera pan showing creator demonstrating key features with enthusiastic expression",
+      voiceover: "Langsung checkout di keranjang kuning sekarang mumpung diskon spesial!",
+      imageUrl: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=600"
     }
   ];
-  let images = { product: null, model: null, location: null };
 
   const wrapper = document.createElement('div');
   shadow.appendChild(wrapper);
 
-  function autoSyncFromWeb() {
-    try {
-      const thumbProd = document.getElementById('img-thumb-product');
-      const thumbMod = document.getElementById('img-thumb-model');
-      const thumbLoc = document.getElementById('img-thumb-location');
-
-      if (thumbProd && thumbProd.src && !thumbProd.classList.contains('hidden')) images.product = thumbProd.src;
-      if (thumbMod && thumbMod.src && !thumbMod.classList.contains('hidden')) images.model = thumbMod.src;
-      if (thumbLoc && thumbLoc.src && !thumbLoc.classList.contains('hidden')) images.location = thumbLoc.src;
-
-      fetch('https://affiliatego.vercel.app/api/storyboards')
-        .then(res => res.json())
-        .then(list => {
-          if (Array.isArray(list) && list.length > 0 && list[0].scenes) {
-            scenes = list[0].scenes.map((s, idx) => ({
-              id: idx + 1,
-              shotType: s.shotType || ("Scene " + (idx + 1)),
-              aspectRatio: s.aspectRatio || "9:16",
-              duration: s.durationSeconds || 4,
-              promptVideo: s.visualDescription || s.prompt || "Cinematic shot",
-              voiceover: s.voiceover || "",
-              imageUrl: s.imageUrl || images.product || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"
-            }));
-            if (scenes[0] && scenes[0].imageUrl && !images.product) images.product = scenes[0].imageUrl;
-            render();
-          }
-        }).catch(() => {});
-    } catch(e) {}
+  // Auto-Sync Unified Storyboards from AffiliateGo Web API
+  function autoSyncStoryboardFromWeb() {
+    fetch('https://affiliatego.vercel.app/api/storyboards')
+      .then(res => res.json())
+      .then(list => {
+        if (Array.isArray(list) && list.length > 0 && list[0].scenes && list[0].scenes.length > 0) {
+          scenes = list[0].scenes.map((s, idx) => ({
+            id: idx + 1,
+            shotType: s.shotType || ("Scene " + (idx + 1)),
+            aspectRatio: s.aspectRatio || "9:16",
+            duration: s.durationSeconds || 4,
+            promptVideo: s.visualDescription || s.prompt || "Cinematic video scene",
+            voiceover: s.voiceover || "",
+            imageUrl: s.imageUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600"
+          }));
+          render();
+        }
+      }).catch(() => {});
   }
 
   function render() {
@@ -371,7 +371,7 @@
       host.style.transform = 'translateX(-50%)';
       wrapper.innerHTML = `
         <div class="floating-pill" id="btn-expand-pill" title="Buka Flow Ai Auto">
-          <div class="pill-icon"><i class="fa-solid fa-bolt"></i></div>
+          <div class="pill-icon">${ICONS.bolt}</div>
           <span>Flow Ai Auto</span>
           <span style="font-size:8.5px; color:#fb923c; font-family:monospace;">S${activeSceneIndex+1}</span>
         </div>
@@ -392,15 +392,15 @@
           <!-- Header -->
           <div class="studio-header" id="studio-drag-bar">
             <div style="display:flex; align-items:center; gap:6px;">
-              <div class="pill-icon"><i class="fa-solid fa-bolt"></i></div>
-              <span style="font-size:11px; font-weight:800; color:#fff; font-family:inherit;">Flow Ai Auto</span>
+              <div class="pill-icon">${ICONS.bolt}</div>
+              <span style="font-size:11px; font-weight:800; color:#fff;">Flow Ai Auto</span>
             </div>
             
             <div class="ctrl-group">
-              <button class="btn-ctrl" id="btn-zoom-out" title="Perkecil Ukuran"><i class="fa-solid fa-minus" style="font-size:8px;"></i></button>
-              <button class="btn-ctrl" id="btn-zoom-in" title="Perbesar Ukuran"><i class="fa-solid fa-plus" style="font-size:8px;"></i></button>
-              <button class="btn-ctrl" id="btn-sync-web-mini" style="color:#6ee7b7;" title="Sync dari Web"><i class="fa-solid fa-cloud-arrow-down" style="font-size:8.5px;"></i></button>
-              <button class="btn-ctrl" id="btn-minimize-studio" title="Perkecil ke Kapsul" style="background:#ea580c; color:#fff;"><i class="fa-solid fa-chevron-up" style="font-size:8px;"></i></button>
+              <button class="btn-ctrl" id="btn-zoom-out" title="Perkecil Ukuran">${ICONS.minus}</button>
+              <button class="btn-ctrl" id="btn-zoom-in" title="Perbesar Ukuran">${ICONS.plus}</button>
+              <button class="btn-ctrl" id="btn-sync-web-mini" style="color:#6ee7b7;" title="Ambil Storyboard dari Web">${ICONS.sync}</button>
+              <button class="btn-ctrl" id="btn-minimize-studio" title="Perkecil ke Kapsul" style="background:#ea580c; color:#fff;">${ICONS.chevronUp}</button>
             </div>
           </div>
 
@@ -415,76 +415,67 @@
               <button class="scene-tab-pill" id="btn-add-scene-compact" style="color:#fbbf24; background:#1e293b;">+ Scene</button>
             </div>
 
-            <!-- 3 Integrated Slots (Produk + Model + Lokasi) -->
+            <!-- Unified Storyboard Card (Contains Combined Product + Model + Location in 1 image) -->
             <div class="card-section">
-              <div style="font-size:8.5px; font-weight:bold; color:#f59e0b; display:flex; justify-content:space-between;">
-                <span><i class="fa-solid fa-images"></i> 3 Slot Referensi Lengkap</span>
-                <span style="font-size:7.5px; color:#94a3b8;">Klik untuk Upload / Crop</span>
+              <div style="display:grid; grid-template-columns: 58px 1fr; gap:6px; align-items:center;">
+                <div class="storyboard-slot" id="slot-storyboard-scene" title="Gambar Storyboard Scene (Klik untuk Ganti / Upload)">
+                  <img src="${currentScene.imageUrl}">
+                  <button class="btn-slot-crop" id="btn-crop-storyboard">${ICONS.crop}</button>
+                  <span class="slot-badge">Scene ${activeSceneIndex+1}</span>
+                  <input type="file" id="input-file-storyboard" accept="image/*" style="display:none">
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:3px;">
+                  <div class="grid-3">
+                    <select class="select-input" id="inp-model-ai">
+                      <option value="omni-flash" selected>Omni Flash</option>
+                      <option value="veo-3.1-lite">Veo Lite</option>
+                      <option value="veo-3.1-fast">Veo Fast</option>
+                      <option value="veo-3.1-quality">Veo Quality</option>
+                    </select>
+                    <select class="select-input" id="inp-scene-dur">
+                      <option value="4" ${currentScene.duration == 4 ? 'selected' : ''}>4s (4 Detik)</option>
+                      <option value="6" ${currentScene.duration == 6 ? 'selected' : ''}>6s (6 Detik)</option>
+                      <option value="8" ${currentScene.duration == 8 ? 'selected' : ''}>8s (8 Detik)</option>
+                      <option value="10" ${currentScene.duration == 10 ? 'selected' : ''}>10s (10 Detik)</option>
+                    </select>
+                    <select class="select-input" id="inp-aspect-ratio">
+                      <option value="9:16" ${currentScene.aspectRatio === '9:16' ? 'selected' : ''}>9:16 (TikTok)</option>
+                      <option value="16:9" ${currentScene.aspectRatio === '16:9' ? 'selected' : ''}>16:9 (YouTube)</option>
+                      <option value="1:1" ${currentScene.aspectRatio === '1:1' ? 'selected' : ''}>1:1 (Square)</option>
+                    </select>
+                  </div>
+                  <input type="text" class="input-text" id="inp-prompt-video" style="color:#fef08a; font-size:8.5px;" value="${currentScene.promptVideo}" placeholder="Prompt Video Motion Scene ${activeSceneIndex+1}">
+                </div>
               </div>
-              <div class="grid-3">
-                <!-- Slot Produk -->
-                <div class="image-slot-modern" id="slot-product" title="Upload Foto Produk">
-                  ${images.product ? `<img src="${images.product}"><button class="btn-slot-crop" data-slot="product"><i class="fa-solid fa-crop"></i></button>` : `<i class="fa-solid fa-box-open" style="font-size:13px; color:#64748b;"></i>`}
-                  <span class="slot-label">Produk</span>
-                  <input type="file" id="input-file-prod" accept="image/*" style="display:none">
-                </div>
-                <!-- Slot Model -->
-                <div class="image-slot-modern" id="slot-model" title="Upload Foto Model">
-                  ${images.model ? `<img src="${images.model}"><button class="btn-slot-crop" data-slot="model"><i class="fa-solid fa-crop"></i></button>` : `<i class="fa-solid fa-user" style="font-size:13px; color:#64748b;"></i>`}
-                  <span class="slot-label">Model</span>
-                  <input type="file" id="input-file-mod" accept="image/*" style="display:none">
-                </div>
-                <!-- Slot Lokasi -->
-                <div class="image-slot-modern" id="slot-location" title="Upload Foto Lokasi">
-                  ${images.location ? `<img src="${images.location}"><button class="btn-slot-crop" data-slot="location"><i class="fa-solid fa-crop"></i></button>` : `<i class="fa-solid fa-mountain-sun" style="font-size:13px; color:#64748b;"></i>`}
-                  <span class="slot-label">Lokasi</span>
-                  <input type="file" id="input-file-loc" accept="image/*" style="display:none">
-                </div>
-              </div>
+
+              <!-- Full Voiceover / Script Input -->
+              <input type="text" class="input-text" id="inp-voiceover" style="color:#34d399; font-size:8.5px;" value="${currentScene.voiceover || ''}" placeholder="Voiceover / Naskah Narasi Scene ${activeSceneIndex+1}">
             </div>
 
-            <!-- Parameters Card -->
-            <div class="card-section">
-              <div class="grid-3">
-                <select class="select-input" id="inp-model-ai">
-                  <option value="omni-flash" selected>Omni Flash</option>
-                  <option value="veo-3.1-lite">Veo Lite</option>
-                  <option value="veo-3.1-fast">Veo Fast</option>
-                  <option value="veo-3.1-quality">Veo Quality</option>
-                </select>
-                <select class="select-input" id="inp-scene-dur">
-                  <option value="4" ${currentScene.duration == 4 ? 'selected' : ''}>4s (4 Detik)</option>
-                  <option value="6" ${currentScene.duration == 6 ? 'selected' : ''}>6s (6 Detik)</option>
-                  <option value="8" ${currentScene.duration == 8 ? 'selected' : ''}>8s (8 Detik)</option>
-                  <option value="10" ${currentScene.duration == 10 ? 'selected' : ''}>10s (10 Detik)</option>
-                </select>
-                <select class="select-input" id="inp-aspect-ratio">
-                  <option value="9:16" ${currentScene.aspectRatio === '9:16' ? 'selected' : ''}>9:16 (TikTok)</option>
-                  <option value="16:9" ${currentScene.aspectRatio === '16:9' ? 'selected' : ''}>16:9 (Landscape)</option>
-                  <option value="1:1" ${currentScene.aspectRatio === '1:1' ? 'selected' : ''}>1:1 (Square)</option>
-                </select>
-              </div>
-
-              <input type="text" class="input-text" id="inp-prompt-video" style="color:#fef08a; font-size:9px;" value="${currentScene.promptVideo}" placeholder="Prompt Video Scene ${activeSceneIndex+1}">
-              <input type="text" class="input-text" id="inp-voiceover" style="color:#34d399; font-size:9px;" value="${currentScene.voiceover || ''}" placeholder="Voiceover Scene ${activeSceneIndex+1}">
-            </div>
-
-            <!-- Action Buttons Grid -->
-            <div style="display:grid; grid-template-columns: 1.1fr 0.9fr; gap:5px;">
-              <button class="btn-action-primary" id="btn-inject-current-scene" title="Inject Prompt dan Upload Semua Foto (Produk, Model, Lokasi) Tanpa Duplikat">
-                <i class="fa-solid fa-arrow-pointer"></i>
-                <span>Inject S${activeSceneIndex + 1} + 3 Foto</span>
+            <!-- Action Controls (Zero-Touch Auto Generate vs Manual Inject) -->
+            <div style="display:grid; grid-template-columns: 1.15fr 0.85fr; gap:4px;">
+              <!-- Zero-Touch Auto Generate -->
+              <button class="btn-auto-now" id="btn-auto-generate-now" title="Otomatis Injeksi Gambar + Prompt dan Langsung Klik Generate di Flow AI Tanpa Sentuh!">
+                ${ICONS.bolt}
+                <span>Auto Gen S${activeSceneIndex+1}</span>
               </button>
-              
-              <button class="btn-auto-sequence ${isAutoRunning ? 'running' : ''}" id="btn-toggle-auto-runner">
-                <i class="fa-solid ${isAutoRunning ? 'fa-stop' : 'fa-play'}"></i>
-                <span>${isAutoRunning ? 'Stop Auto' : 'Auto Lanjut'}</span>
+
+              <!-- Manual Inject -->
+              <button class="btn-manual-inject" id="btn-manual-inject-only" title="Injeksi Gambar + Prompt ke Chat (Generate Manual)">
+                ${ICONS.arrowRight}
+                <span>Inject S${activeSceneIndex+1}</span>
               </button>
             </div>
+
+            <!-- Auto-Sequence Runner (S1 -> S2 -> S3...) -->
+            <button class="btn-auto-sequence ${isAutoRunning ? 'running' : ''}" id="btn-toggle-auto-runner" title="Otomatis Jalankan Seluruh Scene Berurutan">
+              ${isAutoRunning ? ICONS.stop : ICONS.play}
+              <span>${isAutoRunning ? 'Stop Auto-Sequence' : '🚀 Auto-Run Semua Scene (S1..S' + scenes.length + ')'}</span>
+            </button>
 
           </div>
 
-          <!-- Bottom Resize Gripper -->
           <div class="resize-handle" id="gripper-resize" title="Tarik sudut untuk ubah ukuran"></div>
         </div>
       `;
@@ -507,7 +498,7 @@
         }
       });
 
-      // Scene Switching
+      // Scene Tab Switching
       const pills = wrapper.querySelectorAll('.scene-tab-pill[data-idx]');
       pills.forEach(pill => {
         pill.addEventListener('click', (e) => {
@@ -535,7 +526,7 @@
           duration: 6,
           promptVideo: "Smooth dynamic camera motion showing product benefits, 4k 60fps",
           voiceover: "Klik keranjang kuning sekarang mumpung diskon spesial!",
-          imageUrl: images.product || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"
+          imageUrl: scenes[0]?.imageUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600"
         });
         activeSceneIndex = scenes.length - 1;
         render();
@@ -543,8 +534,8 @@
 
       wrapper.querySelector('#btn-sync-web-mini').addEventListener('click', (e) => {
         e.stopPropagation();
-        autoSyncFromWeb();
-        alert("✅ Data & Gambar (Produk, Model, Lokasi) berhasil disinkronkan dari web!");
+        autoSyncStoryboardFromWeb();
+        alert("✅ Gambar Storyboard & Naskah berhasil disinkronkan dari web AffiliateGo!");
       });
 
       const durSelect = wrapper.querySelector('#inp-scene-dur');
@@ -575,20 +566,28 @@
         });
       }
 
-      // Crop Buttons
-      wrapper.querySelectorAll('.btn-slot-crop').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+      // Crop Button
+      const cropBtn = wrapper.querySelector('#btn-crop-storyboard');
+      if (cropBtn) {
+        cropBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          const slot = btn.getAttribute('data-slot');
-          openCropModal(slot);
+          openCropModal();
         });
-      });
+      }
 
-      wrapper.querySelector('#btn-inject-current-scene').addEventListener('click', async (e) => {
+      // Zero-Touch Auto Generate (Inject + Click Generate Button in Flow AI)
+      wrapper.querySelector('#btn-auto-generate-now').addEventListener('click', async (e) => {
         e.stopPropagation();
-        await executePrecisionCleanInjection(activeSceneIndex);
+        await executeFlowAiInjection(activeSceneIndex, true);
       });
 
+      // Manual Inject Only
+      wrapper.querySelector('#btn-manual-inject-only').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await executeFlowAiInjection(activeSceneIndex, false);
+      });
+
+      // Sequential Runner
       wrapper.querySelector('#btn-toggle-auto-runner').addEventListener('click', (e) => {
         e.stopPropagation();
         if (isAutoRunning) {
@@ -598,7 +597,7 @@
         }
       });
 
-      setupMainImageUploads();
+      setupStoryboardImageUpload();
       makeDraggable(wrapper.querySelector('.floating-studio'), wrapper.querySelector('#studio-drag-bar'));
       setupResizeHandler(wrapper.querySelector('.floating-studio'), wrapper.querySelector('#gripper-resize'));
     }
@@ -618,10 +617,10 @@
 
   async function runCurrentSceneInSequence() {
     if (!isAutoRunning) return;
-    await executePrecisionCleanInjection(activeSceneIndex);
+    await executeFlowAiInjection(activeSceneIndex, true);
 
     const curDur = scenes[activeSceneIndex].duration || 6;
-    let secondsLeft = curDur + 22;
+    let secondsLeft = curDur + 24;
 
     if (autoTimerInterval) clearInterval(autoTimerInterval);
 
@@ -644,7 +643,7 @@
             render();
             runCurrentSceneInSequence();
           } else {
-            alert('🎉 Semua Scene Selesai Digenerate!');
+            alert('🎉 Semua Scene Storyboard Selesai Digenerate!');
             stopAutoRunner();
           }
         }, 2500);
@@ -652,27 +651,24 @@
     }, 1000);
   }
 
-  function setupMainImageUploads() {
-    ['prod', 'mod', 'loc'].forEach((k, idx) => {
-      const keyMap = ['product', 'model', 'location'][idx];
-      const slot = wrapper.querySelector('#slot-' + keyMap);
-      const inp = wrapper.querySelector('#input-file-' + k);
-      if (slot && inp) {
-        slot.addEventListener('click', (e) => {
-          if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) inp.click();
-        });
-        inp.addEventListener('change', (e) => {
-          const file = e.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = (evt) => {
-            images[keyMap] = evt.target.result;
-            render();
-          };
-          reader.readAsDataURL(file);
-        });
-      }
-    });
+  function setupStoryboardImageUpload() {
+    const slot = wrapper.querySelector('#slot-storyboard-scene');
+    const inp = wrapper.querySelector('#input-file-storyboard');
+    if (slot && inp) {
+      slot.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) inp.click();
+      });
+      inp.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          scenes[activeSceneIndex].imageUrl = evt.target.result;
+          render();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
   }
 
   async function urlOrBase64ToBlob(urlOrData) {
@@ -695,65 +691,53 @@
     } catch(e) { return null; }
   }
 
-  // PRECISION CLEAN INJECTION (All 3 Images: Product + Model + Location WITHOUT Duplicates)
-  async function executePrecisionCleanInjection(sceneIdx) {
+  // BULLETPROOF INJECTION & ZERO-TOUCH AUTO GENERATE
+  async function executeFlowAiInjection(sceneIdx, autoClickGenerate = false) {
     const sc = scenes[sceneIdx] || scenes[0];
     const aspect = sc.aspectRatio || "9:16";
     const promptText = "[Scene " + (sceneIdx + 1) + " (" + sc.duration + "s, " + aspect + ")]: " + sc.promptVideo;
-    
-    // Collect all available distinct images (Product, Model, Location, Scene)
-    const distinctImageSources = [];
-    const seenHashes = new Set();
+    const imgSrc = sc.imageUrl;
 
-    [
-      { label: 'produk', src: images.product || sc.imageUrl },
-      { label: 'model', src: images.model },
-      { label: 'lokasi', src: images.location }
-    ].forEach((item) => {
-      if (item.src && typeof item.src === 'string' && item.src.length > 50) {
-        const sampleKey = item.src.slice(0, 100);
-        if (!seenHashes.has(sampleKey)) {
-          seenHashes.add(sampleKey);
-          distinctImageSources.push(item);
-        }
-      }
-    });
-
-    // Build Single Clean DataTransfer with all distinct image files
-    if (distinctImageSources.length > 0) {
+    // 1. Injeksi File Gambar Storyboard ke Flow AI (Single Clean Dispatch)
+    if (imgSrc) {
       try {
-        const dt = new DataTransfer();
-        for (let i = 0; i < distinctImageSources.length; i++) {
-          const item = distinctImageSources[i];
-          const blob = await urlOrBase64ToBlob(item.src);
-          if (blob) {
-            const fileName = (i + 1) + "_" + item.label + ".jpg";
-            const file = new File([blob], fileName, { type: blob.type || "image/jpeg" });
-            dt.items.add(file);
+        const blob = await urlOrBase64ToBlob(imgSrc);
+        if (blob) {
+          const file = new File([blob], "storyboard-scene-" + (sceneIdx + 1) + ".jpg", { type: blob.type || "image/jpeg" });
+          const dt = new DataTransfer();
+          dt.items.add(file);
+
+          // Trigger input[type="file"]
+          const fileInputs = Array.from(document.querySelectorAll('input[type="file"]'));
+          for (const fi of fileInputs) {
+            try {
+              fi.files = dt.files;
+              fi.dispatchEvent(new Event('change', { bubbles: true }));
+              fi.dispatchEvent(new Event('input', { bubbles: true }));
+            } catch(e) {}
           }
-        }
 
-        // Single File Input Dispatch (No duplicate triggers)
-        const fileInputs = Array.from(document.querySelectorAll('input[type="file"]'));
-        if (fileInputs.length > 0) {
-          const targetInput = fileInputs[0];
-          targetInput.files = dt.files;
-          targetInput.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-
-        // Single Synthetic Drop on Chat Box
-        const chatBox = document.querySelector('textarea, [contenteditable="true"], form, main');
-        if (chatBox) {
-          chatBox.dispatchEvent(new DragEvent('drop', {
-            bubbles: true,
-            cancelable: true,
-            dataTransfer: dt
-          }));
+          // Trigger Paste on Active Element / Textarea
+          const dropTargets = Array.from(document.querySelectorAll('textarea, [contenteditable="true"], [role="textbox"], form'));
+          for (const target of dropTargets) {
+            try {
+              target.dispatchEvent(new ClipboardEvent('paste', {
+                bubbles: true,
+                cancelable: true,
+                clipboardData: dt
+              }));
+              target.dispatchEvent(new DragEvent('drop', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: dt
+              }));
+            } catch(e) {}
+          }
         }
       } catch(e) {}
     }
 
-    // Single Text Injection into Chat Prompt Textarea
+    // 2. Injeksi Prompt Text ke Kotak Prompt / Chat Area
     const promptSelectors = [
       'textarea[placeholder*="prompt" i]',
       'textarea[placeholder*="describe" i]',
@@ -789,23 +773,43 @@
         targetPromptEl.innerText = promptText;
         targetPromptEl.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: promptText }));
       }
-      alert("✅ Flow Ai Auto: Scene " + (sceneIdx + 1) + " + Semua Foto (Produk, Model, Lokasi) berhasil di-inject ke chat!");
+
+      // 3. ZERO-TOUCH AUTO GENERATE (Klik tombol generate di Flow AI tanpa disentuh)
+      if (autoClickGenerate) {
+        setTimeout(() => {
+          // Cari tombol generate / submit / arrow
+          const btnCandidates = Array.from(document.querySelectorAll('button[aria-label*="generate" i], button[aria-label*="send" i], button[aria-label*="submit" i], button[type="submit"], [data-testid*="send" i], [data-testid*="generate" i]'));
+          let clicked = false;
+          for (const btn of btnCandidates) {
+            if (!btn.disabled && btn.offsetParent !== null) {
+              btn.click();
+              clicked = true;
+              break;
+            }
+          }
+
+          // Fallback Enter key event
+          if (!clicked) {
+            targetPromptEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }));
+          }
+        }, 500);
+      }
     } else {
       navigator.clipboard.writeText(promptText);
-      alert("📋 Prompt Scene " + (sceneIdx + 1) + " berhasil disalin ke clipboard!");
     }
   }
 
-  function openCropModal(slotKey) {
-    const imgSrc = images[slotKey];
+  function openCropModal() {
+    const sc = scenes[activeSceneIndex];
+    const imgSrc = sc.imageUrl;
     if (!imgSrc) return;
 
     const cropOverlay = document.createElement('div');
     cropOverlay.className = 'crop-modal-overlay';
     cropOverlay.innerHTML = `
       <div class="crop-dialog">
-        <div style="font-size:11px; font-weight:bold; color:#f59e0b;"><i class="fa-solid fa-crop"></i> Crop Foto (${slotKey.toUpperCase()})</div>
-        <div style="width:100%; aspect-ratio:1; overflow:hidden; border-radius:8px; background:#000; display:flex; align-items:center; justify-content:center;">
+        <div style="font-size:11px; font-weight:bold; color:#f59e0b;">✂ Crop Storyboard Scene ${activeSceneIndex + 1}</div>
+        <div style="width:100%; aspect-ratio:9/16; max-height:160px; overflow:hidden; border-radius:8px; background:#000; display:flex; align-items:center; justify-content:center;">
           <img id="crop-preview-img" src="${imgSrc}" style="max-width:100%; max-height:100%; object-fit:contain;">
         </div>
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:4px;">
@@ -821,7 +825,7 @@
 
     cropOverlay.querySelector('#btn-crop-1-1').addEventListener('click', () => {
       cropImageToRatio(imgSrc, 1, 1, (res) => {
-        images[slotKey] = res;
+        scenes[activeSceneIndex].imageUrl = res;
         cropOverlay.remove();
         render();
       });
@@ -829,7 +833,7 @@
 
     cropOverlay.querySelector('#btn-crop-9-16').addEventListener('click', () => {
       cropImageToRatio(imgSrc, 9, 16, (res) => {
-        images[slotKey] = res;
+        scenes[activeSceneIndex].imageUrl = res;
         cropOverlay.remove();
         render();
       });
@@ -975,6 +979,6 @@
     }
   }
 
-  autoSyncFromWeb();
+  autoSyncStoryboardFromWeb();
   render();
 })();
