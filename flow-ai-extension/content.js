@@ -1,4 +1,4 @@
-// Flow Ai Extension v4.5 - Auto-Sequential Scene Runner & Robust Event Listeners
+// Flow Ai Extension v5.0 - Ultra-Compact Micro Bar with Full Mobile Touch & Mouse Drag
 (function() {
   if (window.__FLOW_AI_EXTENSION_INJECTED__) {
     const existing = document.getElementById('flow-ai-extension-host');
@@ -10,7 +10,7 @@
   host.id = 'flow-ai-extension-host';
   host.style.position = 'fixed';
   host.style.zIndex = '2147483647';
-  host.style.top = '14px';
+  host.style.top = '10px';
   host.style.left = '50%';
   host.style.transform = 'translateX(-50%)';
   host.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
@@ -22,147 +22,131 @@
   style.textContent = `
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
+    /* Ultra-Compact Minimized Pill */
     .floating-pill {
       display: flex;
       align-items: center;
-      gap: 7px;
-      padding: 7px 14px;
-      background: linear-gradient(135deg, rgba(13, 17, 30, 0.96), rgba(20, 26, 46, 0.96));
-      border: 1.5px solid rgba(249, 115, 22, 0.7);
+      gap: 6px;
+      padding: 6px 12px;
+      background: linear-gradient(135deg, rgba(13, 17, 30, 0.98), rgba(20, 26, 46, 0.98));
+      border: 1.5px solid rgba(249, 115, 22, 0.8);
       border-radius: 9999px;
       color: #fff;
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 800;
       cursor: grab;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7), 0 0 16px rgba(249, 115, 22, 0.35);
+      touch-action: none;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8), 0 0 14px rgba(249, 115, 22, 0.35);
       backdrop-filter: blur(14px);
-      transition: transform 0.2s, box-shadow 0.2s;
       user-select: none;
     }
-    .floating-pill:hover {
-      transform: scale(1.04);
-      border-color: #f97316;
-    }
     .pill-icon {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
       background: linear-gradient(135deg, #f59e0b, #ea580c);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 10px;
-    }
-    .pill-badge {
-      background: rgba(249, 115, 22, 0.25);
-      color: #fb923c;
-      padding: 1px 6px;
-      border-radius: 5px;
-      font-size: 8.5px;
-      font-family: monospace;
-      border: 1px solid rgba(249, 115, 22, 0.4);
+      font-size: 9px;
     }
 
+    /* Ultra-Compact Mini Floating Studio (Small & Slim) */
     .floating-studio {
-      width: 360px;
-      max-width: calc(100vw - 20px);
-      max-height: 85vh;
-      background: linear-gradient(180deg, #0d121f 0%, #070911 100%);
-      border: 1.5px solid rgba(249, 115, 22, 0.55);
-      border-radius: 18px;
+      width: 290px;
+      max-width: 94vw;
+      max-height: 80vh;
+      background: linear-gradient(180deg, #0b0f19 0%, #060810 100%);
+      border: 1.5px solid rgba(249, 115, 22, 0.6);
+      border-radius: 14px;
       color: #f8fafc;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 25px rgba(249, 115, 22, 0.2);
-      backdrop-filter: blur(20px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.95), 0 0 20px rgba(249, 115, 22, 0.2);
+      backdrop-filter: blur(16px);
       display: flex;
       flex-direction: column;
       overflow: hidden;
       position: relative;
       resize: both;
-      animation: popIn 0.18s ease-out;
+      animation: popIn 0.15s ease-out;
     }
     @keyframes popIn {
-      from { opacity: 0; transform: scale(0.95); }
+      from { opacity: 0; transform: scale(0.96); }
       to { opacity: 1; transform: scale(1); }
     }
 
     .studio-header {
-      padding: 8px 12px;
-      background: rgba(15, 23, 42, 0.95);
+      padding: 6px 10px;
+      background: rgba(15, 23, 42, 0.98);
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
       justify-content: space-between;
       cursor: grab;
+      touch-action: none;
       user-select: none;
       flex-shrink: 0;
     }
     .studio-body {
-      padding: 10px;
+      padding: 8px;
       overflow-y: auto;
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
     .studio-body::-webkit-scrollbar { width: 3px; }
-    .studio-body::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    .studio-body::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
 
-    .ctrl-group {
-      display: flex;
-      align-items: center;
-      gap: 3px;
-    }
     .btn-ctrl {
       background: #1e293b;
       color: #cbd5e1;
-      width: 22px;
-      height: 22px;
-      border-radius: 5px;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 10px;
+      font-size: 9px;
       font-weight: bold;
     }
-    .btn-ctrl:hover { background: #334155; color: #fff; }
 
     .card-section {
-      background: rgba(13, 19, 34, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      padding: 8px;
+      background: rgba(13, 19, 34, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 9px;
+      padding: 6px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
     }
     .input-text, .select-input {
       width: 100%;
       background: #030712;
       border: 1px solid #1f2937;
-      border-radius: 7px;
+      border-radius: 6px;
       color: #fff;
-      padding: 5px 8px;
-      font-size: 10px;
+      padding: 4px 6px;
+      font-size: 9px;
       outline: none;
     }
     .input-text:focus, .select-input:focus { border-color: #f97316; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 
     /* Scene Navigation Pills */
     .scene-nav-bar {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       overflow-x: auto;
-      padding-bottom: 2px;
+      padding-bottom: 1px;
     }
     .scene-tab-pill {
-      padding: 4px 8px;
-      border-radius: 7px;
-      font-size: 9px;
+      padding: 3px 6px;
+      border-radius: 5px;
+      font-size: 8px;
       font-weight: 800;
       font-family: monospace;
       cursor: pointer;
@@ -170,18 +154,17 @@
       background: #0f172a;
       color: #94a3b8;
       white-space: nowrap;
-      transition: all 0.15s;
     }
     .scene-tab-pill.active {
-      background: linear-gradient(135deg, #ea580c, #c2410c);
+      background: #ea580c;
       color: #fff;
       border-color: #f97316;
-      box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
+      box-shadow: 0 0 8px rgba(249, 115, 22, 0.4);
     }
 
-    .image-slot-compact {
+    .image-slot-mini {
       aspect-ratio: 1;
-      border-radius: 8px;
+      border-radius: 6px;
       background: #030712;
       border: 1px dashed #374151;
       display: flex;
@@ -193,18 +176,17 @@
       text-align: center;
       position: relative;
     }
-    .image-slot-compact:hover { border-color: #f97316; }
-    .image-slot-compact img { width: 100%; height: 100%; object-fit: cover; }
+    .image-slot-mini img { width: 100%; height: 100%; object-fit: cover; }
     .btn-slot-crop {
       position: absolute;
-      top: 2px;
-      right: 2px;
+      top: 1px;
+      right: 1px;
       background: rgba(0,0,0,0.85);
       color: #f59e0b;
       border: 1px solid rgba(255,255,255,0.2);
-      font-size: 7px;
+      font-size: 6.5px;
       font-weight: bold;
-      padding: 1px 4px;
+      padding: 1px 3px;
       border-radius: 3px;
       cursor: pointer;
     }
@@ -213,61 +195,46 @@
       background: linear-gradient(135deg, #083344, #0e7490);
       border: 1.5px solid #06b6d4;
       color: #a5f3fc;
-      padding: 8px 10px;
-      border-radius: 9px;
+      padding: 6px 8px;
+      border-radius: 7px;
       font-weight: 800;
-      font-size: 10.5px;
+      font-size: 9.5px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 5px;
-      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.25);
+      gap: 4px;
     }
-    .btn-action-primary:hover { background: #0891b2; color: #fff; }
+    .btn-action-primary:active { transform: scale(0.97); }
 
     .btn-auto-sequence {
       background: linear-gradient(135deg, #15803d, #16a34a);
       border: 1.5px solid #4ade80;
       color: #fff;
-      padding: 8px 10px;
-      border-radius: 9px;
+      padding: 6px 8px;
+      border-radius: 7px;
       font-weight: 800;
-      font-size: 10.5px;
+      font-size: 9.5px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 5px;
-      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+      gap: 4px;
     }
-    .btn-auto-sequence:hover { opacity: 0.95; }
     .btn-auto-sequence.running {
       background: linear-gradient(135deg, #b91c1c, #dc2626);
       border-color: #f87171;
     }
 
-    .status-banner {
-      padding: 6px 8px;
-      border-radius: 8px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(249, 115, 22, 0.3);
-      font-size: 9px;
-      color: #fed7aa;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
     .resize-handle {
       position: absolute;
-      bottom: 2px;
-      right: 2px;
-      width: 12px;
-      height: 12px;
+      bottom: 1px;
+      right: 1px;
+      width: 10px;
+      height: 10px;
       cursor: nwse-resize;
       background: linear-gradient(135deg, transparent 50%, #f97316 50%);
-      border-bottom-right-radius: 16px;
+      border-bottom-right-radius: 12px;
     }
 
     .crop-modal-overlay {
@@ -279,18 +246,18 @@
       align-items: center;
       justify-content: center;
       z-index: 1000;
-      padding: 15px;
+      padding: 10px;
     }
     .crop-dialog {
       background: #0d121f;
       border: 1.5px solid #ea580c;
-      border-radius: 14px;
-      padding: 12px;
-      width: 300px;
+      border-radius: 12px;
+      padding: 10px;
+      width: 270px;
       max-width: 95vw;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       color: #fff;
     }
   `;
@@ -298,7 +265,6 @@
 
   let isMinimized = true;
   let activeSceneIndex = 0;
-  let currentZoom = 1.0;
   let isAutoRunning = false;
   let autoTimerInterval = null;
 
@@ -368,7 +334,7 @@
           }
           activeSceneIndex = 0;
           render();
-          alert("✅ Berhasil mengimpor Scene 1.." + scenes.length + " dan Gambar dari Storyboard AffiliateGo!");
+          alert("✅ Berhasil mengimpor Scene 1.." + scenes.length + " dari AffiliateGo!");
           return;
         }
       }
@@ -380,14 +346,14 @@
 
   function render() {
     if (isMinimized) {
-      host.style.top = '14px';
+      host.style.top = '10px';
       host.style.left = '50%';
       host.style.transform = 'translateX(-50%)';
       wrapper.innerHTML = `
-        <div class="floating-pill" id="btn-expand-pill" title="Klik untuk membuka Flow Ai Studio">
+        <div class="floating-pill" id="btn-expand-pill" title="Klik untuk membuka Flow AI Studio">
           <div class="pill-icon">⚡</div>
-          <span>Flow Ai Extension</span>
-          <span class="pill-badge">v4.5</span>
+          <span>Flow AI</span>
+          <span style="font-size:8px; color:#fb923c; font-family:monospace;">SCENE ${activeSceneIndex+1}</span>
         </div>
       `;
       wrapper.querySelector('#btn-expand-pill').addEventListener('click', () => {
@@ -401,126 +367,93 @@
       const activeImg = currentScene.imageUrl || images.product || images.model || images.location || "";
 
       wrapper.innerHTML = `
-        <div class="floating-studio" id="main-floating-studio" style="transform:scale(${currentZoom}); transform-origin:top center;">
-          <!-- Compact Header -->
+        <div class="floating-studio" id="main-floating-studio">
+          <!-- Slim Drag Header -->
           <div class="studio-header" id="studio-drag-bar">
-            <div style="display:flex; align-items:center; gap:6px;">
+            <div style="display:flex; align-items:center; gap:5px;">
               <div class="pill-icon">⚡</div>
-              <div>
-                <div style="font-size:11px; font-weight:800; color:#fff;">Flow Ai Extension</div>
-                <div style="font-size:8px; color:#fb923c; font-family:monospace;">Mode Per-Scene (Top-Center)</div>
-              </div>
+              <span style="font-size:10px; font-weight:800; color:#fff;">Flow AI (Mini)</span>
             </div>
             
-            <div class="ctrl-group">
-              <button class="btn-ctrl" id="btn-zoom-out" title="Perkecil">🔍-</button>
-              <button class="btn-ctrl" id="btn-zoom-in" title="Perbesar">🔍+</button>
+            <div style="display:flex; align-items:center; gap:3px;">
+              <button class="btn-ctrl" id="btn-sync-web-mini" style="color:#6ee7b7; font-size:8px; width:auto; padding:0 4px;" title="Sync dari Web">📥 Sync</button>
               <button class="btn-ctrl" id="btn-minimize-studio" title="Perkecil ke Kapsul" style="background:#ea580c; color:#fff;">-</button>
             </div>
           </div>
 
           <div class="studio-body">
-            <!-- Sync & Per-Scene Navigator Bar -->
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:4px;">
-              <div class="scene-nav-bar" id="scene-pills-bar">
-                ${scenes.map((s, i) => `
-                  <button class="scene-tab-pill ${i === activeSceneIndex ? 'active' : ''}" data-idx="${i}">
-                    SCENE ${i+1}
-                  </button>
-                `).join("")}
-                <button class="scene-tab-pill" id="btn-add-scene-compact" style="color:#fbbf24; background:#1e293b;">+ Scene</button>
-              </div>
-              <button id="btn-sync-web-compact" style="background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.4); color:#6ee7b7; border-radius:6px; padding:3px 6px; font-size:8.5px; font-weight:bold; cursor:pointer; white-space:nowrap;">📥 Sync Web</button>
+            <!-- Scene Pills -->
+            <div class="scene-nav-bar" id="scene-pills-bar">
+              ${scenes.map((s, i) => `
+                <button class="scene-tab-pill ${i === activeSceneIndex ? 'active' : ''}" data-idx="${i}">
+                  S${i+1}
+                </button>
+              `).join("")}
+              <button class="scene-tab-pill" id="btn-add-scene-compact" style="color:#fbbf24; background:#1e293b;">+ S</button>
             </div>
 
-            <!-- Active Status Banner (Auto Runner) -->
-            <div class="status-banner" id="auto-runner-banner">
-              <span id="runner-status-text">
-                ${isAutoRunning ? `🔄 Auto-Runner Aktif: Sedang di Scene ${activeSceneIndex + 1}...` : `⚡ Scene Aktif: Scene ${activeSceneIndex + 1} dari ${scenes.length}`}
-              </span>
-              <span id="runner-countdown" style="font-family:monospace; font-weight:bold; color:#f97316;">
-                ${currentScene.duration}s
-              </span>
-            </div>
-
-            <!-- Active Scene Visual Image Slot with Crop -->
+            <!-- Compact Active Scene -->
             <div class="card-section">
-              <div style="display:flex; justify-content:space-between; align-items:center; font-size:9px; font-weight:bold; color:#f59e0b;">
-                <span>🖼️ Gambar Scene ${activeSceneIndex + 1} (Klik foto untuk Ganti/Crop)</span>
-                <span style="font-size:8px; color:#94a3b8; font-family:monospace;">${currentScene.duration}s</span>
-              </div>
-              
-              <div style="display:grid; grid-template-columns: 80px 1fr; gap:8px;">
-                <div class="image-slot-compact" id="slot-scene-active" style="height:80px; width:80px;">
-                  ${activeImg ? `<img src="${activeImg}"><button class="btn-slot-crop" id="btn-crop-scene-active">Crop</button>` : `<div style="font-size:8px; color:#94a3b8;">+ Foto Scene</div>`}
+              <div style="display:grid; grid-template-columns: 52px 1fr; gap:6px; align-items:center;">
+                <div class="image-slot-mini" id="slot-scene-active" style="height:52px; width:52px;">
+                  ${activeImg ? `<img src="${activeImg}"><button class="btn-slot-crop" id="btn-crop-scene-active">✂</button>` : `<div style="font-size:7px; color:#94a3b8;">+ Foto</div>`}
                   <input type="file" id="input-file-scene-active" accept="image/*" style="display:none">
                 </div>
 
-                <div style="display:flex; flex-direction:column; gap:4px;">
+                <div style="display:flex; flex-direction:column; gap:3px;">
                   <div class="grid-2">
-                    <select class="select-input" id="inp-model-ai" style="font-size:9px; padding:3px 5px;">
+                    <select class="select-input" id="inp-model-ai">
                       <option value="omni-flash" selected>Omni Flash</option>
-                      <option value="veo-3.1-lite">Veo 3.1 - Lite</option>
-                      <option value="veo-3.1-fast">Veo 3.1 - Fast</option>
-                      <option value="veo-3.1-quality">Veo 3.1 - Quality</option>
+                      <option value="veo-3.1-lite">Veo Lite</option>
+                      <option value="veo-3.1-fast">Veo Fast</option>
+                      <option value="veo-3.1-quality">Veo Quality</option>
                     </select>
-                    <select class="select-input" id="inp-scene-dur" style="font-size:9px; padding:3px 5px;">
-                      <option value="4" ${currentScene.duration == 4 ? 'selected' : ''}>4s (4 Detik)</option>
-                      <option value="6" ${currentScene.duration == 6 ? 'selected' : ''}>6s (6 Detik)</option>
-                      <option value="8" ${currentScene.duration == 8 ? 'selected' : ''}>8s (8 Detik)</option>
-                      <option value="10" ${currentScene.duration == 10 ? 'selected' : ''}>10s (10 Detik)</option>
+                    <select class="select-input" id="inp-scene-dur">
+                      <option value="4" ${currentScene.duration == 4 ? 'selected' : ''}>4 Detik</option>
+                      <option value="6" ${currentScene.duration == 6 ? 'selected' : ''}>6 Detik</option>
+                      <option value="8" ${currentScene.duration == 8 ? 'selected' : ''}>8 Detik</option>
+                      <option value="10" ${currentScene.duration == 10 ? 'selected' : ''}>10 Detik</option>
                     </select>
                   </div>
-                  <input type="text" class="input-text" id="inp-shot-type" style="font-size:9px;" value="${currentScene.shotType}" placeholder="Tipe Shot">
+                  <input type="text" class="input-text" id="inp-prompt-video" style="color:#fef08a;" value="${currentScene.promptVideo}" placeholder="Prompt Video Scene ${activeSceneIndex+1}">
                 </div>
-              </div>
-
-              <!-- Prompt Video & Voiceover for Active Scene -->
-              <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px;">
-                <textarea rows="2" class="input-text" id="inp-prompt-video" style="font-size:9px; resize:none; font-family:monospace; color:#fef08a;" placeholder="Prompt Video Motion Scene ${activeSceneIndex+1}">${currentScene.promptVideo}</textarea>
-                <input type="text" class="input-text" id="inp-voiceover" style="font-size:9px; color:#34d399;" value="${currentScene.voiceover}" placeholder="Naskah Voiceover Scene ${activeSceneIndex+1}">
               </div>
             </div>
 
-            <!-- Sequential Execution Action Bar -->
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-              <button class="btn-action-primary" id="btn-inject-current-scene" title="Kirim Prompt dan Upload Gambar Scene ${activeSceneIndex + 1} ke Chat Flow AI">
-                <span>🎯 Inject Scene ${activeSceneIndex + 1}</span>
+            <!-- Action Buttons Grid -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px;">
+              <button class="btn-action-primary" id="btn-inject-current-scene">
+                <span>🎯 Inject S${activeSceneIndex + 1}</span>
               </button>
               
-              <button class="btn-auto-sequence ${isAutoRunning ? 'running' : ''}" id="btn-toggle-auto-runner" title="Otomatis lanjut ke scene berikutnya saat selesai">
-                <span>${isAutoRunning ? '⏹️ Stop Auto' : '🚀 Auto Lanjut Scene'}</span>
+              <button class="btn-auto-sequence ${isAutoRunning ? 'running' : ''}" id="btn-toggle-auto-runner">
+                <span>${isAutoRunning ? '⏹ Stop' : '🚀 Auto Lanjut'}</span>
               </button>
             </div>
 
-            <!-- 3 General Slots (Produk, Model, Lokasi) Compact -->
-            <div class="card-section">
-              <div style="font-size:8.5px; font-weight:bold; color:#94a3b8;">
-                📦 3 Slot Foto Utama (Produk / Model / Lokasi)
+            <!-- 3 Mini Photo Slots -->
+            <div class="grid-3" style="margin-top:1px;">
+              <div class="image-slot-mini" id="slot-product" style="height:36px;">
+                ${images.product ? `<img src="${images.product}">` : `<span style="font-size:6.5px; color:#64748b;">+Produk</span>`}
+                <input type="file" id="input-file-prod" accept="image/*" style="display:none">
               </div>
-              <div class="grid-3">
-                <div class="image-slot-compact" id="slot-product" style="height:48px;">
-                  ${images.product ? `<img src="${images.product}">` : `<div style="font-size:7.5px; color:#64748b;">+ Produk</div>`}
-                  <input type="file" id="input-file-prod" accept="image/*" style="display:none">
-                </div>
-                <div class="image-slot-compact" id="slot-model" style="height:48px;">
-                  ${images.model ? `<img src="${images.model}">` : `<div style="font-size:7.5px; color:#64748b;">+ Model</div>`}
-                  <input type="file" id="input-file-mod" accept="image/*" style="display:none">
-                </div>
-                <div class="image-slot-compact" id="slot-location" style="height:48px;">
-                  ${images.location ? `<img src="${images.location}">` : `<div style="font-size:7.5px; color:#64748b;">+ Lokasi</div>`}
-                  <input type="file" id="input-file-loc" accept="image/*" style="display:none">
-                </div>
+              <div class="image-slot-mini" id="slot-model" style="height:36px;">
+                ${images.model ? `<img src="${images.model}">` : `<span style="font-size:6.5px; color:#64748b;">+Model</span>`}
+                <input type="file" id="input-file-mod" accept="image/*" style="display:none">
+              </div>
+              <div class="image-slot-mini" id="slot-location" style="height:36px;">
+                ${images.location ? `<img src="${images.location}">` : `<span style="font-size:6.5px; color:#64748b;">+Lokasi</span>`}
+                <input type="file" id="input-file-loc" accept="image/*" style="display:none">
               </div>
             </div>
 
           </div>
 
-          <div class="resize-handle" id="gripper-resize" title="Tarik untuk mengubah ukuran"></div>
+          <div class="resize-handle" id="gripper-resize" title="Tarik untuk ubah ukuran"></div>
         </div>
       `;
 
-      // Attach Event Listeners to every Scene Tab Pill dynamically (Fixing scene switching!)
+      // Scene Switching Event Listeners
       const pills = wrapper.querySelectorAll('.scene-tab-pill[data-idx]');
       pills.forEach(pill => {
         pill.addEventListener('click', (e) => {
@@ -533,27 +466,11 @@
         });
       });
 
-      // Zoom Controls
-      wrapper.querySelector('#btn-zoom-in').addEventListener('click', () => {
-        if (currentZoom < 1.4) {
-          currentZoom = Math.round((currentZoom + 0.1) * 10) / 10;
-          const st = wrapper.querySelector('#main-floating-studio');
-          if (st) st.style.transform = `scale(${currentZoom})`;
-        }
-      });
-      wrapper.querySelector('#btn-zoom-out').addEventListener('click', () => {
-        if (currentZoom > 0.6) {
-          currentZoom = Math.round((currentZoom - 0.1) * 10) / 10;
-          const st = wrapper.querySelector('#main-floating-studio');
-          if (st) st.style.transform = `scale(${currentZoom})`;
-        }
-      });
       wrapper.querySelector('#btn-minimize-studio').addEventListener('click', () => {
         isMinimized = true;
         render();
       });
 
-      // Add scene
       wrapper.querySelector('#btn-add-scene-compact').addEventListener('click', () => {
         scenes.push({
           id: scenes.length + 1,
@@ -567,27 +484,19 @@
         render();
       });
 
-      wrapper.querySelector('#btn-sync-web-compact').addEventListener('click', () => {
+      wrapper.querySelector('#btn-sync-web-mini').addEventListener('click', () => {
         if (!tryAutoSyncFromWeb()) {
           fetchStoryboardFromAffiliateGo();
         } else {
           render();
-          alert("✅ Berhasil menyinkronkan data dari AffiliateGo!");
+          alert("✅ Data tersinkron!");
         }
       });
 
-      // Inputs onchange handlers
       const durSelect = wrapper.querySelector('#inp-scene-dur');
       if (durSelect) {
         durSelect.addEventListener('change', (e) => {
           scenes[activeSceneIndex].duration = parseInt(e.target.value) || 6;
-        });
-      }
-
-      const shotInput = wrapper.querySelector('#inp-shot-type');
-      if (shotInput) {
-        shotInput.addEventListener('input', (e) => {
-          scenes[activeSceneIndex].shotType = e.target.value;
         });
       }
 
@@ -598,14 +507,6 @@
         });
       }
 
-      const voiceInput = wrapper.querySelector('#inp-voiceover');
-      if (voiceInput) {
-        voiceInput.addEventListener('input', (e) => {
-          scenes[activeSceneIndex].voiceover = e.target.value;
-        });
-      }
-
-      // Crop button
       const cropBtn = wrapper.querySelector('#btn-crop-scene-active');
       if (cropBtn) {
         cropBtn.addEventListener('click', (e) => {
@@ -614,12 +515,10 @@
         });
       }
 
-      // Inject single scene
       wrapper.querySelector('#btn-inject-current-scene').addEventListener('click', async () => {
         await injectSingleSceneWithImage(activeSceneIndex);
       });
 
-      // Toggle Auto Sequence Runner
       wrapper.querySelector('#btn-toggle-auto-runner').addEventListener('click', () => {
         if (isAutoRunning) {
           stopAutoRunner();
@@ -635,7 +534,6 @@
     }
   }
 
-  // Auto Sequential Runner Logic (Automatically advance to next scene when video is done or timer completes)
   function startAutoRunner() {
     isAutoRunning = true;
     render();
@@ -650,16 +548,10 @@
 
   async function runCurrentSceneInSequence() {
     if (!isAutoRunning) return;
-
-    // 1. Inject current scene + Image
     await injectSingleSceneWithImage(activeSceneIndex);
 
-    // 2. Start monitoring Flow AI for generation completion
     const curDur = scenes[activeSceneIndex].duration || 6;
-    let secondsLeft = curDur + 25; // estimated generation time
-
-    const bannerText = shadow.getElementById('runner-status-text');
-    const countdownEl = shadow.getElementById('runner-countdown');
+    let secondsLeft = curDur + 20;
 
     if (autoTimerInterval) clearInterval(autoTimerInterval);
 
@@ -670,17 +562,11 @@
       }
 
       secondsLeft--;
-      if (countdownEl) countdownEl.innerText = secondsLeft + 's';
-      if (bannerText) bannerText.innerText = '⏳ Scene ' + (activeSceneIndex + 1) + ' Sedang Diproses Flow AI...';
-
-      // Check if Flow AI video is generated in page
       const videos = document.querySelectorAll('video');
       const hasNewVideo = videos.length > 0;
 
-      if (secondsLeft <= 0 || (secondsLeft < 15 && hasNewVideo)) {
+      if (secondsLeft <= 0 || (secondsLeft < 12 && hasNewVideo)) {
         clearInterval(autoTimerInterval);
-        if (bannerText) bannerText.innerText = '✅ Scene ' + (activeSceneIndex + 1) + ' Selesai! Lanjut Scene ' + (activeSceneIndex + 2 <= scenes.length ? activeSceneIndex + 2 : 1) + '...';
-
         setTimeout(() => {
           if (!isAutoRunning) return;
           if (activeSceneIndex + 1 < scenes.length) {
@@ -688,10 +574,10 @@
             render();
             runCurrentSceneInSequence();
           } else {
-            alert('🎉 Semua Scene (Scene 1 s/d ' + scenes.length + ') Selesai Diproses Secara Brutal!');
+            alert('🎉 Semua Scene Selesai!');
             stopAutoRunner();
           }
-        }, 3000);
+        }, 2500);
       }
     }, 1000);
   }
@@ -755,10 +641,7 @@
         const blob = await res.blob();
         return new File([blob], filename, { type: blob.type || 'image/jpeg' });
       }
-    } catch(e) {
-      console.warn("Failed to convert image to file:", e);
-      return null;
-    }
+    } catch(e) { return null; }
   }
 
   async function injectSingleSceneWithImage(sceneIdx) {
@@ -766,7 +649,7 @@
     const promptText = "[Scene " + (sceneIdx + 1) + " (" + sc.duration + "s)]: " + sc.promptVideo;
     const imgSource = sc.imageUrl || images.product || images.model || images.location;
 
-    // 1. Upload Image to Flow AI
+    // 1. Upload image
     if (imgSource) {
       const fileObj = await urlOrBase64ToFile(imgSource, "scene-" + (sceneIdx + 1) + ".jpg");
       if (fileObj) {
@@ -782,7 +665,7 @@
       }
     }
 
-    // 2. Inject Prompt text into Flow AI Chat Prompt Textarea
+    // 2. Inject text into prompt textarea (excluding search)
     const promptSelectors = [
       'textarea[placeholder*="prompt" i]',
       'textarea[placeholder*="describe" i]',
@@ -791,7 +674,7 @@
       'textarea[aria-label*="describe" i]',
       '[contenteditable="true"][role="textbox"]',
       'div[contenteditable="true"]',
-      'textarea:not([type="search"]):not([placeholder*="search" i]):not([placeholder*="cari" i]):not([aria-label*="search" i])'
+      'textarea:not([type="search"]):not([placeholder*="search" i]):not([placeholder*="cari" i])'
     ];
 
     let targetInput = null;
@@ -800,8 +683,7 @@
       const filtered = candidates.filter(el => {
         const ph = (el.getAttribute('placeholder') || '').toLowerCase();
         const aria = (el.getAttribute('aria-label') || '').toLowerCase();
-        const idClass = (el.id + ' ' + el.className).toLowerCase();
-        return !ph.includes('search') && !ph.includes('cari') && !aria.includes('search') && !idClass.includes('search');
+        return !ph.includes('search') && !ph.includes('cari') && !aria.includes('search');
       });
       if (filtered.length > 0) {
         targetInput = filtered[0];
@@ -833,13 +715,13 @@
     cropOverlay.className = 'crop-modal-overlay';
     cropOverlay.innerHTML = `
       <div class="crop-dialog">
-        <div style="font-size:11px; font-weight:bold; color:#f59e0b;">✂️ Crop Foto Scene ${activeSceneIndex + 1}</div>
-        <div style="width:100%; aspect-ratio:1; overflow:hidden; border-radius:8px; background:#000; display:flex; align-items:center; justify-content:center;">
+        <div style="font-size:10px; font-weight:bold; color:#f59e0b;">✂ Crop Scene ${activeSceneIndex + 1}</div>
+        <div style="width:100%; aspect-ratio:1; overflow:hidden; border-radius:6px; background:#000; display:flex; align-items:center; justify-content:center;">
           <img id="crop-preview-img" src="${imgSrc}" style="max-width:100%; max-height:100%; object-fit:contain;">
         </div>
-        <div style="display:flex; justify-content:space-between; gap:6px;">
-          <button id="btn-crop-cancel" style="flex:1; background:#1e293b; color:#cbd5e1; border:none; border-radius:6px; padding:6px; font-size:10px; font-weight:bold; cursor:pointer;">Batal</button>
-          <button id="btn-crop-apply" style="flex:1; background:#ea580c; color:#fff; border:none; border-radius:6px; padding:6px; font-size:10px; font-weight:bold; cursor:pointer;">Crop 1:1</button>
+        <div style="display:flex; justify-content:space-between; gap:4px;">
+          <button id="btn-crop-cancel" style="flex:1; background:#1e293b; color:#cbd5e1; border:none; border-radius:4px; padding:4px; font-size:9px; font-weight:bold; cursor:pointer;">Batal</button>
+          <button id="btn-crop-apply" style="flex:1; background:#ea580c; color:#fff; border:none; border-radius:4px; padding:4px; font-size:9px; font-weight:bold; cursor:pointer;">Crop 1:1</button>
         </div>
       </div>
     `;
@@ -863,17 +745,33 @@
     });
   }
 
+  // Smooth Universal Draggable (Mouse + Touch Support for Mobile / Android)
   function makeDraggable(element, handle) {
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
     const dragTarget = handle || element;
-    dragTarget.onmousedown = dragMouseDown;
+
+    // Mouse Events
+    dragTarget.addEventListener('mousedown', dragMouseDown);
+
+    // Touch Events (Mobile Kiwi / Chrome)
+    dragTarget.addEventListener('touchstart', dragTouchStart, { passive: false });
 
     function dragMouseDown(e) {
       e.preventDefault();
       pos3 = e.clientX;
       pos4 = e.clientY;
-      document.onmouseup = closeDragElement;
-      document.onmousemove = elementDrag;
+      document.addEventListener('mouseup', closeDragElement);
+      document.addEventListener('mousemove', elementDrag);
+    }
+
+    function dragTouchStart(e) {
+      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      pos3 = touch.clientX;
+      pos4 = touch.clientY;
+      document.addEventListener('touchend', closeDragTouch);
+      document.addEventListener('touchmove', elementTouchDrag, { passive: false });
     }
 
     function elementDrag(e) {
@@ -883,14 +781,30 @@
       pos3 = e.clientX;
       pos4 = e.clientY;
       host.style.transform = 'none';
-      host.style.top = (host.offsetTop - pos2) + "px";
-      host.style.left = (host.offsetLeft - pos1) + "px";
-      host.style.right = 'auto';
+      host.style.top = Math.max(0, host.offsetTop - pos2) + "px";
+      host.style.left = Math.max(0, host.offsetLeft - pos1) + "px";
+    }
+
+    function elementTouchDrag(e) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      pos1 = pos3 - touch.clientX;
+      pos2 = pos4 - touch.clientY;
+      pos3 = touch.clientX;
+      pos4 = touch.clientY;
+      host.style.transform = 'none';
+      host.style.top = Math.max(0, host.offsetTop - pos2) + "px";
+      host.style.left = Math.max(0, host.offsetLeft - pos1) + "px";
     }
 
     function closeDragElement() {
-      document.onmouseup = null;
-      document.onmousemove = null;
+      document.removeEventListener('mouseup', closeDragElement);
+      document.removeEventListener('mousemove', elementDrag);
+    }
+
+    function closeDragTouch() {
+      document.removeEventListener('touchend', closeDragTouch);
+      document.removeEventListener('touchmove', elementTouchDrag);
     }
   }
 
@@ -898,27 +812,49 @@
     if (!studio || !gripper) return;
     let startX, startY, startWidth, startHeight;
 
-    gripper.onmousedown = function(e) {
+    gripper.addEventListener('mousedown', (e) => {
       e.preventDefault();
       e.stopPropagation();
       startX = e.clientX;
       startY = e.clientY;
       startWidth = parseInt(document.defaultView.getComputedStyle(studio).width, 10);
       startHeight = parseInt(document.defaultView.getComputedStyle(studio).height, 10);
-      document.onmousemove = doResize;
-      document.onmouseup = stopResize;
-    };
+      document.addEventListener('mousemove', doResize);
+      document.addEventListener('mouseup', stopResize);
+    });
+
+    gripper.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      startWidth = parseInt(document.defaultView.getComputedStyle(studio).width, 10);
+      startHeight = parseInt(document.defaultView.getComputedStyle(studio).height, 10);
+      document.addEventListener('touchmove', doTouchResize, { passive: false });
+      document.addEventListener('touchend', stopTouchResize);
+    }, { passive: false });
 
     function doResize(e) {
-      const newW = Math.max(280, Math.min(window.innerWidth - 30, startWidth + e.clientX - startX));
-      const newH = Math.max(250, Math.min(window.innerHeight - 30, startHeight + e.clientY - startY));
-      studio.style.width = newW + 'px';
-      studio.style.height = newH + 'px';
+      studio.style.width = Math.max(220, startWidth + e.clientX - startX) + 'px';
+      studio.style.height = Math.max(180, startHeight + e.clientY - startY) + 'px';
+    }
+
+    function doTouchResize(e) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      studio.style.width = Math.max(220, startWidth + touch.clientX - startX) + 'px';
+      studio.style.height = Math.max(180, startHeight + touch.clientY - startY) + 'px';
     }
 
     function stopResize() {
-      document.onmousemove = null;
-      document.onmouseup = null;
+      document.removeEventListener('mousemove', doResize);
+      document.removeEventListener('mouseup', stopResize);
+    }
+
+    function stopTouchResize() {
+      document.removeEventListener('touchmove', doTouchResize);
+      document.removeEventListener('touchend', stopTouchResize);
     }
   }
 
