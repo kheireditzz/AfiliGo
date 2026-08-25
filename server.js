@@ -983,56 +983,54 @@ app.post('/api/analyze-uploaded-visuals', async (req, res) => {
     ? process.env.GEMINI_API_KEY
     : (readJson(DB_SETTINGS).geminiApiKey || 'AIzaSyC5n4K5LAJEZM7IZbhenCUvQt18k-nd3Aw');
 
-  // If product image is provided, run real Multimodal Vision AI with Gemini 2.5 Flash
-  if (productImgBase64 && productImgBase64.includes('base64,')) {
+  const hasImage = (productImgBase64 && productImgBase64.includes('base64,')) ||
+                   (modelImgBase64 && modelImgBase64.includes('base64,')) ||
+                   (locationImgBase64 && locationImgBase64.includes('base64,'));
+
+  if (hasImage) {
     try {
       const parts = [];
-      const match = productImgBase64.match(/^data:([^;]+);base64,(.+)$/);
-      if (match) {
-        parts.push({
-          inlineData: {
-            mimeType: match[1] || 'image/jpeg',
-            data: match[2]
-          }
-        });
+      let promptInstructions = `You are an expert Indonesian E-Commerce, Visual Director & Short-Form Video AI.\n`;
+
+      if (productImgBase64 && productImgBase64.includes('base64,')) {
+        const match = productImgBase64.match(/^data:([^;]+);base64,(.+)$/);
+        if (match) {
+          parts.push({
+            inlineData: { mimeType: match[1] || 'image/jpeg', data: match[2] }
+          });
+          promptInstructions += `Image is the PRODUCT. Identify exact commercial product name in Indonesian and 2-3 key selling points / USP.\n`;
+        }
       }
 
       if (modelImgBase64 && modelImgBase64.includes('base64,')) {
-        const mMatch = modelImgBase64.match(/^data:([^;]+);base64,(.+)$/);
-        if (mMatch) {
+        const match = modelImgBase64.match(/^data:([^;]+);base64,(.+)$/);
+        if (match) {
           parts.push({
-            inlineData: {
-              mimeType: mMatch[1] || 'image/jpeg',
-              data: mMatch[2]
-            }
+            inlineData: { mimeType: match[1] || 'image/jpeg', data: match[2] }
           });
+          promptInstructions += `Image is the MODEL / TALENT. Describe this person's appearance, age, gender, Indonesian look, clothing/outfit style, and hairstyle in detail.\n`;
         }
       }
 
       if (locationImgBase64 && locationImgBase64.includes('base64,')) {
-        const lMatch = locationImgBase64.match(/^data:([^;]+);base64,(.+)$/);
-        if (lMatch) {
+        const match = locationImgBase64.match(/^data:([^;]+);base64,(.+)$/);
+        if (match) {
           parts.push({
-            inlineData: {
-              mimeType: lMatch[1] || 'image/jpeg',
-              data: lMatch[2]
-            }
+            inlineData: { mimeType: match[1] || 'image/jpeg', data: match[2] }
           });
+          promptInstructions += `Image is the LOCATION / SETTING. Describe this room/environment, decor, lighting, and aesthetic backdrop in detail in English.\n`;
         }
       }
 
-      parts.push({
-        text: `You are an expert Indonesian E-Commerce & Affiliate Marketing Vision AI for TikTok Shop, Shopee, and Instagram Reels.
-Analyze the uploaded product image very accurately.
-Identify the exact product name, brand/type, packaging details, and key benefits.
-Return a valid JSON object matching this schema:
+      promptInstructions += `Return a valid JSON object with the following schema:
 {
-  "suggestedTitle": "Precise, commercial Indonesian product name (e.g. 'Skintific 5X Ceramide Barrier Repair Moisture Gel', 'TWS Bluetooth Earphones ANC Wireless Bass', 'Tas Ransel Pria Anti Air Waterproof'). Be specific and accurate to what is visible in the photo.",
-  "suggestedUsp": "2-3 high-converting selling points / USP in Indonesian in 1-2 compelling sentences focusing on benefits.",
-  "suggestedModel": "Ideal Indonesian talent/model description (age, gender, stylish outfit, expression) best suited to promote this product on short video.",
-  "suggestedLocation": "Cinematic aesthetic background setting/location in English for generating 8K Flux visuals."
-}`
-      });
+  "suggestedTitle": "Exact commercial Indonesian product name (e.g. 'Skintific 5X Ceramide Barrier Repair Moisture Gel', 'TWS Bluetooth Earphones ANC Wireless')",
+  "suggestedUsp": "2-3 high-converting selling points / USP in Indonesian in 1-2 compelling sentences",
+  "suggestedModel": "Description of the model (appearance, age, fashion style, look) in Indonesian/English",
+  "suggestedLocation": "Cinematic aesthetic background location & lighting in English for 8K rendering"
+}`;
+
+      parts.push({ text: promptInstructions });
 
       const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyToUse}`;
       const visionRes = await fetch(visionUrl, {
