@@ -1227,42 +1227,48 @@ const handleGenerateStoryboard = async (req, res) => {
     locationSetting, 
     numScenes = 4, 
     promptsPerScene = 1,
-    duration = 15,
+    duration = 40,
     platform = 'TikTok / Reels (9:16)',
     videoEngine = 'Flux 8K / Kling AI'
   } = req.body;
 
-  const totalDurationNum = parseInt(duration) || 15;
-  const sceneCount = parseInt(numScenes) || 4;
-  const perSceneDuration = Math.max(2, Math.round(totalDurationNum / sceneCount));
+  const totalDurationNum = 40;
+  const sceneCount = 4;
+  const perSceneDuration = 10;
 
   const modelText = modelDescription || 'Indonesian Female Content Creator, 22 years old, glowing natural skin, charming smile';
   const locationText = locationSetting || 'Aesthetic Modern Indonesian Coffee Shop, warm natural ambient bokeh lighting';
   const uspText = usp || 'Kualitas premium terlaris, formula unggulan terbukti viral.';
   const realismBoost = 'hyperrealistic commercial photograph, true-to-life 8k UHD resolution, authentic skin pores and micro-textures, natural soft daylight, subtle depth of field, captured on Sony A7R V with 50mm f/1.2 GM lens, color graded, cinematic film still, zero CGI, zero cartoon, raw authentic capture';
 
-  const promptForGemini = `You are an elite viral TikTok/Shopee affiliate marketing director and master visual prompt engineer.
-Create an authentic, high-converting storyboard tailored specifically to the user's exact parameters:
-- Exact Product Title: ${productTitle}
-- Key Value/USP: ${uspText}
-- Model Character Description: ${modelText}
-- Exact Setting/Location: ${locationText}
-- Number of Scenes: ${sceneCount}
-- Duration: ${totalDurationNum} seconds (${perSceneDuration}s per scene)
-- Platform: ${platform}
+  const promptForGemini = `Kamu adalah AI storyboard artist & prompt engineer profesional. Buatkan storyboard untuk video pendek dengan tema produk: ${productTitle} (${uspText}).
+
+ATURAN OUTPUT:
+1. Buat TEPAT 4 scene (Scene 1, Scene 2, Scene 3, Scene 4), alur cerita berurutan logis (awal/hook - isi/problem-solution - klimaks/demonstrasi - penutup/CTA).
+2. Untuk SETIAP scene, berikan dalam blok terpisah:
+   a. Judul scene singkat
+   b. Deskripsi visual (setting: ${locationText}, karakter: ${modelText}, aksi, ekspresi, pencahayaan, angle kamera)
+   c. Voice Over (VO) — naskah narasi/dialog persuasif bahasa Indonesia, durasi bicara pas untuk 10 detik (sekitar 20-25 kata)
+   d. Video Prompt — siap dipakai di AI video generator (Flow AI / Runway / Kling / Veo), termasuk gerakan kamera, transisi, format vertical 9:16, durasi 10 detik
+3. WAJIB: Buat 1 (SATU) PROMPT GAMBAR STORYBOARD GABUNGAN — hanya SATU gambar dengan 4 panel susun vertikal (rasio 9:16, garis pembatas, label SCENE 1/2/3/4 di tiap panel), menggambarkan 4 scene secara konsisten visual dan pencahayaan.
+4. Total durasi video: 40 detik (4 scene x 10 detik). Rasio aspek video & gambar: 9:16 vertical.
 
 Return STRICT JSON formatted with this schema:
 {
-  "hook": "Opening viral hook audio script in Indonesian (punchy, energetic, under 15 words)",
-  "cta": "Closing CTA audio script in Indonesian (clear urgency, mention yellow basket/keranjang kuning, under 15 words)",
+  "title": "${productTitle}",
+  "totalDuration": 40,
+  "hook": "Opening viral hook audio script in Indonesian (under 15 words)",
+  "cta": "Closing CTA audio script in Indonesian (clear urgency, keranjang kuning)",
+  "unifiedStoryboardImagePrompt": "A single 9:16 vertical commercial storyboard sheet with 4 horizontal panels stacked vertically from top to bottom separated by clean borders labeled SCENE 1, SCENE 2, SCENE 3, SCENE 4, showing: Panel 1 (${productTitle} close up with ${modelText}), Panel 2 (${modelText} testing ${productTitle} in ${locationText}), Panel 3 (${productTitle} texture detail macro), Panel 4 (${modelText} smiling holding ${productTitle}), consistent cinematic photorealistic lighting, 8k resolution, aspect ratio 9:16 --ar 9:16",
+  "formattedTextOutput": "=== STORYBOARD: ${productTitle} (Total durasi: 40 detik) ===\\n\\n>>> SCENE 1: Hook Pembuka (10 detik) <<<\\nDeskripsi: ...\\nVoice Over: \\"...\\"\\nVideo Prompt: ...\\n>>> END SCENE 1 <<<\\n\\n>>> SCENE 2: Masalah & Solusi (10 detik) <<<\\nDeskripsi: ...\\nVoice Over: \\"...\\"\\nVideo Prompt: ...\\n>>> END SCENE 2 <<<\\n\\n>>> SCENE 3: Demonstrasi Keunggulan (10 detik) <<<\\nDeskripsi: ...\\nVoice Over: \\"...\\"\\nVideo Prompt: ...\\n>>> END SCENE 3 <<<\\n\\n>>> SCENE 4: Call to Action (10 detik) <<<\\nDeskripsi: ...\\nVoice Over: \\"...\\"\\nVideo Prompt: ...\\n>>> END SCENE 4 <<<\\n\\n>>> IMAGE PROMPT STORYBOARD (1 gambar, 4 panel susun vertikal, aspect ratio 9:16) <<<\\n...\\n>>> END IMAGE PROMPT <<<",
   "scenes": [
     {
       "sceneNumber": 1,
-      "shotType": "Extreme Close-Up / Product Macro / Lifestyle Demo",
-      "visualDescription": "Detailed Indonesian description of what model and product are doing in the specified location",
-      "voiceover": "Natural, conversational spoken Indonesian voiceover script tailored to sell the USP",
-      "prompt": "Detailed English Flux 8K photography prompt faithfully featuring: (${productTitle}), (${modelText}), situated directly in (${locationText}), specifying camera angle, lighting, depth of field, authentic material textures",
-      "videoPrompt": "Cinematic AI video generation prompt for Kling/Luma: continuous realistic camera motion, model holding ${productTitle} in ${locationText}, natural realistic movements"
+      "shotType": "Scene 1: Hook Close-Up",
+      "visualDescription": "Deskripsi visual detail setting ${locationText}, karakter ${modelText}, aksi, ekspresi, angle kamera",
+      "voiceover": "Naskah voiceover bahasa Indonesia durasi 10 detik",
+      "prompt": "Detailed English Flux 8K photography prompt for panel 1 featuring ${productTitle} and ${modelText} in ${locationText}",
+      "videoPrompt": "Cinematic AI video generation prompt for Kling/Veo: camera movement, model holding ${productTitle}, 9:16 aspect ratio, 10s duration"
     }
   ]
 }`;
@@ -1270,94 +1276,120 @@ Return STRICT JSON formatted with this schema:
   try {
     const aiResult = await callGeminiPro(promptForGemini);
     if (aiResult && aiResult.scenes && Array.isArray(aiResult.scenes) && aiResult.scenes.length > 0) {
-      const processedScenes = aiResult.scenes.map((sc, idx) => {
-        const fullPrompt = `${sc.prompt || `${productTitle} held naturally by ${modelText} at ${locationText}`}, ${realismBoost}`;
+      const unifiedImgPrompt = aiResult.unifiedStoryboardImagePrompt || `A single 9:16 vertical commercial storyboard sheet with 4 horizontal panels stacked vertically from top to bottom labeled SCENE 1, SCENE 2, SCENE 3, SCENE 4 showing ${productTitle} with ${modelText} in ${locationText}, aspect ratio 9:16, ${realismBoost}`;
+      const unifiedImgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(unifiedImgPrompt)}?width=768&height=1344&seed=${Math.floor(Math.random() * 9999999)}&model=flux&nologo=true`;
+
+      const processedScenes = aiResult.scenes.slice(0, 4).map((sc, idx) => {
+        const fullPrompt = `${sc.prompt || `${productTitle} held naturally by ${modelText} at ${locationText}`}, aspect ratio 9:16, ${realismBoost}`;
         return {
           sceneNumber: idx + 1,
-          shotType: sc.shotType || 'Medium Shot',
-          durationSeconds: perSceneDuration,
+          shotType: sc.shotType || `Scene ${idx + 1}`,
+          durationSeconds: 10,
+          aspectRatio: '9:16',
           visualDescription: sc.visualDescription || `Model memperlihatkan ${productTitle} di ${locationText}`,
           voiceover: sc.voiceover || `Lihat keunggulan ${productTitle} yang sangat praktis dan ${uspText}`,
           prompt: fullPrompt,
-          videoPrompt: sc.videoPrompt || `Smooth slow motion camera pan of ${modelText} with ${productTitle} inside ${locationText}, 4k realistic footage`,
+          videoPrompt: sc.videoPrompt || `Smooth slow motion camera pan of ${modelText} with ${productTitle} inside ${locationText}, vertical 9:16, 10s duration, 4k realistic footage`,
           promptsList: [fullPrompt],
-          imageUrl: `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=768&height=1344&seed=${Math.floor(Math.random() * 9999999)}&model=flux&nologo=true`
+          imageUrl: unifiedImgUrl
         };
       });
 
+      // Pad to exactly 4 scenes if AI returned fewer
+      while (processedScenes.length < 4) {
+        const idx = processedScenes.length;
+        processedScenes.push({
+          sceneNumber: idx + 1,
+          shotType: `Scene ${idx + 1}: Closing Action`,
+          durationSeconds: 10,
+          aspectRatio: '9:16',
+          visualDescription: `${modelText} tersenyum menunjukkan ${productTitle} di ${locationText}.`,
+          voiceover: `Klik keranjang kuning sekarang mumpung promo diskon spesial masih ada!`,
+          prompt: `Commercial portrait of ${modelText} with ${productTitle} in ${locationText}, aspect ratio 9:16, ${realismBoost}`,
+          videoPrompt: `Smooth push in camera move towards ${modelText} showing ${productTitle}, 9:16 vertical, 10s duration`,
+          promptsList: [`Commercial portrait of ${modelText} with ${productTitle} in ${locationText}, aspect ratio 9:16, ${realismBoost}`],
+          imageUrl: unifiedImgUrl
+        });
+      }
+
       return res.json({
         title: `Affiliate: ${productTitle}`,
-        platform: platform,
-        totalDuration: totalDurationNum,
+        platform: 'TikTok / Reels (9:16)',
+        totalDuration: 40,
         modelDescription: modelText,
         locationSetting: locationText,
         hook: aiResult.hook || `Stop scrolling! Ini rahasia kenapa ${productTitle} viral banget!`,
         cta: aiResult.cta || 'Klik keranjang kuning sekarang mumpung diskon spesial!',
+        unifiedStoryboardImagePrompt: unifiedImgPrompt,
+        unifiedStoryboardImageUrl: unifiedImgUrl,
+        formattedTextOutput: aiResult.formattedTextOutput || '',
         scenes: processedScenes,
-        poweredBy: 'Antigravity AI (Gemini 2.5 Pro & Video Prompt Director)'
+        poweredBy: 'Antigravity AI (Gemini 2.5 Pro 4-Scene Storyboard Director)'
       });
     }
   } catch (geminiError) {
     console.error('Gemini Pro generation fallback:', geminiError);
   }
 
-  // High quality fallback matching exact user inputs
+  // High quality fallback matching exact user inputs (4 Scenes x 10s = 40s)
+  const unifiedFallbackPrompt = `A single 9:16 vertical commercial storyboard sheet with 4 horizontal panels stacked vertically from top to bottom labeled SCENE 1, SCENE 2, SCENE 3, SCENE 4, showing: Panel 1 (${productTitle} macro hook), Panel 2 (${modelText} demonstrating solution), Panel 3 (${productTitle} premium texture in ${locationText}), Panel 4 (${modelText} happy holding ${productTitle}), aspect ratio 9:16, ${realismBoost}`;
+  const unifiedFallbackImgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(unifiedFallbackPrompt)}?width=768&height=1344&seed=${Math.floor(Math.random() * 9999999)}&model=flux&nologo=true`;
+
   const sceneTemplates = [
     {
-      shotType: 'Hook / Extreme Close-Up',
-      visualDesc: `Kamera fokus menyorot detail ${productTitle} yang dipegang elegan oleh ${modelText} di ${locationText}.`,
-      voiceover: `Stop scrolling! Ini rahasia kenapa ${productTitle} ini lagi viral banget dan wajib kamu punya!`,
-      promptBase: `Macro close-up shot of authentic ${productTitle}, held delicately by hands of ${modelText}, crystal clear authentic textures, ambient natural illumination in ${locationText}, ${realismBoost}`
+      shotType: 'Scene 1: Hook Pembuka',
+      visualDesc: `Kamera fokus macro menyorot detail ${productTitle} yang dipegang elegan oleh ${modelText} di ${locationText}, pencahayaan studio estetik.`,
+      voiceover: `Stop scrolling! Ini rahasia kenapa ${productTitle} ini lagi viral banget dan wajib kamu punya sekarang!`,
+      videoPrompt: `Extreme close up macro camera push-in on ${productTitle} held by ${modelText}, soft cinematic lighting, 9:16 vertical, 10 seconds duration, 4k 60fps`
     },
     {
-      shotType: 'Problem & Solution / Medium Shot',
-      visualDesc: `${modelText} mengekspresikan kepuasan saat mendemonstrasikan keunggulan ${productTitle} di ${locationText}.`,
-      voiceover: `Dulu sering bingung cari yang pas, tapi pas nyobain ${productTitle} langsung kaget sama keunggulannya yang ${uspText}!`,
-      promptBase: `Medium shot of ${modelText} actively demonstrating and genuinely using ${productTitle}, authentic happy facial expression, natural soft daylight, located inside ${locationText}, ${realismBoost}`
+      shotType: 'Scene 2: Masalah & Solusi',
+      visualDesc: `${modelText} mendemonstrasikan keunggulan praktis ${productTitle} dengan ekspresi terkesima dan bahagia di ${locationText}.`,
+      voiceover: `Dulu sering bingung cari yang beneran ampuh, pas nyobain ini langsung kaget sama hasilnya yang ${uspText}!`,
+      videoPrompt: `Medium tracking camera movement of ${modelText} actively using and presenting ${productTitle}, natural facial expression, 9:16 vertical, 10s duration`
     },
     {
-      shotType: 'Feature Demo / Close-Up Macro',
-      visualDesc: `Demonstrasi jelas detail material dan manfaat ${productTitle} dengan pencahayaan estetik di ${locationText}.`,
-      voiceover: `Lihat detail materialnya yang premium dan mewah. Bener-bener ${uspText} dan worth it banget!`,
-      promptBase: `Crisp commercial photograph showcasing the authentic build of ${productTitle}, ${modelText} in natural background bokeh, soft realistic lighting in ${locationText}, ${realismBoost}`
+      shotType: 'Scene 3: Demonstrasi Keunggulan',
+      visualDesc: `Sorotan close-up menunjukkan detail kualitas dan tekstur formula ${productTitle} dengan pencahayaan natural di ${locationText}.`,
+      voiceover: `Lihat detail material dan kandungannya yang premium. Bener-bener ${uspText} dan berasa mewah banget!`,
+      videoPrompt: `Slow motion orbital camera rotation around ${productTitle} highlighting material quality, bokeh background in ${locationText}, 9:16 vertical, 10s duration`
     },
     {
-      shotType: 'Lifestyle & Call-To-Action / Eye-Level Portrait',
-      visualDesc: `${modelText} tersenyum percaya diri menggunakan ${productTitle} dalam aktivitas santai di ${locationText}.`,
-      voiceover: `Praktis dibawa ke mana aja dan bikin hidup makin simpel! Klik keranjang kuning sekarang mumpung diskon spesial masih ada!`,
-      promptBase: `Eye-level candid lifestyle photo of ${modelText} posing naturally with ${productTitle}, gorgeous authentic smile, realistic depth of field, seated inside ${locationText}, ${realismBoost}`
+      shotType: 'Scene 4: Call to Action (CTA)',
+      visualDesc: `${modelText} tersenyum percaya diri mengajak penonton sambil menunjukkan ${productTitle} ke arah kamera di ${locationText}.`,
     }
   ];
 
-  const scenes = [];
-  for (let i = 0; i < sceneCount; i++) {
-    const template = sceneTemplates[i % sceneTemplates.length];
-    const activePrompt = template.promptBase;
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(activePrompt)}?width=768&height=1344&seed=${Math.floor(Math.random() * 9999999)}&model=flux&nologo=true`;
+  const scenes = sceneTemplates.map((template, idx) => ({
+    sceneNumber: idx + 1,
+    shotType: template.shotType,
+    durationSeconds: 10,
+    aspectRatio: '9:16',
+    visualDescription: template.visualDesc,
+    voiceover: template.voiceover,
+    prompt: `${template.videoPrompt}, aspect ratio 9:16, ${realismBoost}`,
+    videoPrompt: template.videoPrompt,
+    promptsList: [`${template.videoPrompt}, aspect ratio 9:16, ${realismBoost}`],
+    imageUrl: unifiedFallbackImgUrl
+  }));
 
-    scenes.push({
-      sceneNumber: i + 1,
-      shotType: template.shotType,
-      durationSeconds: perSceneDuration,
-      visualDescription: template.visualDesc,
-      voiceover: template.voiceover,
-      prompt: activePrompt,
-      videoPrompt: `Smooth cinematic camera movement showing ${modelText} with ${productTitle} at ${locationText}, 4k realistic motion`,
-      promptsList: [activePrompt],
-      imageUrl: imageUrl
-    });
-  }
+  const fallbackFormattedText = `=== STORYBOARD: ${productTitle} (Total durasi: 40 detik) ===\n\n` +
+    scenes.map(s => `>>> ${s.shotType.toUpperCase()} (10 detik) <<<\nDeskripsi: ${s.visualDescription}\nVoice Over: "${s.voiceover}"\nVideo Prompt: ${s.videoPrompt}\n>>> END SCENE ${s.sceneNumber} <<<`).join('\n\n') +
+    `\n\n>>> IMAGE PROMPT STORYBOARD (1 gambar, 4 panel susun vertikal, aspect ratio 9:16) <<<\n${unifiedFallbackPrompt}\n>>> END IMAGE PROMPT <<<`;
 
   res.json({
     title: `Affiliate: ${productTitle}`,
-    platform: platform,
-    totalDuration: totalDurationNum,
+    platform: 'TikTok / Reels (9:16)',
+    totalDuration: 40,
     modelDescription: modelText,
     locationSetting: locationText,
     hook: `Stop scrolling! Ini rahasia kenapa ${productTitle} viral banget!`,
     cta: `Klik keranjang kuning sekarang mumpung diskon spesial masih ada!`,
+    unifiedStoryboardImagePrompt: unifiedFallbackPrompt,
+    unifiedStoryboardImageUrl: unifiedFallbackImgUrl,
+    formattedTextOutput: fallbackFormattedText,
     scenes: scenes,
-    poweredBy: 'Native AI Studio Engine (Flux 8K)'
+    poweredBy: 'Native AI 4-Scene Storyboard Director'
   });
 };
 

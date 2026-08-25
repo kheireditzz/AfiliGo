@@ -880,9 +880,11 @@
     }
   }
 
+    // DEEP CLEANER: REMOVE ALL UPLOADED & GENERATED IMAGES IN FLOW AI
   function executeDeepClearImages() {
     let count = 0;
 
+    // 1. Click all dismiss / close / delete buttons across Flow AI DOM
     const dismissSelectors = [
       'button[aria-label*="remove" i]',
       'button[aria-label*="delete" i]',
@@ -903,13 +905,16 @@
     dismissSelectors.forEach(sel => {
       document.querySelectorAll(sel).forEach(el => {
         try {
-          const btn = el.tagName === "BUTTON" || el.getAttribute("role") === "button" ? el : el.closest("button, [role='button']");
-          if (btn) { btn.click(); count++; }
+          if (!el.closest("#flow-ai-extension-host")) {
+            const btn = el.tagName === "BUTTON" || el.getAttribute("role") === "button" ? el : el.closest("button, [role='button']");
+            if (btn) { btn.click(); count++; }
+          }
         } catch(e) {}
       });
     });
 
-    document.querySelectorAll('[role="img"], .attachment-chip, .preview-item, [data-testid*="attachment"], [data-testid*="thumbnail"]').forEach(el => {
+    // 2. Direct DOM removal of preview chips & image attachment containers in chat / result area
+    document.querySelectorAll('[role="img"]:not(#flow-ai-extension-host *), .attachment-chip, .preview-item, [data-testid*="attachment"], [data-testid*="thumbnail"], .image-card, .generated-image-card').forEach(el => {
       try {
         if (!el.closest("#flow-ai-extension-host")) {
           el.remove();
@@ -918,6 +923,7 @@
       } catch(e) {}
     });
 
+    // 3. Reset all file inputs
     document.querySelectorAll('input[type="file"]').forEach(fi => {
       try {
         fi.value = "";
@@ -927,33 +933,49 @@
       } catch(e) {}
     });
 
+    // 4. Reset extension current image & banana state
     if (scenes[activeSceneIndex]) {
       scenes[activeSceneIndex].imageUrl = null;
     }
     bananaState.imageUrl = null;
     render();
 
-    alert("🖼️ Berhasil membersihkan semua lampiran foto di Flow AI!");
+    alert("🖼️ Berhasil membersihkan foto yang terupload & digenerate di Flow AI!");
   }
 
+    // DEEP CLEANER: REMOVE ALL GENERATED VIDEOS IN FLOW AI
   function executeDeepClearVideos() {
     let count = 0;
+    
+    // 1. Target all video elements and remove their parent cards
     document.querySelectorAll("video").forEach(v => {
       try {
         v.pause();
         v.removeAttribute("src");
         v.src = "";
         v.load();
-        const card = v.closest(".video-card, .output-card, [data-testid*='video'], .result-container");
-        if (card) {
+        const card = v.closest(".video-card, .output-card, [data-testid*='video'], .result-container, [data-testid*='output'], .player-container");
+        if (card && !card.closest("#flow-ai-extension-host")) {
           card.remove();
+        } else {
+          v.remove();
         }
         count++;
       } catch(e) {}
     });
 
+    // 2. Click any Flow AI video delete buttons
+    document.querySelectorAll('button[aria-label*="delete video" i], button[aria-label*="remove video" i], [data-testid*="delete-video" i]').forEach(btn => {
+      try {
+        if (!btn.closest("#flow-ai-extension-host")) {
+          btn.click();
+          count++;
+        }
+      } catch(e) {}
+    });
+
     detectedVideoUrl = null;
-    alert("🎬 Berhasil membersihkan seluruh video player & hasil render di Flow AI!");
+    alert("🎬 Berhasil membersihkan semua video hasil render di Flow AI!");
   }
 
   function createNewProject() {
