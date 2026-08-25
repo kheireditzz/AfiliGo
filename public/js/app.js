@@ -1421,43 +1421,32 @@ function renderStoryboardPreview() {
   }
 
   container.innerHTML = currentStoryboard.scenes.map((scene, idx) => {
-    const imagesList = scene.imagesList || [scene.imageUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"];
-    const promptsList = scene.promptsList || [scene.prompt || ""];
-    const safeImageUrl = scene.imageUrl || imagesList[0];
+    const safeImageUrl = scene.imageUrl || (scene.imagesList && scene.imagesList[0]) || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400";
     const encodedPrompt = encodeURIComponent(scene.prompt || "");
-
-    const photoTabs = [
-      { label: "1. Macro Hook", icon: "fa-bullseye" },
-      { label: "2. Talent UGC", icon: "fa-user" },
-      { label: "3. Detail Tekstur", icon: "fa-gem" },
-      { label: "4. Lifestyle CTA", icon: "fa-star" }
+    const panels = scene.panels || [
+      { num: 1, title: 'Keadaan Awal', desc: 'Karakter memulai aktivitas di lokasi.' },
+      { num: 2, title: 'Aksi Berjalan', desc: 'Karakter bergerak mencari solusi.' },
+      { num: 3, title: 'Mempromosikan', desc: 'Karakter memperlihatkan produk ke kamera.' },
+      { num: 4, title: 'Aksi Lanjutan', desc: 'Transisi bersiap menuju scene berikutnya.' }
     ];
 
-    const photoSelectorButtons = `
-      <div class="grid grid-cols-4 gap-1.5 p-1 rounded-2xl bg-black/40 border border-slate-800">
-        ${imagesList.slice(0, 4).map((img, pIdx) => {
-          const isSelected = (scene.imageUrl === img) || (!scene.imageUrl && pIdx === 0);
-          const tabMeta = photoTabs[pIdx] || { label: `Foto ${pIdx + 1}`, icon: "fa-image" };
-          return `
-            <button onclick="selectScenePhoto(${idx}, ${pIdx})" class="group relative rounded-xl overflow-hidden aspect-[9/16] border-2 transition active:scale-95 ${isSelected ? 'border-amber-400 ring-2 ring-orange-500/40 shadow-lg shadow-orange-500/20' : 'border-slate-800 opacity-60 hover:opacity-100 hover:border-slate-600'}">
-              <img src="${img}" class="w-full h-full object-cover" alt="Foto ${pIdx + 1}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400';">
-              <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent p-1 text-[8px] font-bold text-center text-white truncate font-mono">
-                <i class="fa-solid ${tabMeta.icon} text-[7px] text-amber-400"></i> ${pIdx + 1}
-              </div>
-            </button>
-          `;
-        }).join('')}
-      </div>
-    `;
+    const isConnected = idx > 0;
 
     return `
-      <div class="rounded-3xl bg-[#0f121d] border border-slate-800/90 hover:border-orange-500/40 p-3.5 sm:p-4 space-y-3 shadow-xl transition">
+      <div class="rounded-3xl bg-[#0f121d] border ${isConnected ? 'border-cyan-900/60 hover:border-cyan-500/50' : 'border-amber-900/60 hover:border-amber-500/50'} p-3.5 sm:p-5 space-y-4 shadow-2xl transition relative overflow-hidden">
+        <!-- Connecting Line Ribbon for Continuous Story -->
+        ${isConnected ? `
+          <div class="flex items-center gap-2 px-3 py-1 rounded-xl bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-[10px] font-mono font-bold">
+            <i class="fa-solid fa-link text-cyan-400"></i> BERSAMBUNG DARI SCENE ${idx}
+          </div>
+        ` : ''}
+
         <div class="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
           <div class="flex items-center gap-2 min-w-0 flex-1">
             <span class="px-2.5 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black text-[10px] font-display shadow-sm flex-shrink-0">
-              SCENE ${idx + 1} (4 FOTO)
+              SCENE ${idx + 1}
             </span>
-            <input type="text" value="${scene.shotType || 'Medium Shot'}" oninput="updateSceneShotType(${idx}, this.value)" class="w-full max-w-[200px] bg-slate-950/80 border border-slate-800 rounded-lg px-2 py-0.5 text-xs font-bold text-amber-300 focus:outline-none focus:border-amber-400 font-mono truncate" placeholder="Shot Type">
+            <input type="text" value="${scene.shotType || `Scene ${idx + 1}`}" oninput="updateSceneShotType(${idx}, this.value)" class="w-full max-w-[280px] bg-slate-950/80 border border-slate-800 rounded-lg px-2 py-0.5 text-xs font-bold text-amber-300 focus:outline-none focus:border-amber-400 font-mono truncate" placeholder="Shot Type">
             <span class="px-2 py-0.5 rounded-md bg-slate-950 text-[10px] font-mono text-slate-400 border border-slate-800 flex-shrink-0">${scene.durationSeconds || 10}s</span>
           </div>
           <div class="flex items-center gap-1.5 flex-shrink-0">
@@ -1471,53 +1460,67 @@ function renderStoryboardPreview() {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-start">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+          <!-- Left: 1 Single Image Split into 4 Panels (9:16 Vertical Strip) -->
           <div class="md:col-span-5 w-full space-y-2">
-            <!-- Main Active Photo Display -->
-            <div class="relative w-full rounded-2xl overflow-hidden bg-black aspect-[9/16] max-h-72 border border-slate-800/90 shadow-inner flex items-center justify-center mx-auto group">
-              <img id="scene-img-${idx}" src="${safeImageUrl}" class="w-full h-full object-cover" alt="Scene Visual" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400';">
-              <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded-md bg-black/80 text-[8px] font-mono text-cyan-300 border border-cyan-500/30 shadow flex items-center gap-1">
-                <i class="fa-solid fa-sparkles text-[7px] text-cyan-400"></i> GEMINI AI DIRECTOR
+            <div class="relative w-full rounded-2xl overflow-hidden bg-black aspect-[9/16] max-h-80 border-2 border-slate-700/90 shadow-2xl flex items-center justify-center mx-auto group">
+              <img id="scene-img-${idx}" src="${safeImageUrl}" class="w-full h-full object-cover" alt="Scene Visual Strip" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400';">
+              <div class="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-black/85 text-[9px] font-mono text-cyan-300 border border-cyan-500/40 shadow-lg flex items-center gap-1.5 backdrop-blur-md">
+                <i class="fa-solid fa-table-cells-large text-cyan-400 text-[8px]"></i> 1 GAMBAR 4 PANEL AKSI
               </div>
-              <div class="absolute inset-x-2 bottom-2 p-1 rounded-xl bg-black/90 border border-white/15 shadow-2xl flex items-center gap-1 z-10">
-                <select id="select-ratio-${idx}" class="flex-1 bg-slate-900 border border-slate-700/80 text-amber-300 rounded-lg px-1.5 py-1 text-[9px] font-mono focus:outline-none focus:border-orange-500">
-                  <option value="9:16" selected>9:16 (Story)</option>
-                  <option value="1:1">1:1 (Square)</option>
+              <div class="absolute inset-x-2 bottom-2 p-1.5 rounded-xl bg-black/90 border border-white/15 shadow-2xl flex items-center gap-1.5 z-10 backdrop-blur-md">
+                <select id="select-ratio-${idx}" class="flex-1 bg-slate-900 border border-slate-700 text-amber-300 rounded-lg px-2 py-1 text-[9px] font-mono focus:outline-none focus:border-orange-500">
+                  <option value="9:16" selected>9:16 (Vertikal)</option>
+                  <option value="1:1">1:1 (Persegi)</option>
                   <option value="16:9">16:9 (Landscape)</option>
                   <option value="4:5">4:5 (Portrait)</option>
                 </select>
-                <button onclick="downloadSceneWithCustomSize('${safeImageUrl}', document.getElementById('select-ratio-${idx}').value, ${idx + 1})" class="px-2 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] shadow flex items-center gap-1 transition flex-shrink-0" title="Unduh Foto Aktif">
+                <button onclick="downloadSceneWithCustomSize('${safeImageUrl}', document.getElementById('select-ratio-${idx}').value, ${idx + 1})" class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] shadow flex items-center gap-1 transition flex-shrink-0" title="Unduh Lembar Storyboard">
                   <i class="fa-solid fa-download text-[9px]"></i>
                   <span>Unduh</span>
                 </button>
               </div>
             </div>
 
-            <!-- 4-Photo Selector Grid per Scene -->
-            <div class="space-y-1">
-              <div class="flex items-center justify-between text-[9px] font-bold text-slate-400 px-1 font-mono">
-                <span>PILIH DARI 4 FOTO SCENE:</span>
-                <span class="text-amber-400">4 Variasi Tersedia</span>
-              </div>
-              ${photoSelectorButtons}
+            <div class="p-2.5 rounded-xl bg-black/60 border border-slate-800 text-[10px] text-slate-400 text-center font-mono">
+              <i class="fa-solid fa-circle-info text-amber-400"></i> Lembar gambar di atas terbagi menjadi 4 panel aksi berurutan.
             </div>
           </div>
 
-          <div class="md:col-span-7 space-y-2.5">
+          <!-- Right: 4 Sequential Sub-Panels + Voiceover + Video Prompt -->
+          <div class="md:col-span-7 space-y-3">
+            <!-- 4 Continuous Action Sub-Panels List -->
+            <div class="space-y-1.5">
+              <span class="text-[10px] font-bold text-amber-300 font-mono flex items-center gap-1.5 uppercase">
+                <i class="fa-solid fa-layer-group text-orange-400"></i> 4 Bagian Aksi dalam 1 Gambar:
+              </span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                ${panels.map(p => `
+                  <div class="p-2 rounded-xl bg-slate-900/90 border border-slate-800/90 space-y-0.5">
+                    <div class="flex items-center gap-1.5 text-[10px] font-bold text-cyan-300 font-mono">
+                      <span class="w-4 h-4 rounded-full bg-cyan-950 border border-cyan-500/50 flex items-center justify-center text-[9px] text-cyan-400 font-bold">${p.num}</span>
+                      <span>${p.title}</span>
+                    </div>
+                    <p class="text-[10px] text-slate-300 leading-snug">${p.desc}</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Visual Strip Prompt -->
             <div class="p-2.5 rounded-2xl bg-orange-950/20 border border-orange-500/30 space-y-1.5">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-bold text-amber-300 font-display flex items-center gap-1.5">
-                  <i class="fa-solid fa-sparkles text-orange-400"></i> Prompt Visual Foto Aktif
+                  <i class="fa-solid fa-sparkles text-orange-400"></i> Prompt 1 Gambar 4-Panel AI
                 </span>
                 <button onclick="copyPromptText('${encodedPrompt}')" class="text-[9px] text-slate-400 hover:text-amber-300 transition flex items-center gap-1 font-mono">
                   <i class="fa-solid fa-copy text-[8px]"></i> Salin Prompt
                 </button>
               </div>
-              <div class="flex gap-1.5 items-stretch">
-                <textarea id="scene-prompt-input-${idx}" rows="3" oninput="updateScenePrompt(${idx}, this.value)" class="w-full bg-slate-950/90 border border-slate-800 focus:border-amber-400 rounded-xl p-2 text-[10px] text-amber-200 font-mono focus:outline-none leading-relaxed transition" placeholder="Instruksi prompt foto...">${scene.prompt || ""}</textarea>
-              </div>
+              <textarea id="scene-prompt-input-${idx}" rows="2" oninput="updateScenePrompt(${idx}, this.value)" class="w-full bg-slate-950/90 border border-slate-800 focus:border-amber-400 rounded-xl p-2 text-[10px] text-amber-200 font-mono focus:outline-none leading-relaxed transition" placeholder="Instruksi prompt gambar 4 panel...">${scene.prompt || ""}</textarea>
             </div>
 
+            <!-- Video Prompt -->
             <div class="space-y-0.5">
               <span class="text-[9px] font-bold text-slate-400 uppercase font-mono flex items-center gap-1">
                 <i class="fa-solid fa-video text-cyan-400"></i> Prompt Video Generator (Kling / Flow / Veo)
@@ -1525,6 +1528,7 @@ function renderStoryboardPreview() {
               <input type="text" value="${scene.videoPrompt || scene.visualDescription || ''}" oninput="updateSceneVisualDesc(${idx}, this.value)" class="w-full bg-slate-950/80 border border-slate-800/80 focus:border-cyan-500 rounded-xl px-2.5 py-1.5 text-[11px] text-white placeholder-slate-500 focus:outline-none transition font-mono" placeholder="Prompt video AI generator...">
             </div>
 
+            <!-- Voiceover Script -->
             <div class="space-y-0.5">
               <span class="text-[9px] font-bold text-slate-400 uppercase font-mono flex items-center gap-1">
                 <i class="fa-solid fa-microphone text-orange-400"></i> Naskah Voiceover (10 Detik)
