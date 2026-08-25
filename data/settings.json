@@ -1,5 +1,5 @@
 {
-  "geminiApiKey": "YOUR_GEMINI_API_KEY",
+  "geminiApiKey": "AIzaSyCAOhVkvvOw7JCLnY9FL_3G9xRc3HtVEZU",
   "huggingFaceKey": "",
   "adminUsername": "admin",
   "adminPassword": "Admin@123",
@@ -8,6 +8,18 @@
   "role": "SUPER_ADMIN",
   "vipExpiresAt": null,
   "featureConfig": {
+    "storyboard-creator": {
+      "name": "AI Storyboard & Foto",
+      "isVip": false,
+      "isError": false,
+      "errorMsg": "Fitur sedang dalam perbaikan server."
+    },
+    "storyboard-list": {
+      "name": "Galeri Storyboard",
+      "isVip": false,
+      "isError": false,
+      "errorMsg": "Fitur sedang dalam pemeliharaan."
+    },
     "product-db": {
       "name": "Database Produk",
       "isVip": true,
@@ -25,18 +37,6 @@
       "isVip": true,
       "isError": false,
       "errorMsg": "Engine Flux sedang mengalami antrean render tinggi."
-    },
-    "storyboard-creator": {
-      "name": "AI Storyboard & Foto",
-      "isVip": false,
-      "isError": false,
-      "errorMsg": "Fitur sedang dalam pemeliharaan."
-    },
-    "storyboard-list": {
-      "name": "Galeri Storyboard",
-      "isVip": false,
-      "isError": false,
-      "errorMsg": "Fitur sedang dalam pemeliharaan."
     }
   },
   "adminEmail": "kheireditzsupport@gmail.com",
@@ -64,6 +64,16 @@
       "url": "https://pollinations.ai/",
       "description": "Mesin Render Visual 8K Hyperrealistic",
       "status": "ON"
+    }
+  ],
+  "geminiApiKeys": [
+    {
+      "id": "key-user-1",
+      "key": "AIzaSyCAOhVkvvOw7JCLnY9FL_3G9xRc3HtVEZU",
+      "label": "Google Gemini Pro Key",
+      "isActive": true,
+      "status": "active",
+      "addedAt": "2026-08-25T16:34:45.367Z"
     }
   ]
 }

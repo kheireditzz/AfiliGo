@@ -1163,7 +1163,7 @@ Format response WAJIB berupa JSON valid murni dengan struktur spesifik berikut:
         analisa_produk: parsedData.analisa_produk || {},
         prompt_video: parsedData.prompt_video || [],
         caption: parsedData.caption || [],
-        source: 'GoogleGenAI (gemini-2.5-flash)'
+        source: 'GoogleGenAI (gemini-3.6-flash)'
       });
     }
   } catch (sdkError) {
@@ -1171,7 +1171,7 @@ Format response WAJIB berupa JSON valid murni dengan struktur spesifik berikut:
 
     // Attempt 2: Direct REST fetch fallback
     try {
-      const restUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const restUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
       const restRes = await fetch(restUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1425,7 +1425,7 @@ app.delete('/api/chats/:id', (req, res) => {
 });
 
 app.post('/api/chat', async (req, res) => {
-  const { message, model = 'gemini-2.5-flash', chatId } = req.body;
+  const { message, model = 'gemini-3.6-flash', chatId } = req.body;
   if (!message) {
     return res.status(400).json({ success: false, message: 'Pesan tidak boleh kosong.' });
   }
@@ -1435,7 +1435,7 @@ app.post('/api/chat', async (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
-  const modelId = model.includes('pro') ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
+  const modelId = 'gemini-3.6-flash';
 
   // Find or create chat session in DB
   let chats = readJson(DB_CHATS);
@@ -1570,7 +1570,7 @@ async function callGeminiPro(promptText, customKey) {
   let maxAttempts = Math.max(1, pool.length);
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyToUse}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${keyToUse}`;
 
     try {
       const response = await fetch(url, {
