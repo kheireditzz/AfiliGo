@@ -356,12 +356,13 @@ function checkAuthSession() {
   // Smoothly fade out App Skeleton Preloader
   const preloader = document.getElementById("app-skeleton-preloader") || document.getElementById("tiktok-preloader");
   if (preloader) {
+    preloader.classList.add("opacity-0", "pointer-events-none");
     setTimeout(() => {
-      preloader.classList.add("opacity-0", "pointer-events-none");
-      setTimeout(() => {
-        if (preloader.parentElement) preloader.remove();
-      }, 500);
-    }, 450);
+      if (preloader.parentElement) preloader.remove();
+    }, 100);
+  }
+}
+
 function bypassLoginDirectly() {
   const defaultAdmin = {
     id: "usr-admin-1",
