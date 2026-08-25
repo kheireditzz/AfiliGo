@@ -37,15 +37,9 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use((req, res, next) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  res.set('Pragma', 'no-cache');
-  res.set('Expires', '0');
-  next();
-});
 app.use(express.static(path.join(__dirname, 'public'), {
-  etag: false,
-  maxAge: 0
+  etag: true,
+  maxAge: '1d'
 }));
 
 // Database File Paths
@@ -230,8 +224,49 @@ app.post('/api/auth/login', async (req, res) => {
   const inputKey = username.trim().toLowerCase();
   const inputPass = password.trim();
 
+  // 1. Instant check local database (0ms latency)
+  const users = readJson(DB_USERS);
+  const foundUser = users.find(u => 
+    (u.email && u.email.toLowerCase() === inputKey) || 
+    (u.username && u.username.toLowerCase() === inputKey)
+  );
+
+  if (foundUser) {
+    const isPassValid = foundUser.password === inputPass || 
+      (foundUser.password && foundUser.password.startsWith('$2') && bcrypt.compareSync(inputPass, foundUser.password));
+
+    if (isPassValid) {
+      const token = jwt.sign(
+        { id: foundUser.id, email: foundUser.email, name: foundUser.name, role: foundUser.role }, 
+        JWT_SECRET, 
+        { expiresIn: '30d' }
+      );
+
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 30 * 24 * 60 * 60 * 1000
+      });
+
+      return res.json({
+        success: true,
+        message: `Selamat datang kembali, ${foundUser.name || 'User'}!`,
+        token,
+        user: {
+          id: foundUser.id,
+          name: foundUser.name,
+          email: foundUser.email,
+          role: foundUser.role,
+          vipActive: foundUser.vipActive || false,
+          hasApiKey: !!foundUser.apiKey
+        }
+      });
+    }
+  }
+
+  // 2. Fallback check Supabase cloud auth if not found in local DB
   try {
-    // 1. Try Supabase cloud auth
     const { data: supaUser, error: supaErr } = await supabase
       .from('users')
       .select('*')
@@ -270,22 +305,6 @@ app.post('/api/auth/login', async (req, res) => {
     }
   } catch (err) {
     console.error('Supabase login check exception:', err);
-  }
-
-  // 2. Fallback check local users database
-  const users = readJson(DB_USERS);
-  if (inputKey === 'kheireditz@gmail.com' && inputPass === 'Admin@123') {
-    return res.json({
-      success: true,
-      token: 'token_admin_' + Date.now(),
-      user: {
-        id: 'usr-admin-1',
-        name: 'Kheir Editz (Super Admin)',
-        email: 'kheireditz@gmail.com',
-        role: 'SUPER_ADMIN',
-        vipActive: true
-      }
-    });
   }
 
   return res.status(401).json({ success: false, message: 'Email atau password salah!' });
@@ -1290,7 +1309,7 @@ async function handleFlowProxyRequest(req, res, customPath = null) {
 app.all('/flow-proxy', (req, res) => handleFlowProxyRequest(req, res));
 app.all('/flow-proxy/*', (req, res) => handleFlowProxyRequest(req, res));
 app.all('/fx/*', (req, res) => handleFlowProxyRequest(req, res));
-app.all('/api/auth/*', (req, res) => handleFlowProxyRequest(req, res));
+app.all('/api/auth/session', (req, res) => handleFlowProxyRequest(req, res));
 app.all('/api/fx/*', (req, res) => handleFlowProxyRequest(req, res));
 app.all('/_next/*', (req, res) => handleFlowProxyRequest(req, res));
 app.all('/flow-live', (req, res) => handleFlowProxyRequest(req, res));

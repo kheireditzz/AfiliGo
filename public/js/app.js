@@ -353,8 +353,18 @@ function showLoginScreen() {
 function showMainApp() {
   const loginOverlay = document.getElementById("login-overlay");
   const mainApp = document.getElementById("main-app");
-  if (loginOverlay) loginOverlay.classList.add("hidden");
-  if (mainApp) mainApp.classList.remove("hidden");
+  
+  if (loginOverlay) {
+    loginOverlay.classList.add("hidden");
+    loginOverlay.style.setProperty("display", "none", "important");
+  }
+  
+  if (mainApp) {
+    mainApp.classList.remove("hidden");
+    mainApp.style.setProperty("display", "flex", "important");
+    mainApp.style.height = "100vh";
+    mainApp.style.minHeight = "100vh";
+  }
 
   if (currentUser && currentUser.name) {
     const adminInput = document.getElementById("setting-admin-name");
@@ -364,13 +374,23 @@ function showMainApp() {
   }
 
   openTab("dashboard");
-  loadDashboardData();
-  loadProducts();
-  loadStoryboards();
-  loadPrompts();
-  loadSettings();
-  checkVipStatus();
-  loadFeaturesConfig(); loadFloatingServersState();
+  const tabDash = document.getElementById("tab-dashboard");
+  if (tabDash) {
+    tabDash.classList.remove("hidden");
+    tabDash.style.display = "block";
+  }
+
+  // Load data asynchronously without blocking UI
+  setTimeout(() => {
+    try { loadDashboardData(); } catch(e){}
+    try { loadProducts(); } catch(e){}
+    try { loadStoryboards(); } catch(e){}
+    try { loadPrompts(); } catch(e){}
+    try { loadSettings(); } catch(e){}
+    try { checkVipStatus(); } catch(e){}
+    try { loadFeaturesConfig(); } catch(e){}
+    try { loadFloatingServersState(); } catch(e){}
+  }, 50);
 }
 
 function switchAuthMode(mode) {
@@ -503,6 +523,7 @@ async function handleLogin(e) {
       localStorage.setItem("affiliate_ai_auth_token", data.token);
       localStorage.setItem("affiliate_ai_user", JSON.stringify(data.user));
       currentUser = data.user;
+      showToastNotification("success", "Login Berhasil", data.message || "Selamat datang kembali!");
       showMainApp();
     } else {
       if (errorMsg) {
@@ -2252,6 +2273,16 @@ function startNewChatSession() {
     }
   }
   loadChatSessions();
+function toggleChatHistorySidebar() {
+  const sidebar = document.getElementById('gemini-chat-sidebar');
+  if (sidebar) {
+    sidebar.classList.toggle('hidden');
+    sidebar.classList.toggle('absolute');
+    sidebar.classList.toggle('inset-y-0');
+    sidebar.classList.toggle('left-0');
+    sidebar.classList.toggle('z-30');
+    sidebar.classList.toggle('bg-[#0d1424]');
+  }
 }
 
 async function loadChatSessions() {
@@ -2263,18 +2294,18 @@ async function loadChatSessions() {
 
     if (data.success && data.chats && data.chats.length > 0) {
       list.innerHTML = data.chats.map(c => `
-        <div onclick="openChatSession('${c.id}')" class="group p-2 rounded-xl bg-slate-900/60 hover:bg-cyan-950/40 border border-slate-800/80 hover:border-cyan-500/40 cursor-pointer flex items-center justify-between transition">
+        <div onclick="openChatSession('${c.id}')" class="group p-2.5 rounded-xl bg-slate-900/60 hover:bg-cyan-950/40 border ${currentChatId === c.id ? 'border-cyan-500/60 bg-cyan-950/30' : 'border-slate-800/80'} hover:border-cyan-500/40 cursor-pointer flex items-center justify-between transition shadow-sm">
           <div class="min-w-0 flex items-center gap-2">
             <i class="fa-solid fa-message text-[10px] text-cyan-400"></i>
             <div class="text-[11px] font-bold text-slate-300 truncate group-hover:text-cyan-300">${c.title || 'New Chat'}</div>
           </div>
-          <button onclick="event.stopPropagation(); deleteChatSession('${c.id}')" class="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 text-[10px] p-1">
+          <button onclick="event.stopPropagation(); deleteChatSession('${c.id}')" class="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 text-[10px] p-1 transition" title="Hapus Chat">
             <i class="fa-solid fa-trash"></i>
           </button>
         </div>
       `).join('');
     } else {
-      list.innerHTML = '<div class="text-[10px] text-slate-500 italic p-2 text-center">Belum ada riwayat chat</div>';
+      list.innerHTML = '<div class="text-[10px] text-slate-500 italic p-3 text-center border border-dashed border-slate-800 rounded-xl">Belum ada riwayat chat</div>';
     }
   } catch(e) {}
 }
@@ -2299,6 +2330,9 @@ async function openChatSession(id) {
         chat.messages.forEach(m => {
           appendMessageToUI(m.role, m.content);
         });
+
+        // Highlight active session
+        loadChatSessions();
       }
     }
   } catch(e) {}
@@ -2312,6 +2346,30 @@ async function deleteChatSession(id) {
   } catch(e) {}
 }
 
+function formatChatMarkdown(raw) {
+  if (!raw) return '';
+  return raw
+    // Code blocks with language or without
+    .replace(/```([\s\S]*?)```/g, '<pre class="my-2 p-3 rounded-xl bg-slate-950/90 border border-slate-800 text-cyan-300 font-mono text-[11px] overflow-x-auto whitespace-pre-wrap"><code>$1</code></pre>')
+    // Inline code
+    .replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded-md bg-slate-950 text-cyan-300 font-mono text-[11px] border border-slate-800">$1</code>')
+    // Bold
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
+    // Italic
+    .replace(/\*(.*?)\*/g, '<em class="text-slate-300">$1</em>')
+    // Line breaks
+    .replace(/\n/g, '<br>');
+}
+
+function copyChatMessage(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i>';
+    setTimeout(() => {
+      btn.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    }, 2000);
+  });
+}
+
 function appendMessageToUI(role, content) {
   const container = document.getElementById('chat-messages-container');
   const welcome = document.getElementById('chat-empty-welcome');
@@ -2320,18 +2378,26 @@ function appendMessageToUI(role, content) {
   const msgDiv = document.createElement('div');
   const isUser = role === 'user';
   
-  msgDiv.className = `flex items-start gap-2.5 ${isUser ? 'justify-end' : 'justify-start'}`;
+  msgDiv.className = `flex items-start gap-3 ${isUser ? 'justify-end' : 'justify-start'}`;
 
-  const formattedContent = content
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br>');
+  const formattedContent = formatChatMarkdown(content);
+  const rawTextEscaped = encodeURIComponent(content);
 
   msgDiv.innerHTML = `
-    ${!isUser ? '<div class="w-7 h-7 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-xs flex-shrink-0 mt-0.5"><i class="fa-solid fa-robot"></i></div>' : ''}
-    <div class="max-w-[82%] sm:max-w-[75%] p-3 rounded-2xl ${isUser ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-tr-sm font-medium' : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-sm'} text-xs leading-relaxed shadow">
+    ${!isUser ? '<div class="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 text-cyan-300 border border-cyan-500/30 flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow"><i class="fa-solid fa-sparkles"></i></div>' : ''}
+    <div class="group relative max-w-[85%] sm:max-w-[75%] p-3.5 rounded-2xl ${isUser ? 'bg-gradient-to-r from-cyan-600 via-sky-600 to-blue-600 text-white rounded-tr-sm font-medium shadow-md shadow-cyan-900/20' : 'bg-slate-900/90 border border-slate-800 text-slate-200 rounded-tl-sm shadow-md'} text-xs leading-relaxed">
       ${formattedContent}
+      ${!isUser ? `
+        <div class="flex items-center gap-2 pt-2 mt-2 border-t border-slate-800/80 text-[10px] text-slate-400">
+          <button onclick="copyChatMessage(this, decodeURIComponent('${rawTextEscaped}'))" class="hover:text-cyan-300 transition flex items-center gap-1">
+            <i class="fa-regular fa-copy"></i> Salin
+          </button>
+          <span class="text-slate-700">•</span>
+          <span class="text-slate-500 font-mono text-[9px]">Google Gemini</span>
+        </div>
+      ` : ''}
     </div>
-    ${isUser ? '<div class="w-7 h-7 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 flex items-center justify-center text-xs flex-shrink-0 mt-0.5"><i class="fa-solid fa-user"></i></div>' : ''}
+    ${isUser ? '<div class="w-8 h-8 rounded-xl bg-slate-800/90 text-slate-300 border border-slate-700 flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow"><i class="fa-solid fa-user"></i></div>' : ''}
   `;
 
   container.appendChild(msgDiv);
@@ -2360,11 +2426,14 @@ async function handleSendChatMessage(event) {
   // Setup streaming model response container
   const container = document.getElementById('chat-messages-container');
   const modelMsgDiv = document.createElement('div');
-  modelMsgDiv.className = 'flex items-start gap-2.5 justify-start';
+  modelMsgDiv.className = 'flex items-start gap-3 justify-start';
   modelMsgDiv.innerHTML = `
-    <div class="w-7 h-7 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-xs flex-shrink-0 mt-0.5 animate-pulse"><i class="fa-solid fa-robot"></i></div>
-    <div class="ai-reply-body max-w-[82%] sm:max-w-[75%] p-3 rounded-2xl bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-sm text-xs leading-relaxed shadow font-mono">
-      <span class="inline-block w-2 h-3 bg-cyan-400 animate-pulse"></span>
+    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 text-cyan-300 border border-cyan-500/30 flex items-center justify-center text-xs flex-shrink-0 mt-0.5 animate-pulse shadow"><i class="fa-solid fa-sparkles"></i></div>
+    <div class="ai-reply-body max-w-[85%] sm:max-w-[75%] p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 text-slate-200 rounded-tl-sm text-xs leading-relaxed shadow-md">
+      <div class="flex items-center gap-2 text-cyan-400 font-mono text-[11px]">
+        <span class="inline-block w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+        <span>Gemini sedang berpikir & memproses jawaban...</span>
+      </div>
     </div>
   `;
   container.appendChild(modelMsgDiv);
@@ -2411,18 +2480,24 @@ async function handleSendChatMessage(event) {
             const data = JSON.parse(line.replace('data: ', '').trim());
             if (data.chunk) {
               accumulatedText += data.chunk;
-              const formatted = accumulatedText
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\n/g, '<br>');
-              replyBody.innerHTML = formatted + '<span class="inline-block w-1.5 h-3 bg-cyan-400 animate-pulse ml-0.5"></span>';
+              const formatted = formatChatMarkdown(accumulatedText);
+              replyBody.innerHTML = formatted + '<span class="inline-block w-1.5 h-3 bg-cyan-400 animate-pulse ml-0.5 align-middle"></span>';
               container.scrollTop = container.scrollHeight;
             }
             if (data.done) {
               if (data.chatId) currentChatId = data.chatId;
-              const formatted = accumulatedText
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\n/g, '<br>');
-              replyBody.innerHTML = formatted;
+              const formatted = formatChatMarkdown(accumulatedText);
+              const rawTextEscaped = encodeURIComponent(accumulatedText);
+              replyBody.innerHTML = `
+                ${formatted}
+                <div class="flex items-center gap-2 pt-2 mt-2 border-t border-slate-800/80 text-[10px] text-slate-400">
+                  <button onclick="copyChatMessage(this, decodeURIComponent('${rawTextEscaped}'))" class="hover:text-cyan-300 transition flex items-center gap-1">
+                    <i class="fa-regular fa-copy"></i> Salin
+                  </button>
+                  <span class="text-slate-700">•</span>
+                  <span class="text-slate-500 font-mono text-[9px]">Google Gemini</span>
+                </div>
+              `;
               loadChatSessions();
             }
             if (data.error) {

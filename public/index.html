@@ -42,29 +42,44 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
   <style>
+    :root {
+      --color-primary: #f97316;
+      --color-secondary: #06b6d4;
+      --color-accent: #8b5cf6;
+      --bg-obsidian: #0b0f19;
+      --card-surface: #111625;
+      --elevated-surface: #161d31;
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: #07090e; }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
     ::-webkit-scrollbar-thumb:hover { background: #f97316; }
     
     .ultra-glass {
-      background: rgba(11, 15, 25, 0.85);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(11, 15, 25, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--glass-border);
+      contain: paint;
     }
 
     .ultra-glass-card {
-      background: linear-gradient(145deg, rgba(17, 24, 39, 0.7) 0%, rgba(11, 15, 25, 0.85) 100%);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      background: rgba(17, 22, 37, 0.95);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.5);
+      transition: border-color 0.15s ease, transform 0.15s ease;
+      will-change: transform;
+      contain: content;
     }
 
     .ultra-glass-card:hover {
-      border-color: rgba(249, 115, 22, 0.25);
+      border-color: rgba(249, 115, 22, 0.4);
+      transform: translateY(-1px);
     }
     
     .gradient-orange-fire {
@@ -73,14 +88,19 @@
       -webkit-text-fill-color: transparent;
     }
 
+    .gradient-cyan-ai {
+      background: linear-gradient(135deg, #38bdf8 0%, #06b6d4 50%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
     .nav-item {
-      transition: all 0.2s ease-in-out;
+      transition: background-color 0.15s ease, color 0.15s ease;
     }
 
     .nav-item:hover {
-      background: rgba(249, 115, 22, 0.08);
+      background: rgba(249, 115, 22, 0.1);
       color: #fff;
-      transform: translateX(2px);
     }
 
     @keyframes laserFlow {
@@ -91,9 +111,9 @@
 
     .laser-btn-active {
       background: linear-gradient(90deg, #f59e0b, #ea580c, #ef4444, #f59e0b) !important;
-      background-size: 300% 300%;
-      animation: laserFlow 1.8s infinite linear;
-      box-shadow: 0 0 25px rgba(249, 115, 22, 0.5);
+      background-size: 200% 200%;
+      animation: laserFlow 2.5s infinite linear;
+      box-shadow: 0 0 15px rgba(249, 115, 22, 0.4);
     }
   </style>
 
@@ -237,65 +257,77 @@
 <body class="w-full h-full flex flex-col antialiased selection:bg-orange-500 selection:text-white bg-[#0b0f19]">
 
   <!-- FORMAL & CLEAN AUTH OVERLAY (LOGIN & DAFTAR) -->
-  <div id="login-overlay" class="fixed inset-0 z-50 bg-[#0b0f19] flex items-center justify-center p-4 overflow-y-auto">
-    <div class="w-full max-w-sm sm:max-w-md bg-[#111625] rounded-2xl p-6 sm:p-8 space-y-5 border border-slate-800 shadow-2xl relative my-auto">
+  <div id="login-overlay" class="fixed inset-0 z-50 bg-[#070b14]/95 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto">
+    <!-- Ambient Background Glows -->
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-orange-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+    <div class="absolute bottom-1/4 left-1/3 w-72 h-72 bg-cyan-500/10 rounded-full blur-[90px] pointer-events-none"></div>
+
+    <div class="w-full max-w-sm sm:max-w-md bg-gradient-to-b from-[#111827]/90 via-[#0d1322]/95 to-[#0b0f19] rounded-3xl p-6 sm:p-8 space-y-5 border border-slate-700/60 shadow-2xl shadow-black/80 relative my-auto backdrop-blur-2xl">
       
       <!-- Brand & Header -->
-      <div class="text-center space-y-1">
-        <div class="inline-flex w-11 h-11 rounded-xl bg-orange-600/10 border border-orange-500/20 text-orange-500 items-center justify-center text-lg mb-1 shadow-sm">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
+      <div class="text-center space-y-2">
+        <div class="inline-flex w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500/20 via-orange-500/20 to-red-500/20 border border-orange-500/30 text-orange-400 items-center justify-center text-xl mb-1 shadow-lg shadow-orange-500/10">
+          <i class="fa-solid fa-wand-magic-sparkles animate-pulse"></i>
         </div>
-        <h1 id="auth-main-title" class="text-lg font-bold text-white tracking-tight">Masuk</h1>
-        <p id="auth-sub-title" class="text-xs text-slate-400">Masukkan email dan kata sandi Anda</p>
+        <div>
+          <h1 id="auth-main-title" class="text-xl font-extrabold text-white font-display tracking-tight">Masuk ke Affiliate<span class="text-orange-500">Go</span></h1>
+          <p id="auth-sub-title" class="text-xs text-slate-400 mt-0.5">Platform AI Konten Affiliate & Storyboard 8K</p>
+        </div>
       </div>
 
       <!-- Notification Box -->
-      <div id="login-error-msg" class="hidden p-3 rounded-xl bg-rose-950/50 border border-rose-500/30 text-rose-300 text-xs text-center font-medium"></div>
-      <div id="login-success-msg" class="hidden p-3 rounded-xl bg-emerald-950/50 border border-emerald-500/30 text-emerald-300 text-xs text-center font-medium"></div>
+      <div id="login-error-msg" class="hidden p-3 rounded-2xl bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs text-center font-medium shadow-inner"></div>
+      <div id="login-success-msg" class="hidden p-3 rounded-2xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs text-center font-medium shadow-inner"></div>
 
       <!-- 1. FORM LOGIN -->
-      <form id="form-login" onsubmit="handleLogin(event)" class="space-y-3.5" style="display: block;">
-        <div class="space-y-1">
-          <label class="block text-xs font-semibold text-slate-300">Email</label>
-          <input type="email" id="login-username" required placeholder="nama@email.com" class="w-full bg-[#0a0d17] border border-slate-700/80 focus:border-orange-500 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none transition">
+      <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4" style="display: block;">
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-slate-300 font-display">Email</label>
+          <div class="relative">
+            <input type="email" id="login-username" required placeholder="nama@email.com" class="w-full bg-[#070a14] border border-slate-700/80 hover:border-slate-600 focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition shadow-inner">
+          </div>
         </div>
 
-        <div class="space-y-1">
-          <label class="block text-xs font-semibold text-slate-300">Kata Sandi</label>
-          <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-[#0a0d17] border border-slate-700/80 focus:border-orange-500 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none transition">
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-slate-300 font-display">Kata Sandi</label>
+          <div class="relative">
+            <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-[#070a14] border border-slate-700/80 hover:border-slate-600 focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition shadow-inner">
+          </div>
         </div>
 
-        <button type="submit" id="btn-login" class="w-full py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 active:scale-[0.99] text-white font-semibold text-xs transition shadow-sm flex items-center justify-center gap-2">
-          <span>Masuk</span>
+        <button type="submit" id="btn-login" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-600 to-red-600 hover:from-amber-400 hover:to-orange-500 active:scale-[0.98] text-white font-extrabold text-xs font-display transition shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span>Masuk ke Dashboard</span>
         </button>
       </form>
 
       <!-- 2. FORM DAFTAR -->
       <form id="form-register" onsubmit="handleRegister(event)" class="space-y-3.5" style="display: none;">
-        <div class="space-y-1">
-          <label class="block text-xs font-semibold text-slate-300">Nama Lengkap</label>
-          <input type="text" id="reg-name" required placeholder="Nama Anda" class="w-full bg-[#0a0d17] border border-slate-700/80 focus:border-orange-500 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none transition">
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-slate-300 font-display">Nama Lengkap</label>
+          <input type="text" id="reg-name" required placeholder="Nama Anda" class="w-full bg-[#070a14] border border-slate-700/80 hover:border-slate-600 focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition shadow-inner">
         </div>
 
-        <div class="space-y-1">
-          <label class="block text-xs font-semibold text-slate-300">Email</label>
-          <input type="email" id="reg-email" required placeholder="nama@email.com" class="w-full bg-[#0a0d17] border border-slate-700/80 focus:border-orange-500 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none transition">
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-slate-300 font-display">Email</label>
+          <input type="email" id="reg-email" required placeholder="nama@email.com" class="w-full bg-[#070a14] border border-slate-700/80 hover:border-slate-600 focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition shadow-inner">
         </div>
 
-        <div class="space-y-1">
-          <label class="block text-xs font-semibold text-slate-300">Kata Sandi</label>
-          <input type="password" id="reg-password" required placeholder="Minimal 6 karakter" class="w-full bg-[#0a0d17] border border-slate-700/80 focus:border-orange-500 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none transition">
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-slate-300 font-display">Kata Sandi</label>
+          <input type="password" id="reg-password" required placeholder="Minimal 6 karakter" class="w-full bg-[#070a14] border border-slate-700/80 hover:border-slate-600 focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition shadow-inner">
         </div>
 
-        <button type="submit" id="btn-register" class="w-full py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 active:scale-[0.99] text-white font-semibold text-xs transition shadow-sm flex items-center justify-center gap-2">
-          <span>Daftar</span>
+        <button type="submit" id="btn-register" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-600 to-red-600 hover:from-amber-400 hover:to-orange-500 active:scale-[0.98] text-white font-extrabold text-xs font-display transition shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-user-plus"></i>
+          <span>Daftar Akun Sekarang</span>
         </button>
       </form>
 
       <!-- Bottom Formal Switch Link (Daftar / Masuk) -->
-      <div class="pt-3 border-t border-slate-800/80 text-center text-xs text-slate-400">
+      <div class="pt-3 border-t border-slate-800/90 text-center text-xs text-slate-400 flex items-center justify-center gap-1.5">
         <span id="auth-switch-prompt">Belum punya akun?</span>
-        <button type="button" onclick="toggleAuthMode()" id="auth-switch-btn" class="font-bold text-orange-400 hover:text-orange-300 ml-1 transition">
+        <button type="button" onclick="toggleAuthMode()" id="auth-switch-btn" class="font-extrabold text-orange-400 hover:text-amber-300 transition underline underline-offset-4">
           Daftar
         </button>
       </div>
@@ -823,101 +855,184 @@
         </div>
 
         <!-- ============================================== -->
-        <!-- TAB: GEMINI AI CHAT GATEWAY (PER-USER API KEY) -->
+        <!-- TAB: GEMINI AI CHAT GATEWAY (PREMIUM AI GATEWAY) -->
         <!-- ============================================== -->
-        <div id="tab-gemini-chat" class="tab-content hidden space-y-2 h-[calc(100vh-120px)] flex flex-col">
-          <div class="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2 flex-shrink-0">
-            <div class="flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-sm shadow">
-                <i class="fa-solid fa-robot"></i>
+        <div id="tab-gemini-chat" class="tab-content hidden h-[calc(100vh-115px)] flex flex-col space-y-2.5">
+          <!-- TOP HEADER BAR -->
+          <div class="flex items-center justify-between gap-3 bg-gradient-to-r from-[#0d1527]/90 via-[#0a101f]/90 to-[#0d1527]/90 p-3 rounded-2xl border border-cyan-500/20 shadow-lg shadow-cyan-950/20 flex-shrink-0 backdrop-blur-md">
+            <div class="flex items-center gap-3">
+              <button onclick="toggleChatHistorySidebar()" class="md:hidden w-8 h-8 rounded-xl bg-slate-900/90 border border-slate-700/80 text-cyan-400 hover:text-white flex items-center justify-center text-xs transition active:scale-95 shadow">
+                <i class="fa-solid fa-bars-staggered"></i>
+              </button>
+
+              <div class="relative">
+                <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-cyan-500/30 via-blue-600/20 to-purple-600/30 text-cyan-300 border border-cyan-400/40 flex items-center justify-center text-sm shadow-md shadow-cyan-500/10">
+                  <i class="fa-solid fa-sparkles text-cyan-300 animate-pulse"></i>
+                </div>
+                <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#090d16] rounded-full"></span>
               </div>
+              
               <div>
-                <h2 class="text-sm sm:text-base font-bold text-white font-display flex items-center gap-2">
-                  Gemini AI Gateway
-                  <span id="chat-model-badge" class="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[9px] font-mono font-bold border border-cyan-500/30">
-                    Gemini 2.5 Flash
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h2 class="text-sm sm:text-base font-extrabold text-white font-display tracking-tight flex items-center gap-1.5">
+                    Gemini AI <span class="bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400 bg-clip-text text-transparent">Gateway</span>
+                  </h2>
+                  <span id="chat-model-badge" class="px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 text-[10px] font-mono font-bold border border-cyan-500/40 shadow-inner flex items-center gap-1">
+                    <i class="fa-solid fa-bolt text-[9px] text-cyan-400"></i> Gemini 2.5 Flash
                   </span>
-                </h2>
-                <div class="text-[10px] text-slate-400">Direct Gateway: Kuota & Rate Limit Milik Akun Anda</div>
+                </div>
+                <div class="text-[10px] text-slate-400 hidden sm:flex items-center gap-2 font-medium">
+                  <span>Direct Encrypted Gateway</span>
+                  <span class="text-slate-600">•</span>
+                  <span class="text-cyan-400/80 font-mono">AES-256 Secured</span>
+                </div>
               </div>
             </div>
 
-            <!-- Model Switcher & Settings Quick Link -->
+            <!-- Header Controls (Model Selector, Clear & Key Settings) -->
             <div class="flex items-center gap-2">
-              <select id="chat-model-select" onchange="changeChatModel(this.value)" class="bg-slate-900 border border-slate-700/80 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono font-bold">
-                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Default)</option>
-                <option value="gemini-2.5-pro">Gemini 2.5 Pro (Deep Reasoner)</option>
-              </select>
-              <button onclick="selectMenu('settings')" class="p-2 rounded-xl bg-slate-900 border border-slate-700/80 text-slate-400 hover:text-cyan-400 transition" title="Pengaturan API Key">
+              <div class="relative">
+                <select id="chat-model-select" onchange="changeChatModel(this.value)" class="appearance-none bg-slate-950/90 border border-cyan-500/30 hover:border-cyan-400/60 rounded-xl pl-3 pr-7 py-1.5 text-xs text-cyan-200 focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono font-bold transition cursor-pointer shadow-sm">
+                  <option value="gemini-2.5-flash">⚡ Gemini 2.5 Flash (Cepat)</option>
+                  <option value="gemini-2.5-pro">🧠 Gemini 2.5 Pro (Deep Reasoning)</option>
+                </select>
+                <i class="fa-solid fa-chevron-down text-[9px] text-cyan-400 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2"></i>
+              </div>
+
+              <button onclick="startNewChatSession()" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-cyan-950/40 border border-slate-700/80 hover:border-cyan-500/40 text-slate-300 hover:text-cyan-300 font-bold text-xs transition active:scale-95 shadow">
+                <i class="fa-solid fa-plus text-xs"></i>
+                <span class="hidden md:inline">Sesi Baru</span>
+              </button>
+
+              <button onclick="selectMenu('settings')" class="p-2 rounded-xl bg-slate-900/90 hover:bg-cyan-950/50 border border-slate-700/80 hover:border-cyan-500/50 text-slate-400 hover:text-cyan-300 transition active:scale-95 shadow" title="Pengaturan Google Gemini API Key">
                 <i class="fa-solid fa-key text-xs"></i>
               </button>
             </div>
           </div>
 
-          <!-- CHAT INTERFACE CONTAINER (SIDEBAR HISTORY + CHAT STREAM) -->
-          <div class="flex-1 flex gap-3 overflow-hidden min-h-0">
+          <!-- CHAT INTERFACE CONTAINER -->
+          <div class="flex-1 flex gap-3 overflow-hidden min-h-0 relative">
             
-            <!-- Left: Chat Sessions History -->
-            <div class="w-64 bg-[#0d121f] rounded-2xl border border-slate-800/80 p-3 flex flex-col justify-between hidden md:flex flex-shrink-0">
-              <div class="space-y-2">
-                <button onclick="startNewChatSession()" class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition">
+            <!-- Left: Chat Sessions History (Collapsible / Responsive) -->
+            <div id="gemini-chat-sidebar" class="w-64 bg-gradient-to-b from-[#0e1424] to-[#0a0e1a] rounded-2xl border border-slate-800/90 p-3.5 flex flex-col justify-between hidden md:flex flex-shrink-0 shadow-xl transition-all duration-300 z-10">
+              <div class="space-y-3">
+                <button onclick="startNewChatSession()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-600 to-blue-600 hover:from-cyan-400 hover:to-blue-500 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/20 transition duration-200">
                   <i class="fa-solid fa-plus text-xs"></i>
-                  <span>New Chat Session</span>
+                  <span>Obrolan Baru</span>
                 </button>
-                <div class="text-[10px] font-mono uppercase text-slate-500 px-1 pt-1 font-bold">Riwayat Obrolan</div>
+
+                <div class="flex items-center justify-between px-1 pt-1 border-b border-slate-800/80 pb-1.5">
+                  <div class="text-[10px] font-mono uppercase text-slate-400 font-bold tracking-wider flex items-center gap-1.5">
+                    <i class="fa-solid fa-clock-rotate-left text-cyan-400 text-[10px]"></i> Riwayat Obrolan
+                  </div>
+                  <button onclick="loadChatSessions()" class="text-slate-500 hover:text-cyan-400 text-[10px] transition" title="Refresh Riwayat">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                  </button>
+                </div>
               </div>
 
-              <div id="chat-history-sidebar-list" class="flex-1 overflow-y-auto space-y-1.5 my-2 pr-1 custom-scrollbar">
+              <!-- Sidebar Sessions List -->
+              <div id="chat-history-sidebar-list" class="flex-1 overflow-y-auto space-y-1.5 my-2.5 pr-1 custom-scrollbar">
                 <!-- Populated by JS -->
               </div>
 
               <!-- Key Status Warning if not set -->
-              <div id="chat-key-warning-box" class="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-[10px] text-amber-300 space-y-1 hidden">
-                <div class="font-bold flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation"></i> API Key Belum Disetel</div>
-                <div class="text-slate-400 text-[9px]">Tambahkan key Anda di Pengaturan untuk mulai chat.</div>
-                <button onclick="selectMenu('settings')" class="w-full mt-1 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-[9px] transition">Setel Key Sekarang</button>
+              <div id="chat-key-warning-box" class="p-3 rounded-xl bg-gradient-to-br from-amber-950/60 to-red-950/40 border border-amber-500/40 text-[10px] text-amber-200 space-y-1.5 hidden shadow-lg">
+                <div class="font-bold flex items-center gap-1.5 text-amber-300 text-xs">
+                  <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> API Key Diperlukan
+                </div>
+                <div class="text-slate-300 text-[10px] leading-snug">Sambungkan Google Gemini API Key Anda untuk mulai menggunakan AI Gateway.</div>
+                <button onclick="selectMenu('settings')" class="w-full mt-1 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-[10px] font-display transition shadow">
+                  Sambungkan Sekarang
+                </button>
               </div>
             </div>
 
             <!-- Right: Chat Messages Stream & Input -->
-            <div class="flex-1 bg-[#090d16] rounded-2xl border border-slate-800/80 flex flex-col justify-between overflow-hidden relative">
+            <div class="flex-1 bg-gradient-to-b from-[#0a0e18] via-[#070a12] to-[#0a0e18] rounded-2xl border border-slate-800/80 flex flex-col justify-between overflow-hidden relative shadow-2xl">
+              
+              <!-- Subtle Background Ambient Glow -->
+              <div class="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-32 bg-cyan-500/5 blur-[80px] pointer-events-none rounded-full"></div>
               
               <!-- Messages Scrollable Body -->
-              <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+              <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 custom-scrollbar relative z-0">
                 
                 <!-- Welcome Screen -->
-                <div id="chat-empty-welcome" class="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto space-y-3 p-4">
-                  <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center text-2xl shadow-lg">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <div id="chat-empty-welcome" class="h-full flex flex-col items-center justify-center text-center max-w-lg mx-auto space-y-4 p-4 my-auto">
+                  <div class="relative group">
+                    <div class="w-16 h-16 rounded-3xl bg-gradient-to-br from-cyan-500/20 via-blue-600/10 to-indigo-600/20 border border-cyan-500/40 text-cyan-300 flex items-center justify-center text-3xl shadow-xl shadow-cyan-500/10 transition-transform group-hover:scale-105 duration-300">
+                      <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <div class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center text-[10px] font-black">
+                      AI
+                    </div>
                   </div>
-                  <h3 class="text-base font-bold text-white font-display">Google Gemini AI Gateway</h3>
-                  <p class="text-xs text-slate-400 leading-relaxed">
-                    Setiap request diproses langsung dengan Google Gemini API Key Anda sendiri tanpa berbagi kuota atau rate-limit platform.
-                  </p>
-                  <div class="grid grid-cols-2 gap-2 w-full pt-2">
-                    <button onclick="injectChatPrompt('Buatkan skrip video TikTok affiliate produk fashion aesthetic')" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] text-slate-300 text-left transition">
-                      💡 Skrip Video TikTok
+
+                  <div class="space-y-1.5">
+                    <h3 class="text-lg sm:text-xl font-black text-white font-display tracking-tight">
+                      Google Gemini <span class="bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400 bg-clip-text text-transparent">AI Gateway</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
+                      Akses langsung model <span class="text-cyan-300 font-semibold">Gemini 2.5 Flash & Pro</span> menggunakan API Key pribadi Anda dengan enkripsi tingkat militer <span class="text-slate-300 font-mono">AES-256-GCM</span>.
+                    </p>
+                  </div>
+
+                  <!-- Quick Prompt Cards Grid -->
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full pt-2">
+                    <button onclick="injectChatPrompt('Buatkan skrip video TikTok/Reels viral untuk produk fashion affiliate, lengkap dengan visual hook 3 detik pertama & CTA checkout!')" class="group p-3 rounded-xl bg-slate-900/80 hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/50 text-left transition duration-200 shadow-sm">
+                      <div class="flex items-center gap-2 text-cyan-400 text-xs font-bold font-display group-hover:text-cyan-300">
+                        <i class="fa-solid fa-video text-xs"></i> Skrip Video TikTok / Reels
+                      </div>
+                      <div class="text-[10px] text-slate-400 line-clamp-2 mt-1 leading-snug">Skrip affiliate dengan visual hook & strategi call-to-action konversi tinggi.</div>
                     </button>
-                    <button onclick="injectChatPrompt('Tuliskan 5 ide hook viral untuk produk elektronik audio')" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] text-slate-300 text-left transition">
-                      ⚡ 5 Hook Viral Produk
+
+                    <button onclick="injectChatPrompt('Tuliskan 5 ide hook copywriting yang memicu FOMO dan rasa penasaran untuk produk elektronik viral!')" class="group p-3 rounded-xl bg-slate-900/80 hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/50 text-left transition duration-200 shadow-sm">
+                      <div class="flex items-center gap-2 text-sky-400 text-xs font-bold font-display group-hover:text-sky-300">
+                        <i class="fa-solid fa-bolt text-xs"></i> 5 Hook Penjualan Viral
+                      </div>
+                      <div class="text-[10px] text-slate-400 line-clamp-2 mt-1 leading-snug">Hook copywriting psikologis untuk menaikkan rasio klik & penjualan.</div>
+                    </button>
+
+                    <button onclick="injectChatPrompt('Analisis keunggulan produk skincare dan buatkan tabel perbandingan USP vs kompetitor')" class="group p-3 rounded-xl bg-slate-900/80 hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/50 text-left transition duration-200 shadow-sm">
+                      <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold font-display group-hover:text-emerald-300">
+                        <i class="fa-solid fa-chart-line text-xs"></i> Analisis USP & Riset Produk
+                      </div>
+                      <div class="text-[10px] text-slate-400 line-clamp-2 mt-1 leading-snug">Breakdown keunggulan produk dan target audiens market potensial.</div>
+                    </button>
+
+                    <button onclick="injectChatPrompt('Buatkan prompt gambar Flux 8K Ultra-realistic untuk produk kecantikan di atas podium marmer mewah dengan pencahayaan sinematik')" class="group p-3 rounded-xl bg-slate-900/80 hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/50 text-left transition duration-200 shadow-sm">
+                      <div class="flex items-center gap-2 text-purple-400 text-xs font-bold font-display group-hover:text-purple-300">
+                        <i class="fa-solid fa-wand-magic-sparkles text-xs"></i> Prompt Gambar AI Studio
+                      </div>
+                      <div class="text-[10px] text-slate-400 line-clamp-2 mt-1 leading-snug">Prompt fotorealistik studio 8K siap render di Image Generator.</div>
                     </button>
                   </div>
                 </div>
 
               </div>
 
-              <!-- Chat Input Box -->
-              <div class="p-3 bg-[#0d121f] border-t border-slate-800/80 space-y-2">
-                <form id="chat-form" onsubmit="handleSendChatMessage(event)" class="relative flex items-center gap-2">
-                  <input type="text" id="chat-input-text" placeholder="Ketik pesan atau instruksi untuk Gemini..." class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-cyan-500 pr-12 shadow-inner">
+              <!-- Chat Input Box & Prompt Bar -->
+              <div class="p-3 sm:p-4 bg-[#0d1322]/95 border-t border-slate-800/90 space-y-2 backdrop-blur-md relative z-10">
+                <form id="chat-form" onsubmit="handleSendChatMessage(event)" class="relative flex items-center">
+                  <input type="text" id="chat-input-text" autocomplete="off" placeholder="Ketik pesan, instruksi, atau pertanyaan untuk Gemini..." class="w-full bg-[#070b14] border border-slate-700/80 hover:border-slate-600 focus:border-cyan-500/80 rounded-2xl px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 pr-14 shadow-inner transition duration-150">
                   
-                  <button type="submit" id="btn-send-chat" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white flex items-center justify-center shadow transition">
+                  <button type="submit" id="btn-send-chat" class="absolute right-2 w-9 h-9 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 active:scale-90 text-white flex items-center justify-center shadow-lg shadow-cyan-600/30 transition disabled:opacity-40 disabled:cursor-not-allowed" title="Kirim Pesan">
                     <i class="fa-solid fa-paper-plane text-xs"></i>
                   </button>
                 </form>
-                <div class="flex items-center justify-between text-[9px] text-slate-500 px-1 font-mono">
-                  <span>AES-256 Encrypted Gateway</span>
-                  <span id="chat-stream-status">Siap</span>
+
+                <div class="flex items-center justify-between text-[10px] text-slate-400 px-1 font-mono">
+                  <div class="flex items-center gap-2">
+                    <span class="flex items-center gap-1.5 text-cyan-400/90">
+                      <i class="fa-solid fa-shield-halved text-[9px]"></i> AES-256 Encrypted
+                    </span>
+                    <span class="text-slate-600 hidden sm:inline">•</span>
+                    <span class="text-slate-500 hidden sm:inline">Google AI Studio Direct API</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                    <span id="chat-stream-status" class="text-slate-300 font-semibold">Siap</span>
+                  </div>
                 </div>
               </div>
 

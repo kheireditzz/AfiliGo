@@ -1,0 +1,162 @@
+{
+  "meta": {
+    "name": "AffiliateGo Cyber Studio",
+    "description": "High-conversion affiliate creative studio with dark obsidian surfaces, laser gradients, micro-glows, and ultra-glass elevation.",
+    "source_references": [
+      "https://affiliatego.ai",
+      "Linear / Vercel Dark UI / Midjourney Studio"
+    ],
+    "created_at": "2026-08-25T08:22:00Z"
+  },
+  "design_system": {
+    "color": {
+      "palette_type": "dark_modern_neon",
+      "primary": {
+        "hex": "#f97316",
+        "role": "High-impact CTA, fire highlights, and primary actions"
+      },
+      "secondary": {
+        "hex": "#06b6d4",
+        "role": "AI Gateway, intelligent badges, streaming state"
+      },
+      "accent": {
+        "hex": "#8b5cf6",
+        "role": "Deep intelligence, 8K Flux engine, premium studio tags"
+      },
+      "neutral": {
+        "scale": {
+          "0": "#ffffff",
+          "50": "#f8fafc",
+          "100": "#f1f5f9",
+          "200": "#e2e8f0",
+          "300": "#cbd5e1",
+          "400": "#94a3b8",
+          "500": "#64748b",
+          "600": "#475569",
+          "700": "#334155",
+          "800": "#1e293b",
+          "900": "#0f172a",
+          "950": "#0b0f19"
+        },
+        "usage": "Rich obsidian (#0b0f19) background with layered dark slate cards (#111625)"
+      },
+      "semantic": {
+        "success": "#10b981",
+        "warning": "#f59e0b",
+        "error": "#ef4444",
+        "info": "#38bdf8"
+      },
+      "surface": {
+        "background": "#0b0f19",
+        "card": "#111625",
+        "elevated": "#161d31"
+      },
+      "contrast_strategy": "Ultra-high contrast with vibrant neon highlights against dark slate"
+    },
+    "typography": {
+      "font_families": {
+        "heading": "Outfit, sans-serif",
+        "body": "Plus Jakarta Sans, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "type_scale": {
+        "display": { "size": "32px", "weight": "800", "line_height": "1.1", "tracking": "-0.03em" },
+        "heading_1": { "size": "24px", "weight": "800", "line_height": "1.2", "tracking": "-0.02em" },
+        "heading_2": { "size": "18px", "weight": "700", "line_height": "1.3", "tracking": "-0.01em" },
+        "heading_3": { "size": "14px", "weight": "700", "line_height": "1.4", "tracking": "0" },
+        "body": { "size": "13px", "weight": "400", "line_height": "1.6", "tracking": "0" },
+        "body_small": { "size": "11px", "weight": "500", "line_height": "1.5", "tracking": "0" },
+        "caption": { "size": "10px", "weight": "600", "line_height": "1.4", "tracking": "0.02em" },
+        "overline": { "size": "9px", "weight": "800", "line_height": "1.2", "tracking": "0.08em" }
+      },
+      "font_style_notes": "Modern geometric sans for display, highly readable humanist sans for body, strict monospace for technical metadata and encryption badges."
+    },
+    "spacing": {
+      "base_unit": "4px",
+      "scale": ["4px", "8px", "12px", "16px", "20px", "24px", "32px", "48px"],
+      "content_density": "high",
+      "section_rhythm": "tight and modular workspace"
+    },
+    "layout": {
+      "grid_system": "12-column dynamic responsive grid with collapsible sidebars",
+      "max_content_width": "1600px",
+      "columns": 12,
+      "gutter": "16px",
+      "breakpoints": { "sm": "640px", "md": "768px", "lg": "1024px", "xl": "1280px", "2xl": "1536px" },
+      "alignment_tendency": "center-anchored workspace with floating HUD tools"
+    },
+    "shape": {
+      "border_radius": {
+        "small": "8px",
+        "medium": "12px",
+        "large": "16px",
+        "pill": "9999px"
+      },
+      "border_usage": "Subtle 1px border with rgba(255,255,255,0.08) and accent glow on focus",
+      "divider_style": "1px solid rgba(255,255,255,0.06)"
+    },
+    "elevation": {
+      "shadow_style": "multi-layered diffuse dark shadows with colored ambient glow",
+      "levels": {
+        "low": "0 2px 8px rgba(0, 0, 0, 0.4)",
+        "medium": "0 8px 24px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255,255,255,0.1)",
+        "high": "0 20px 48px rgba(0, 0, 0, 0.8), 0 0 24px rgba(249, 115, 22, 0.15)"
+      },
+      "depth_cues": "Glassmorphism blur(24px) + specular border gradients"
+    },
+    "motion": {
+      "easing": "cubic-bezier(0.16, 1, 0.3, 1)",
+      "duration_scale": {
+        "micro": "150ms",
+        "normal": "250ms",
+        "macro": "400ms"
+      },
+      "entrance_pattern": "fade-up with scale(0.98 -> 1.0)",
+      "exit_pattern": "fade-out with scale(1.0 -> 0.98)",
+      "philosophy": "Snappy, spring-like, purposeful tactile feedback"
+    },
+    "components": {
+      "button_style": "Rounded-xl, subtle inner gradient, glowing hover state, active scale-down (0.96)",
+      "input_style": "Obsidian background (#070b14), 1px border, smooth ring focus indicator",
+      "card_style": "Ultra-glass card with backdrop-blur and 1px translucent border",
+      "navigation_pattern": "Icon-first vertical pill list with active neon pill indicator"
+    }
+  },
+  "design_style": {
+    "aesthetic": {
+      "mood": "Futuristic, high-tech creator workstation, authoritative, hyper-efficient",
+      "visual_metaphor": "Cybernetic media production suite",
+      "genre": "AI SaaS Studio / Creator Economy Tool",
+      "personality_traits": ["Innovative", "Reliable", "Precise", "Bold", "Speed-Oriented"],
+      "adjectives": ["Sleek", "Luminescent", "Modular", "Tactile", "Empowering"]
+    },
+    "visual_language": {
+      "complexity": "Moderate-High (dense functionality with clean visual hierarchy)",
+      "ornamentation": "Functional glowing badges, gradient text, ambient blur spots",
+      "whitespace_usage": "Optimized compact padding for maximum viewport productivity",
+      "focal_strategy": "High-contrast action triggers (Generate, Render, Send) drawing the eye first"
+    }
+  },
+  "visual_effects": {
+    "overview": {
+      "effect_intensity": "medium_high",
+      "performance_tier": "smooth_60fps"
+    },
+    "glassmorphism": {
+      "enabled": true,
+      "blur_strength": "24px",
+      "border_opacity": "0.08",
+      "specular_reflection": true
+    },
+    "ambient_glows": {
+      "enabled": true,
+      "colors": ["rgba(249, 115, 22, 0.08)", "rgba(6, 182, 212, 0.08)", "rgba(139, 92, 246, 0.08)"],
+      "animation": "slow_pulse"
+    },
+    "laser_borders": {
+      "enabled": true,
+      "active_on_generation": true,
+      "animation_duration": "1.8s"
+    }
+  }
+}
