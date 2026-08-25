@@ -2712,3 +2712,20 @@ document.addEventListener('DOMContentLoaded', () => {
   loadChatSessions();
 });
 
+// Flow AI Brutal Extension Modal Helpers
+function openExtensionModal() {
+  const modal = document.getElementById("modal-extension-flow-ai");
+  if (modal) {
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  }
+}
+
+function closeExtensionModal() {
+  const modal = document.getElementById("modal-extension-flow-ai");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
+}
+

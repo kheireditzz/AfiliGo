@@ -764,6 +764,19 @@ app.get('/api/vip/status', (req, res) => {
 });
 
 // =========================================================================
+// FLOW AI EXTENSION DOWNLOAD ENDPOINT (ZIP)
+// =========================================================================
+app.get('/api/extension/download-flow-ai', (req, res) => {
+  const zipPath = path.join(__dirname, 'public', 'AffiliateGo-FlowAI-Extension.zip');
+  if (fs.existsSync(zipPath)) {
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="AffiliateGo-FlowAI-Extension.zip"');
+    return res.sendFile(zipPath);
+  }
+  res.status(404).json({ success: false, message: 'File extension belum dibuat.' });
+});
+
+// =========================================================================
 // AI AFFILIATE PRODUCT VISION & SCRIPT VAULT GENERATION API (@google/genai)
 // =========================================================================
 app.post('/api/ai/analyze-affiliate-product', async (req, res) => {

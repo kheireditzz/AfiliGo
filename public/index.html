@@ -730,6 +730,11 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <button onclick="openExtensionModal()" class="px-3 py-2 rounded-xl bg-slate-850 hover:bg-slate-800 border border-orange-500/40 text-amber-300 hover:text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow transition" title="Buka & Unduh Extension Flow AI">
+          <i class="fa-solid fa-puzzle-piece text-orange-400 text-xs animate-pulse"></i>
+          <span class="hidden sm:inline">Extension Flow AI</span>
+        </button>
+
         <button id="header-btn-create" onclick="openTab('storyboard-creator')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow-md shadow-orange-600/30 transition">
           <i class="fa-solid fa-plus text-[11px]"></i>
           <span>Buat</span>
@@ -2083,7 +2088,87 @@
     </div>
   </div>
 
-  <!-- ONE-CLICK EXTENSION INSTALLER MODAL -->
+  <!-- EXTENSION FLOW AI BRUTAL GENERATOR MODAL -->
+  <div id="modal-extension-flow-ai" class="fixed inset-0 z-[10000] bg-black/85 backdrop-blur-xl hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="w-full max-w-lg bg-gradient-to-b from-[#141b2d] via-[#0e1322] to-[#070a14] border border-orange-500/40 rounded-3xl p-5 sm:p-7 shadow-2xl shadow-black relative text-white space-y-4 my-auto">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-red-600 flex items-center justify-center text-white text-lg shadow-lg shadow-orange-600/30">
+            <i class="fa-solid fa-puzzle-piece"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-extrabold text-sm sm:text-base font-display text-white">Extension Flow AI Brutal</h3>
+              <span class="px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 text-[10px] font-mono font-bold border border-orange-500/40">v2.5 ULTRA</span>
+            </div>
+            <p class="text-[10px] sm:text-[11px] text-amber-300 font-mono">Ekstensi Browser Otomasi Video & Storyboard 8K</p>
+          </div>
+        </div>
+        <button onclick="closeExtensionModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-xs transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Feature Badges Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center">
+        <div class="p-2.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
+          <i class="fa-solid fa-bolt-lightning text-orange-400 text-sm"></i>
+          <div class="text-[10px] font-bold text-white">Generate Brutal</div>
+          <div class="text-[8px] text-slate-400">Batch Video Speed</div>
+        </div>
+        <div class="p-2.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
+          <i class="fa-solid fa-images text-amber-400 text-sm"></i>
+          <div class="text-[10px] font-bold text-white">3 Slot Gambar</div>
+          <div class="text-[8px] text-slate-400">Produk, Model, Lokasi</div>
+        </div>
+        <div class="p-2.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1 col-span-2 sm:col-span-1">
+          <i class="fa-solid fa-cloud-arrow-down text-emerald-400 text-sm"></i>
+          <div class="text-[10px] font-bold text-white">1-Click Unduh All</div>
+          <div class="text-[8px] text-slate-400">Aset Gambar + JSON</div>
+        </div>
+      </div>
+
+      <!-- Detail Box -->
+      <div class="p-3.5 rounded-2xl bg-slate-950/90 border border-orange-500/20 space-y-2 text-xs text-slate-300">
+        <div class="font-bold text-white flex items-center gap-1.5 text-xs">
+          <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+          <span>Fitur Lengkap Ekstensi Flow AI:</span>
+        </div>
+        <ul class="text-[11px] space-y-1.5 text-slate-300 list-disc list-inside leading-relaxed">
+          <li><b>Model Omni Flash & Gemini Pro</b>: Cepat dan presisi untuk affiliate.</li>
+          <li><b>Multi-Scene Manager</b>: Tambah dan hapus scene tanpa batas.</li>
+          <li><b>Prompt Visual, Video Motion & Voiceover</b>: Semua tersimpan rapi dan dapat diedit langsung.</li>
+          <li><b>Inject Langsung ke Tab Flow AI</b>: Menempelkan prompt ke kotak generate secara instan.</li>
+        </ul>
+      </div>
+
+      <!-- Installation Guide (3 Langkah Cepat) -->
+      <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-1.5">
+        <div class="text-[10px] font-bold uppercase text-amber-400 tracking-wider font-mono">Cara Pasang di Browser Chrome / Kiwi:</div>
+        <ol class="text-[10px] text-slate-300 space-y-1 list-decimal list-inside font-mono">
+          <li>Unduh file ZIP di bawah lalu <b>Ekstrak</b> folder-nya.</li>
+          <li>Buka <code class="text-orange-400 bg-slate-950 px-1 py-0.5 rounded">chrome://extensions</code> & aktifkan <b>Developer Mode</b>.</li>
+          <li>Klik <b>Load Unpacked</b> lalu pilih folder hasil ekstrak tadi.</li>
+        </ol>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+        <button onclick="closeExtensionModal()" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs font-display transition">
+          Tutup
+        </button>
+        <a href="/AffiliateGo-FlowAI-Extension.zip" download="AffiliateGo-FlowAI-Extension.zip" class="py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-600 to-red-600 hover:from-amber-400 hover:to-orange-500 active:scale-95 text-white font-extrabold text-xs font-display shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 transition text-center">
+          <i class="fa-solid fa-download"></i>
+          <span>Unduh Extension (.ZIP)</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ONE-CLICK EXTENSION INSTALLER MODAL (LEGACY FLOW 2) -->
   <div id="modal-install-extension" class="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
     <div class="w-full max-w-md bg-gradient-to-b from-[#141b2d] to-[#0b0e17] border border-amber-500/30 rounded-3xl p-5 sm:p-6 shadow-2xl shadow-black relative text-white space-y-4">
       

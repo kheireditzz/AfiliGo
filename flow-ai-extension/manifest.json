@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "AffiliateGo - Flow AI Brutal Video & Storyboard Generator",
+  "version": "2.5.0",
+  "description": "Generate brutal affiliate video prompts, multi-image product/model/location scenes, and 1-click batch download for Flow AI.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "downloads"
+  ],
+  "host_permissions": [
+    "*://labs.google/*",
+    "*://*.google.com/*",
+    "*://*.flow.ai/*",
+    "*://affiliatego.vercel.app/*",
+    "*://*.vercel.app/*",
+    "*://localhost/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "AffiliateGo Flow AI Brutal Generator"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://labs.google/*",
+        "*://*.google.com/*",
+        "*://*.flow.ai/*",
+        "*://affiliatego.vercel.app/*",
+        "*://*.vercel.app/*",
+        "http://localhost:*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

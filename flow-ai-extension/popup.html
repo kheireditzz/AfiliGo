@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AffiliateGo - Flow AI Brutal Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body {
+      width: 480px;
+      max-height: 590px;
+      background: #070b14;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow-y: auto;
+    }
+    .ultra-glass {
+      background: rgba(13, 19, 34, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .neon-border {
+      border: 1px solid rgba(249, 115, 22, 0.4);
+      box-shadow: 0 0 15px rgba(249, 115, 22, 0.15);
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #070b14; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #f97316; }
+    @keyframes shimmerWave {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .shimmer-active::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(249,115,22,0.25), transparent);
+      animation: shimmerWave 1.4s infinite;
+    }
+  </style>
+</head>
+<body class="p-3.5 space-y-3 antialiased select-none">
+
+  <!-- TOP HEADER -->
+  <header class="ultra-glass p-3 rounded-2xl flex items-center justify-between border border-orange-500/30 shadow-lg">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white text-sm shadow">
+        <i class="fa-solid fa-bolt-lightning"></i>
+      </div>
+      <div>
+        <div class="text-xs font-black tracking-tight text-white flex items-center gap-1.5">
+          <span>Flow AI</span>
+          <span class="px-1.5 py-0.2 rounded bg-orange-500/20 text-orange-400 text-[9px] font-mono border border-orange-500/40">BRUTAL v2.5</span>
+        </div>
+        <div class="text-[9px] text-slate-400 font-mono">AffiliateGo Video Director</div>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-1.5">
+      <button id="btn-save-all-json" class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-white text-[10px] font-bold border border-slate-700 transition flex items-center gap-1" title="Simpan Data Prompt JSON">
+        <i class="fa-solid fa-file-code"></i>
+        <span>JSON</span>
+      </button>
+      <button id="btn-download-all-zip" class="px-2.5 py-1 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90 active:scale-95 text-white text-[10px] font-extrabold shadow flex items-center gap-1 transition" title="Download Semua Aset 1-Klik">
+        <i class="fa-solid fa-cloud-arrow-down"></i>
+        <span>Unduh All</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 1. MULTI-IMAGE SLOTS (PRODUK, MODEL, LOKASI) -->
+  <div class="ultra-glass p-3 rounded-2xl space-y-2 border border-slate-800">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
+        <i class="fa-solid fa-images text-orange-400"></i> Masukkan Gambar (3 Slot)
+      </span>
+      <span class="text-[9px] text-slate-400 font-mono">Auto Visual AI</span>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2">
+      <!-- Slot 1: Produk -->
+      <div class="space-y-1 text-center">
+        <label for="ext-file-product" class="relative block aspect-square rounded-xl bg-slate-950 border border-dashed border-slate-700 hover:border-orange-500 cursor-pointer overflow-hidden group shadow flex flex-col items-center justify-center">
+          <img id="ext-thumb-product" class="hidden w-full h-full object-cover">
+          <div id="ext-placeholder-product" class="p-1 space-y-0.5 text-center">
+            <i class="fa-solid fa-box-open text-slate-500 group-hover:text-amber-400 text-xs"></i>
+            <div class="text-[8px] font-bold text-slate-300">Foto Produk</div>
+          </div>
+          <input type="file" id="ext-file-product" accept="image/*" class="hidden">
+        </label>
+        <div class="text-[8px] text-slate-400 truncate">Produk</div>
+      </div>
+
+      <!-- Slot 2: Model -->
+      <div class="space-y-1 text-center">
+        <label for="ext-file-model" class="relative block aspect-square rounded-xl bg-slate-950 border border-dashed border-slate-700 hover:border-orange-500 cursor-pointer overflow-hidden group shadow flex flex-col items-center justify-center">
+          <img id="ext-thumb-model" class="hidden w-full h-full object-cover">
+          <div id="ext-placeholder-model" class="p-1 space-y-0.5 text-center">
+            <i class="fa-solid fa-user text-slate-500 group-hover:text-orange-400 text-xs"></i>
+            <div class="text-[8px] font-bold text-slate-300">Foto Model</div>
+          </div>
+          <input type="file" id="ext-file-model" accept="image/*" class="hidden">
+        </label>
+        <div class="text-[8px] text-slate-400 truncate">Model/Talent</div>
+      </div>
+
+      <!-- Slot 3: Lokasi -->
+      <div class="space-y-1 text-center">
+        <label for="ext-file-location" class="relative block aspect-square rounded-xl bg-slate-950 border border-dashed border-slate-700 hover:border-orange-500 cursor-pointer overflow-hidden group shadow flex flex-col items-center justify-center">
+          <img id="ext-thumb-location" class="hidden w-full h-full object-cover">
+          <div id="ext-placeholder-location" class="p-1 space-y-0.5 text-center">
+            <i class="fa-solid fa-mountain-sun text-slate-500 group-hover:text-red-400 text-xs"></i>
+            <div class="text-[8px] font-bold text-slate-300">Foto Tempat</div>
+          </div>
+          <input type="file" id="ext-file-location" accept="image/*" class="hidden">
+        </label>
+        <div class="text-[8px] text-slate-400 truncate">Lokasi/Latar</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. AI MODEL SELECTOR & DURATION CONFIG -->
+  <div class="ultra-glass p-3 rounded-2xl space-y-2.5 border border-slate-800">
+    <div class="grid grid-cols-2 gap-2">
+      <div>
+        <label class="block text-[10px] font-bold text-slate-300 mb-1">Engine Model AI</label>
+        <select id="ext-ai-model" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-2 py-1.5 text-[10px] text-amber-300 font-mono focus:outline-none focus:border-orange-500">
+          <option value="omni-flash" selected>Omni Flash (Gemini 2.5)</option>
+          <option value="gemini-pro">Gemini 2.5 Pro (Cinematic)</option>
+          <option value="veo2-kling">Veo 2 & Kling 1.5 Motion</option>
+          <option value="flux-ultra">Flux 8K Ultra Photoreal</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-[10px] font-bold text-slate-300 mb-1">Durasi Video</label>
+        <select id="ext-duration" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-2 py-1.5 text-[10px] text-white font-mono focus:outline-none focus:border-orange-500">
+          <option value="5">5 Detik (Hook Singkat)</option>
+          <option value="10">10 Detik (Fast UGC)</option>
+          <option value="15" selected>15 Detik (Standard TikTok)</option>
+          <option value="30">30 Detik (Review Lengkap)</option>
+          <option value="60">60 Detik (Storytelling)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Product Title & USP Input -->
+    <div class="space-y-1.5">
+      <input type="text" id="ext-product-title" placeholder="Nama Produk (contoh: Wireless Earbuds ANC Pro)" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-1.5 text-[11px] text-white placeholder-slate-500 focus:outline-none focus:border-orange-500">
+      <input type="text" id="ext-product-usp" placeholder="Keunggulan / USP Produk (contoh: Noise cancelling hening, bass nendang)" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-1.5 text-[11px] text-emerald-300 placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+    </div>
+
+    <!-- Live Timer & Progress Bar (Hidden until generation starts) -->
+    <div id="ext-timer-container" class="hidden p-2 rounded-xl bg-orange-950/40 border border-orange-500/40 space-y-1">
+      <div class="flex items-center justify-between text-[9px] font-mono">
+        <span class="text-amber-300 font-bold flex items-center gap-1">
+          <i class="fa-solid fa-stopwatch animate-spin"></i> Proses Brutal Flow AI...
+        </span>
+        <span id="ext-timer-text" class="text-orange-400 font-black">0s</span>
+      </div>
+      <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+        <div id="ext-progress-bar" class="h-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 w-0 transition-all duration-300"></div>
+      </div>
+    </div>
+
+    <!-- Brutal Generate Button -->
+    <button id="btn-ext-generate-brutal" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-600 to-red-600 hover:from-amber-400 hover:to-orange-500 active:scale-95 text-white font-extrabold text-xs shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 transition">
+      <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+      <span id="btn-ext-gen-text">Generate Brutal Video di Flow AI</span>
+    </button>
+  </div>
+
+  <!-- 3. DYNAMIC SCENES MANAGER -->
+  <div class="space-y-2">
+    <div class="flex items-center justify-between px-1">
+      <span class="text-xs font-bold text-white font-display flex items-center gap-1.5">
+        <i class="fa-solid fa-clapperboard text-orange-400"></i> Daftar Adegan (Scene)
+      </span>
+      <button id="btn-add-scene" class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-white text-[10px] font-bold border border-slate-700 transition flex items-center gap-1">
+        <i class="fa-solid fa-plus text-[9px]"></i>
+        <span>Tambah Scene</span>
+      </button>
+    </div>
+
+    <div id="ext-scenes-container" class="space-y-2.5">
+      <!-- Scene Cards Dynamically Injected -->
+    </div>
+  </div>
+
+  <!-- BOTTOM INJECT & SYNC BAR -->
+  <div class="p-2.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2">
+    <button id="btn-inject-flow-tab" class="flex-1 py-1.5 rounded-xl bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 text-[10px] font-bold transition flex items-center justify-center gap-1.5">
+      <i class="fa-solid fa-arrow-pointer"></i>
+      <span>Inject Prompt ke Tab Flow AI</span>
+    </button>
+    <button id="btn-copy-all-prompts" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-[10px] font-bold transition flex items-center gap-1" title="Salin Naskah & Semua Prompt">
+      <i class="fa-solid fa-copy"></i>
+      <span>Salin</span>
+    </button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
