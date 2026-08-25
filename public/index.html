@@ -716,6 +716,33 @@
         <!-- ============================================== -->
         <div id="tab-dashboard" class="tab-content space-y-3">
 
+          <!-- QUICK ACCESS: SAKLAR AKTIVASI TAB MELAYANG DI DASHBOARD -->
+          <div class="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-orange-950/60 via-amber-950/30 to-slate-900/90 border border-orange-500/40 shadow-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3.5 min-w-0">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-red-600 p-[1.5px] shadow-lg shadow-orange-600/30 flex-shrink-0">
+                <div class="w-full h-full bg-[#0d111e] rounded-2xl flex items-center justify-center text-amber-400 text-xl">
+                  <i class="fa-solid fa-cloud-bolt"></i>
+                </div>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <h3 class="font-extrabold text-white text-sm sm:text-base font-display">Server Generate</h3>
+                  <span id="dash-floating-status-badge" class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[10px] font-mono font-bold border border-slate-700">OFF</span>
+                </div>
+                <p class="text-xs text-slate-300">Kapsul server AI yang bisa digeser bebas & diselipkan ke tepi layar</p>
+              </div>
+            </div>
+
+            <!-- Saklar Aktivasi Dashboard -->
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-slate-800/80 pt-2.5 sm:pt-0">
+              <span class="text-xs font-bold text-amber-300 font-display">Aktifkan Kapsul</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="dashboard-floating-toggle" onchange="directToggleFlowHub(this)" class="sr-only peer">
+                <div class="w-12 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-amber-500 peer-checked:to-orange-600"></div>
+              </label>
+            </div>
+          </div>
+
           <!-- HERO BANNER -->
           <div class="rounded-3xl bg-gradient-to-br from-slate-900/90 via-[#0d121f] to-[#0a0d17] p-5 sm:p-7 border border-slate-800/80 shadow-2xl relative overflow-hidden">
             <div class="absolute -right-12 -top-12 w-64 h-64 bg-orange-500/10 rounded-full opacity-30 pointer-events-none"></div>
