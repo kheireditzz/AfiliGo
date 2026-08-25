@@ -2451,6 +2451,146 @@ function injectChatPrompt(text) {
   }
 }
 
+// ==========================================================
+// GEMINI MULTI-API KEY POOL & AUTO-FAILOVER CLIENT CONTROLLER
+// ==========================================================
+function openGeminiKeyModal() {
+  const modal = document.getElementById('modal-gemini-keys');
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    loadGeminiKeysPool();
+  }
+}
+
+function closeGeminiKeyModal() {
+  const modal = document.getElementById('modal-gemini-keys');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+}
+
+async function loadGeminiKeysPool() {
+  const list = document.getElementById('gemini-keys-modal-list');
+  const badge = document.getElementById('gemini-keys-badge');
+  const statusText = document.getElementById('gemini-keys-status-text');
+  if (!list) return;
+
+  try {
+    const res = await fetch('/api/gemini-keys');
+    const data = await res.json();
+
+    if (data.success && data.keys) {
+      if (badge) badge.innerText = data.keys.length;
+      if (statusText) statusText.innerText = `${data.keys.length} Key Tersimpan`;
+
+      if (data.keys.length === 0) {
+        list.innerHTML = `<div class="p-4 rounded-xl bg-[#070b14] border border-slate-800 text-center text-xs text-slate-400">Belum ada API Key tersimpan. Silakan masukkan key di atas.</div>`;
+        return;
+      }
+
+      list.innerHTML = data.keys.map(k => {
+        const isActive = k.isActive;
+        const isLimited = k.status === 'rate_limited';
+        
+        let statusBadge = isActive 
+          ? `<span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/40 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Aktif</span>`
+          : (isLimited 
+            ? `<span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/40 flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation text-[9px]"></i> Rate Limited</span>`
+            : `<span class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 text-[10px] font-bold border border-slate-700">Cadangan</span>`);
+
+        return `
+          <div class="p-3 rounded-2xl ${isActive ? 'bg-cyan-950/30 border-cyan-500/50' : 'bg-[#070b14] border-slate-800/80'} border flex items-center justify-between gap-2.5 transition">
+            <div class="min-w-0 flex-1 space-y-0.5">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-white truncate">${k.label || 'API Key'}</span>
+                ${statusBadge}
+              </div>
+              <div class="text-[11px] font-mono text-cyan-300/80 tracking-wide">${k.maskedKey}</div>
+            </div>
+
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              ${!isActive ? `
+                <button onclick="setActiveGeminiKey('${k.id}')" class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-cyan-900/60 text-slate-300 hover:text-cyan-300 text-[10px] font-bold border border-slate-700 hover:border-cyan-500/40 transition" title="Jadikan Key Aktif">
+                  Aktifkan
+                </button>
+              ` : ''}
+              <button onclick="deleteGeminiKey('${k.id}')" class="p-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-500/40 text-xs transition" title="Hapus Key">
+                <i class="fa-solid fa-trash text-[11px]"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  } catch(e) {
+    if (statusText) statusText.innerText = 'Gagal memuat';
+  }
+}
+
+async function submitNewGeminiKey() {
+  const keyInput = document.getElementById('input-new-gemini-key');
+  const labelInput = document.getElementById('input-new-gemini-label');
+  const key = keyInput ? keyInput.value.trim() : '';
+  const label = labelInput ? labelInput.value.trim() : '';
+
+  if (!key) {
+    showToastNotification('error', 'Gagal', 'Silakan tempel Google Gemini API Key terlebih dahulu.');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/gemini-keys', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key, label })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToastNotification('success', 'Berhasil', data.message || 'API Key berhasil ditambahkan!');
+      if (keyInput) keyInput.value = '';
+      if (labelInput) labelInput.value = '';
+      activeUserHasApiKey = true;
+      loadGeminiKeysPool();
+    } else {
+      showToastNotification('error', 'Gagal', data.message || 'Gagal menambahkan API Key.');
+    }
+  } catch(e) {
+    showToastNotification('error', 'Error', e.message);
+  }
+}
+
+async function setActiveGeminiKey(id) {
+  try {
+    const res = await fetch('/api/gemini-keys/set-active', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToastNotification('success', 'Sukses', data.message);
+      loadGeminiKeysPool();
+    }
+  } catch(e) {}
+}
+
+async function deleteGeminiKey(id) {
+  if (!confirm('Hapus API Key ini dari pool?')) return;
+  try {
+    const res = await fetch(`/api/gemini-keys/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      showToastNotification('success', 'Dihapus', data.message);
+      loadGeminiKeysPool();
+    } else {
+      showToastNotification('error', 'Gagal', data.message);
+    }
+  } catch(e) {}
+}
+
 function startNewChatSession() {
   currentChatId = 'chat_' + Date.now();
   const container = document.getElementById('chat-messages-container');
@@ -2722,6 +2862,7 @@ async function handleSendChatMessage(event) {
 document.addEventListener('DOMContentLoaded', () => {
   checkUserApiKeyStatus();
   loadChatSessions();
+  loadGeminiKeysPool();
 });
 
 // Flow AI Brutal Extension Modal Helpers

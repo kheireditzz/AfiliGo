@@ -595,6 +595,184 @@ app.post('/api/settings', (req, res) => {
 });
 
 // ==========================================
+// GEMINI MULTI-API KEY POOL & AUTO-FAILOVER ENGINE
+// ==========================================
+function maskApiKey(key) {
+  if (!key || key.length < 10) return '********';
+  return key.slice(0, 7) + '...' + key.slice(-5);
+}
+
+function getGeminiKeyPool() {
+  const settings = readJson(DB_SETTINGS);
+  let pool = settings.geminiApiKeys || [];
+
+  // Migrate legacy single key if exists
+  if (pool.length === 0 && settings.geminiApiKey && !settings.geminiApiKey.includes('****') && settings.geminiApiKey !== 'YOUR_GEMINI_API_KEY') {
+    pool.push({
+      id: 'key-' + Date.now(),
+      key: settings.geminiApiKey,
+      label: 'API Key Utama',
+      isActive: true,
+      status: 'active',
+      addedAt: new Date().toISOString()
+    });
+    settings.geminiApiKeys = pool;
+    writeJson(DB_SETTINGS, settings);
+  }
+
+  // Fallback default key if pool is completely empty
+  if (pool.length === 0) {
+    const envKey = (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'YOUR_GEMINI_API_KEY')
+      ? process.env.GEMINI_API_KEY
+      : 'AIzaSyC5n4K5LAJEZM7IZbhenCUvQt18k-nd3Aw';
+    pool.push({
+      id: 'key-builtin-1',
+      key: envKey,
+      label: 'Default Key',
+      isActive: true,
+      status: 'active',
+      addedAt: new Date().toISOString()
+    });
+  }
+
+  return pool;
+}
+
+function getActiveGeminiKey() {
+  const pool = getGeminiKeyPool();
+  const active = pool.find(k => k.isActive) || pool.find(k => k.status === 'active') || pool[0];
+  return active ? active.key : (process.env.GEMINI_API_KEY || 'AIzaSyC5n4K5LAJEZM7IZbhenCUvQt18k-nd3Aw');
+}
+
+function rotateGeminiKeyOnLimit(failedKey) {
+  const settings = readJson(DB_SETTINGS);
+  let pool = settings.geminiApiKeys || getGeminiKeyPool();
+  if (pool.length === 0) return getActiveGeminiKey();
+
+  const failedIdx = pool.findIndex(k => k.key === failedKey || k.id === failedKey);
+  if (failedIdx !== -1) {
+    pool[failedIdx].status = 'rate_limited';
+    pool[failedIdx].isActive = false;
+    pool[failedIdx].lastLimitedAt = new Date().toISOString();
+  }
+
+  // Find next working key
+  let nextKey = pool.find(k => k.status !== 'rate_limited');
+  if (!nextKey) {
+    // Reset all statuses if all were marked limited
+    pool.forEach(k => k.status = 'active');
+    nextKey = pool[0];
+  }
+
+  if (nextKey) {
+    nextKey.isActive = true;
+    settings.geminiApiKeys = pool;
+    settings.geminiApiKey = nextKey.key;
+    writeJson(DB_SETTINGS, settings);
+    console.log(`[Gemini Failover] Switched active key to: ${nextKey.label} (${maskApiKey(nextKey.key)})`);
+    return nextKey.key;
+  }
+
+  return getActiveGeminiKey();
+}
+
+app.get('/api/gemini-keys', (req, res) => {
+  const pool = getGeminiKeyPool();
+  const safeList = pool.map(k => ({
+    id: k.id,
+    label: k.label || 'API Key',
+    maskedKey: maskApiKey(k.key),
+    isActive: !!k.isActive,
+    status: k.status || 'active',
+    addedAt: k.addedAt,
+    lastLimitedAt: k.lastLimitedAt || null
+  }));
+  res.json({ success: true, keys: safeList });
+});
+
+app.post('/api/gemini-keys', (req, res) => {
+  const { key, label } = req.body;
+  if (!key || key.length < 8) {
+    return res.status(400).json({ success: false, message: 'Format Google Gemini API Key tidak valid.' });
+  }
+
+  const settings = readJson(DB_SETTINGS);
+  let pool = settings.geminiApiKeys || getGeminiKeyPool();
+
+  // Check duplicate
+  const existing = pool.find(k => k.key === key.trim());
+  if (existing) {
+    return res.status(400).json({ success: false, message: 'API Key ini sudah ada di dalam daftar.' });
+  }
+
+  const newKeyObj = {
+    id: 'key-' + Date.now(),
+    key: key.trim(),
+    label: (label && label.trim()) ? label.trim() : `Key ${pool.length + 1}`,
+    isActive: pool.length === 0,
+    status: 'active',
+    addedAt: new Date().toISOString()
+  };
+
+  pool.push(newKeyObj);
+  settings.geminiApiKeys = pool;
+  if (newKeyObj.isActive) {
+    settings.geminiApiKey = newKeyObj.key;
+  }
+  writeJson(DB_SETTINGS, settings);
+
+  res.json({ success: true, message: 'API Key berhasil ditambahkan!', key: { ...newKeyObj, maskedKey: maskApiKey(newKeyObj.key) } });
+});
+
+app.post('/api/gemini-keys/set-active', (req, res) => {
+  const { id } = req.body;
+  const settings = readJson(DB_SETTINGS);
+  let pool = settings.geminiApiKeys || getGeminiKeyPool();
+
+  let target = null;
+  pool.forEach(k => {
+    if (k.id === id) {
+      k.isActive = true;
+      k.status = 'active'; // reset limit status if user manually activates
+      target = k;
+    } else {
+      k.isActive = false;
+    }
+  });
+
+  if (target) {
+    settings.geminiApiKeys = pool;
+    settings.geminiApiKey = target.key;
+    writeJson(DB_SETTINGS, settings);
+    return res.json({ success: true, message: `Key "${target.label}" sekarang aktif!` });
+  }
+  res.status(404).json({ success: false, message: 'Key tidak ditemukan.' });
+});
+
+app.delete('/api/gemini-keys/:id', (req, res) => {
+  const { id } = req.params;
+  const settings = readJson(DB_SETTINGS);
+  let pool = settings.geminiApiKeys || getGeminiKeyPool();
+
+  if (pool.length <= 1) {
+    return res.status(400).json({ success: false, message: 'Minimal harus ada 1 API Key di dalam pool.' });
+  }
+
+  const wasActive = pool.find(k => k.id === id)?.isActive;
+  pool = pool.filter(k => k.id !== id);
+
+  if (wasActive && pool.length > 0) {
+    pool[0].isActive = true;
+    pool[0].status = 'active';
+    settings.geminiApiKey = pool[0].key;
+  }
+
+  settings.geminiApiKeys = pool;
+  writeJson(DB_SETTINGS, settings);
+  res.json({ success: true, message: 'API Key berhasil dihapus.' });
+});
+
+// ==========================================
 // DONGTUBE VIP PAYMENT GATEWAY & WEBHOOK ENGINE
 // ==========================================
 const DONGTUBE_API_KEY = 'DONGTUBE_20a06f2ab35b44ac';
@@ -1209,18 +1387,12 @@ app.post('/api/chat', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Pesan tidak boleh kosong.' });
   }
 
-  const settings = readJson(DB_SETTINGS);
-  const apiKey = process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'YOUR_GEMINI_API_KEY'
-    ? process.env.GEMINI_API_KEY
-    : (settings.geminiApiKey || 'AIzaSyC5n4K5LAJEZM7IZbhenCUvQt18k-nd3Aw');
-
   // Prepare SSE Headers
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
   const modelId = model.includes('pro') ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${apiKey}`;
 
   // Find or create chat session in DB
   let chats = readJson(DB_CHATS);
@@ -1256,109 +1428,148 @@ app.post('/api/chat', async (req, res) => {
   }));
 
   let accumulatedAiResponse = '';
+  let activeKey = getActiveGeminiKey();
+  let retryCount = 0;
+  const maxRetries = Math.max(1, (readJson(DB_SETTINGS).geminiApiKeys || []).length);
 
-  try {
-    const upstreamRes = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: historyContents,
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 3000
+  while (retryCount <= maxRetries) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${activeKey}`;
+
+    try {
+      const upstreamRes = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: historyContents,
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 3000
+          }
+        })
+      });
+
+      if (!upstreamRes.ok) {
+        const errText = await upstreamRes.text();
+        const isRateLimit = upstreamRes.status === 429 || upstreamRes.status === 403 || errText.includes('RESOURCE_EXHAUSTED') || errText.includes('Quota exceeded');
+        
+        if (isRateLimit && retryCount < maxRetries) {
+          console.warn(`[Gemini Limit Hit] Rotating key from ${maskApiKey(activeKey)} (Attempt ${retryCount + 1}/${maxRetries})`);
+          activeKey = rotateGeminiKeyOnLimit(activeKey);
+          retryCount++;
+          continue;
         }
-      })
-    });
 
-    if (!upstreamRes.ok) {
-      const errText = await upstreamRes.text();
-      res.write(`data: ${JSON.stringify({ error: 'Gemini API Error: ' + errText })}\n\n`);
+        res.write(`data: ${JSON.stringify({ error: 'Gemini API Error: ' + errText })}\n\n`);
+        res.end();
+        return;
+      }
+
+      const reader = upstreamRes.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const rawJson = line.replace('data: ', '').trim();
+              if (rawJson) {
+                const parsed = JSON.parse(rawJson);
+                if (parsed.candidates && parsed.candidates[0]?.content?.parts[0]?.text) {
+                  const textPart = parsed.candidates[0].content.parts[0].text;
+                  accumulatedAiResponse += textPart;
+                  res.write(`data: ${JSON.stringify({ chunk: textPart })}\n\n`);
+                }
+              }
+            } catch(e) {}
+          }
+        }
+      }
+
+      // Save AI response to History
+      activeChat.messages.push({
+        role: 'assistant',
+        content: accumulatedAiResponse,
+        timestamp: new Date().toISOString()
+      });
+      writeJson(DB_CHATS, chats);
+
+      res.write(`data: ${JSON.stringify({ done: true, chatId: currentId })}\n\n`);
+      res.end();
+      return;
+    } catch(err) {
+      if (retryCount < maxRetries) {
+        activeKey = rotateGeminiKeyOnLimit(activeKey);
+        retryCount++;
+        continue;
+      }
+      res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
       res.end();
       return;
     }
-
-    const reader = upstreamRes.body.getReader();
-    const decoder = new TextDecoder();
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split('\n');
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          try {
-            const rawJson = line.replace('data: ', '').trim();
-            if (rawJson) {
-              const parsed = JSON.parse(rawJson);
-              if (parsed.candidates && parsed.candidates[0]?.content?.parts[0]?.text) {
-                const textPart = parsed.candidates[0].content.parts[0].text;
-                accumulatedAiResponse += textPart;
-                res.write(`data: ${JSON.stringify({ chunk: textPart })}\n\n`);
-              }
-            }
-          } catch(e) {}
-        }
-      }
-    }
-
-    // Save AI response to History
-    activeChat.messages.push({
-      role: 'assistant',
-      content: accumulatedAiResponse,
-      timestamp: new Date().toISOString()
-    });
-    writeJson(DB_CHATS, chats);
-
-    res.write(`data: ${JSON.stringify({ done: true, chatId: currentId })}\n\n`);
-    res.end();
-  } catch(err) {
-    res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
-    res.end();
   }
 });
 
 
 // =========================================================================
-// GOOGLE AI STUDIO PRO (GEMINI) DIRECT GENERATION ENGINE
+// GOOGLE AI STUDIO PRO (GEMINI) DIRECT GENERATION ENGINE (WITH AUTO-FAILOVER)
 // =========================================================================
-async function callGeminiPro(promptText, apiKey) {
-  const keyToUse = process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'YOUR_GEMINI_API_KEY'
-    ? process.env.GEMINI_API_KEY
-    : (apiKey || readJson(DB_SETTINGS).geminiApiKey || 'AIzaSyC5n4K5LAJEZM7IZbhenCUvQt18k-nd3Aw');
+async function callGeminiPro(promptText, customKey) {
+  let keyToUse = customKey || getActiveGeminiKey();
+  const pool = getGeminiKeyPool();
+  let maxAttempts = Math.max(1, pool.length);
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyToUse}`;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyToUse}`;
 
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: promptText }] }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 4000,
-          responseMimeType: "application/json"
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 4000,
+            responseMimeType: "application/json"
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        if ((response.status === 429 || response.status === 403 || errText.includes('RESOURCE_EXHAUSTED')) && attempt < maxAttempts - 1) {
+          keyToUse = rotateGeminiKeyOnLimit(keyToUse);
+          continue;
         }
-      })
-    });
+        return null;
+      }
 
-    const data = await response.json();
-    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-      const rawText = data.candidates[0].content.parts[0].text;
-      return JSON.parse(rawText);
+      const data = await response.json();
+      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        const rawText = data.candidates[0].content.parts[0].text;
+        return JSON.parse(rawText);
+      }
+      return null;
+    } catch (err) {
+      if (attempt < maxAttempts - 1) {
+        keyToUse = rotateGeminiKeyOnLimit(keyToUse);
+        continue;
+      }
+      console.error('Gemini Pro API call error:', err);
+      return null;
     }
-    return null;
-  } catch (err) {
-    console.error('Gemini Pro API call error:', err);
-    return null;
   }
+  return null;
 }
 
 // AI STORYBOARD & SCENE GENERATOR API (HYPER-REALISTIC & CUSTOM USER INPUTS)

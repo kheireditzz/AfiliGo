@@ -1288,7 +1288,7 @@
               </div>
             </div>
 
-            <!-- Header Controls: Model Selector, New Chat, API Key -->
+            <!-- Header Controls: Model Selector, New Chat, API Key Pool -->
             <div class="flex items-center gap-1.5 flex-shrink-0">
               <select id="chat-model-select" onchange="changeChatModel(this.value)" class="bg-[#050811] border border-slate-800 hover:border-cyan-500/50 rounded-xl px-2 py-1 text-[10.5px] text-cyan-300 font-bold outline-none cursor-pointer max-w-[120px] sm:max-w-none transition">
                 <option value="gemini-2.5-flash">Flash 2.5</option>
@@ -1300,8 +1300,10 @@
                 <span class="hidden sm:inline">Baru</span>
               </button>
 
-              <button onclick="selectMenu('settings')" class="p-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-cyan-300 transition active:scale-95" title="API Key">
-                <i class="fa-solid fa-key text-xs"></i>
+              <button onclick="openGeminiKeyModal()" class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-cyan-950/40 border border-slate-700/80 hover:border-cyan-500/50 text-cyan-300 flex items-center gap-1.5 text-[11px] font-bold transition active:scale-95 shadow-sm" title="Kelola Pool API Key Gemini">
+                <i class="fa-solid fa-key text-[10px] text-cyan-400"></i>
+                <span class="hidden sm:inline">API Key</span>
+                <span id="gemini-keys-badge" class="px-1.5 py-0.2 rounded-full bg-cyan-950 text-cyan-300 text-[9px] font-mono border border-cyan-500/40">1</span>
               </button>
             </div>
           </div>
@@ -2198,6 +2200,74 @@
     </div>
   </div>
 
-  <script src="/js/app.js?v=20260825_2225"></script>
+  <!-- ========================================================== -->
+  <!-- GEMINI MULTI-API KEY POOL MODAL (AUTO-FAILOVER / ROTATION) -->
+  <!-- ========================================================== -->
+  <div id="modal-gemini-keys" class="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4">
+    <div class="w-full max-w-lg bg-[#0c101d] border border-cyan-500/30 rounded-3xl p-5 sm:p-6 shadow-2xl shadow-black relative text-white space-y-4 max-h-[90vh] flex flex-col">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white text-xs shadow-md shadow-cyan-500/20">
+            <i class="fa-solid fa-key"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm font-display text-white">Google Gemini API Key Pool</h3>
+            <p class="text-[10px] text-cyan-300 font-mono">Auto-Failover saat Limit Quota 429</p>
+          </div>
+        </div>
+        <button onclick="closeGeminiKeyModal()" class="w-7 h-7 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Add New Key Form -->
+      <div class="p-3.5 rounded-2xl bg-[#070b14] border border-slate-800/90 space-y-2.5 flex-shrink-0">
+        <div class="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-plus text-cyan-400 text-[10px]"></i> Tambah API Key Baru
+        </div>
+        
+        <div class="space-y-2">
+          <input type="password" id="input-new-gemini-key" placeholder="Tempel Gemini API Key (AIzaSy...)" class="w-full bg-[#050811] border border-slate-700 hover:border-cyan-500/60 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 outline-none transition font-mono">
+          
+          <div class="flex gap-2">
+            <input type="text" id="input-new-gemini-label" placeholder="Label Key (contoh: Akun Cadangan 1)" class="flex-1 bg-[#050811] border border-slate-700 hover:border-cyan-500/60 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 outline-none transition">
+            <button onclick="submitNewGeminiKey()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 active:scale-95 text-white font-bold text-xs shadow-md transition flex items-center gap-1 flex-shrink-0">
+              <i class="fa-solid fa-plus text-[10px]"></i> Tambah
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Pool List -->
+      <div class="space-y-2 flex-1 overflow-hidden flex flex-col min-h-0">
+        <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 px-1">
+          <span>Daftar API Key Tersimpan</span>
+          <span id="gemini-keys-status-text" class="text-[10px] text-cyan-400 font-mono">Memuat...</span>
+        </div>
+
+        <div id="gemini-keys-modal-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Info Banner -->
+      <div class="p-2.5 rounded-xl bg-cyan-950/30 border border-cyan-500/20 text-[10px] text-cyan-200/90 leading-relaxed flex items-start gap-2 flex-shrink-0">
+        <i class="fa-solid fa-circle-info text-cyan-400 text-xs mt-0.5"></i>
+        <span>Sistem akan otomatis mengganti (*auto-rotate*) ke key cadangan berikutnya secara instan jika key aktif terkena limit kuota (*429 Rate Limit*).</span>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="flex justify-end gap-2 pt-1 flex-shrink-0 border-t border-slate-800">
+        <button onclick="closeGeminiKeyModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition">
+          Selesai
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/app.js?v=20260825_2235"></script>
 </body>
 </html>
