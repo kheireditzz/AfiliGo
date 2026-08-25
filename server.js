@@ -1676,10 +1676,19 @@ Return STRICT JSON formatted with this schema:
     const aiResult = await callGeminiPro(promptForGemini);
     if (aiResult && aiResult.scenes && Array.isArray(aiResult.scenes) && aiResult.scenes.length > 0) {
       const unifiedImgPrompt = aiResult.unifiedStoryboardImagePrompt || `A single 9:16 vertical commercial storyboard sheet with 4 horizontal panels stacked vertically from top to bottom labeled SCENE 1, SCENE 2, SCENE 3, SCENE 4 showing ${productTitle} with ${modelText} in ${locationText}, aspect ratio 9:16, ${realismBoost}`;
-      const unifiedImgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(unifiedImgPrompt)}?width=768&height=1344&seed=${Math.floor(Math.random() * 9999999)}&model=flux&nologo=true`;
+      const unifiedImgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(unifiedImgPrompt)}?width=768&height=1344&seed=${Math.floor(Math.random() * 9999999)}&nologo=true`;
 
       const processedScenes = aiResult.scenes.slice(0, 4).map((sc, idx) => {
-        const fullPrompt = `${sc.prompt || `${productTitle} held naturally by ${modelText} at ${locationText}`}, aspect ratio 9:16, ${realismBoost}`;
+        const p1 = `${sc.prompt || `${productTitle} extreme macro close up held by ${modelText} at ${locationText}`}, aspect ratio 9:16, ${realismBoost}`;
+        const p2 = `Medium action UGC commercial shot of ${modelText} enthusiastically testing and presenting ${productTitle} inside ${locationText}, authentic soft daylight, aspect ratio 9:16, ${realismBoost}`;
+        const p3 = `45-degree high-end commercial texture showcase of ${productTitle} with bokeh lighting in ${locationText}, crisp details, aspect ratio 9:16, ${realismBoost}`;
+        const p4 = `Lifestyle dynamic commercial portrait of ${modelText} proudly smiling and holding ${productTitle} in ${locationText}, 8k UHD, aspect ratio 9:16, ${realismBoost}`;
+
+        const prompts = [p1, p2, p3, p4];
+        const images = prompts.map((p, pIdx) => 
+          `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=768&height=1344&seed=${Math.floor(Math.random() * 9000000 + (idx * 10 + pIdx) * 10000)}&nologo=true`
+        );
+
         return {
           sceneNumber: idx + 1,
           shotType: sc.shotType || `Scene ${idx + 1}`,
@@ -1687,16 +1696,26 @@ Return STRICT JSON formatted with this schema:
           aspectRatio: '9:16',
           visualDescription: sc.visualDescription || `Model memperlihatkan ${productTitle} di ${locationText}`,
           voiceover: sc.voiceover || `Lihat keunggulan ${productTitle} yang sangat praktis dan ${uspText}`,
-          prompt: fullPrompt,
-          videoPrompt: sc.videoPrompt || `Smooth slow motion camera pan of ${modelText} with ${productTitle} inside ${locationText}, vertical 9:16, 10s duration, 4k realistic footage`,
-          promptsList: [fullPrompt],
-          imageUrl: unifiedImgUrl
+          prompt: p1,
+          videoPrompt: sc.videoPrompt || `Smooth slow motion camera movement of ${modelText} with ${productTitle} inside ${locationText}, vertical 9:16, 10s duration, 4k realistic footage`,
+          promptsList: prompts,
+          imagesList: images,
+          imageUrl: images[0]
         };
       });
 
       // Pad to exactly 4 scenes if AI returned fewer
       while (processedScenes.length < 4) {
         const idx = processedScenes.length;
+        const p1 = `Commercial portrait of ${modelText} with ${productTitle} in ${locationText}, aspect ratio 9:16, ${realismBoost}`;
+        const p2 = `Close-up demonstration of ${productTitle} by ${modelText}, aspect ratio 9:16, ${realismBoost}`;
+        const p3 = `Product angle showcase of ${productTitle} in ${locationText}, aspect ratio 9:16, ${realismBoost}`;
+        const p4 = `Happy customer reaction holding ${productTitle}, aspect ratio 9:16, ${realismBoost}`;
+        const prompts = [p1, p2, p3, p4];
+        const images = prompts.map((p, pIdx) => 
+          `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=768&height=1344&seed=${Math.floor(Math.random() * 9000000 + (idx * 10 + pIdx) * 10000)}&nologo=true`
+        );
+
         processedScenes.push({
           sceneNumber: idx + 1,
           shotType: `Scene ${idx + 1}: Closing Action`,
@@ -1704,10 +1723,11 @@ Return STRICT JSON formatted with this schema:
           aspectRatio: '9:16',
           visualDescription: `${modelText} tersenyum menunjukkan ${productTitle} di ${locationText}.`,
           voiceover: `Klik keranjang kuning sekarang mumpung promo diskon spesial masih ada!`,
-          prompt: `Commercial portrait of ${modelText} with ${productTitle} in ${locationText}, aspect ratio 9:16, ${realismBoost}`,
+          prompt: p1,
           videoPrompt: `Smooth push in camera move towards ${modelText} showing ${productTitle}, 9:16 vertical, 10s duration`,
-          promptsList: [`Commercial portrait of ${modelText} with ${productTitle} in ${locationText}, aspect ratio 9:16, ${realismBoost}`],
-          imageUrl: unifiedImgUrl
+          promptsList: prompts,
+          imagesList: images,
+          imageUrl: images[0]
         });
       }
 
@@ -1723,56 +1743,88 @@ Return STRICT JSON formatted with this schema:
         unifiedStoryboardImageUrl: unifiedImgUrl,
         formattedTextOutput: aiResult.formattedTextOutput || '',
         scenes: processedScenes,
-        poweredBy: 'Antigravity AI (Gemini 2.5 Pro 4-Scene Storyboard Director)'
+        poweredBy: 'Antigravity AI (Gemini 2.5 Pro 4-Scene 16-Photo Director)'
       });
     }
   } catch (geminiError) {
     console.error('Gemini Pro generation fallback:', geminiError);
   }
 
-  // High quality fallback matching exact user inputs (4 Scenes x 10s = 40s)
+  // High quality fallback matching exact user inputs (4 Scenes x 4 Photos = 16 Photos Total, 40s total)
   const unifiedFallbackPrompt = `A single 9:16 vertical commercial storyboard sheet with 4 horizontal panels stacked vertically from top to bottom labeled SCENE 1, SCENE 2, SCENE 3, SCENE 4, showing: Panel 1 (${productTitle} macro hook), Panel 2 (${modelText} demonstrating solution), Panel 3 (${productTitle} premium texture in ${locationText}), Panel 4 (${modelText} happy holding ${productTitle}), aspect ratio 9:16, ${realismBoost}`;
-  const unifiedFallbackImgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(unifiedFallbackPrompt)}?width=768&height=1344&seed=${Math.floor(Math.random() * 9999999)}&model=flux&nologo=true`;
+  const unifiedFallbackImgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(unifiedFallbackPrompt)}?width=768&height=1344&seed=${Math.floor(Math.random() * 9999999)}&nologo=true`;
 
   const sceneTemplates = [
     {
       shotType: 'Scene 1: Hook Pembuka',
       visualDesc: `Kamera fokus macro menyorot detail ${productTitle} yang dipegang elegan oleh ${modelText} di ${locationText}, pencahayaan studio estetik.`,
       voiceover: `Stop scrolling! Ini rahasia kenapa ${productTitle} ini lagi viral banget dan wajib kamu punya sekarang!`,
-      videoPrompt: `Extreme close up macro camera push-in on ${productTitle} held by ${modelText}, soft cinematic lighting, 9:16 vertical, 10 seconds duration, 4k 60fps`
+      videoPrompt: `Extreme close up macro camera push-in on ${productTitle} held by ${modelText}, soft cinematic lighting, 9:16 vertical, 10 seconds duration, 4k 60fps`,
+      angles: [
+        `Extreme macro close-up of ${productTitle} held with elegance by ${modelText} in ${locationText}, sharp focal point, 8k commercial photography`,
+        `Eye-level engaging hook shot of ${modelText} making direct eye contact while holding ${productTitle} in ${locationText}, soft natural daylight`,
+        `Low-angle cinematic heroic presentation of ${productTitle} in ${locationText}, dramatic rim lighting, commercial 8k still`,
+        `Dynamic top-down flat-lay product presentation of ${productTitle} with aesthetic lifestyle props in ${locationText}`
+      ]
     },
     {
       shotType: 'Scene 2: Masalah & Solusi',
       visualDesc: `${modelText} mendemonstrasikan keunggulan praktis ${productTitle} dengan ekspresi terkesima dan bahagia di ${locationText}.`,
       voiceover: `Dulu sering bingung cari yang beneran ampuh, pas nyobain ini langsung kaget sama hasilnya yang ${uspText}!`,
-      videoPrompt: `Medium tracking camera movement of ${modelText} actively using and presenting ${productTitle}, natural facial expression, 9:16 vertical, 10s duration`
+      videoPrompt: `Medium tracking camera movement of ${modelText} actively using and presenting ${productTitle}, natural facial expression, 9:16 vertical, 10s duration`,
+      angles: [
+        `Medium shot of ${modelText} actively demonstrating and using ${productTitle} with genuine surprise and delight in ${locationText}, UGC lifestyle ad`,
+        `Over-the-shoulder perspective showing ${productTitle} in action with ${modelText} in ${locationText}, natural handheld camera feel`,
+        `Side-profile candid commercial capture of ${modelText} testing ${productTitle} against warm bokeh background in ${locationText}`,
+        `Split-lighting close-up of ${modelText} showing immediate positive reaction while applying/using ${productTitle} in ${locationText}`
+      ]
     },
     {
       shotType: 'Scene 3: Demonstrasi Keunggulan',
       visualDesc: `Sorotan close-up menunjukkan detail kualitas dan tekstur formula ${productTitle} dengan pencahayaan natural di ${locationText}.`,
       voiceover: `Lihat detail material dan kandungannya yang premium. Bener-bener ${uspText} dan berasa mewah banget!`,
-      videoPrompt: `Slow motion orbital camera rotation around ${productTitle} highlighting material quality, bokeh background in ${locationText}, 9:16 vertical, 10s duration`
+      videoPrompt: `Slow motion orbital camera rotation around ${productTitle} highlighting material quality, bokeh background in ${locationText}, 9:16 vertical, 10s duration`,
+      angles: [
+        `45-degree angle premium showcase of ${productTitle} revealing rich texture and high-grade materials in ${locationText}, studio softbox glow`,
+        `Macro slow-motion style still focusing on key ingredient / active component of ${productTitle} in ${locationText}, pristine crystal clarity`,
+        `Handheld close-up showing ${modelText} pointing out the signature feature of ${productTitle} in ${locationText}, crisp sharp focus`,
+        `Atmospheric cinematic shot of ${productTitle} placed on luxury wooden counter with coffee bokeh background in ${locationText}`
+      ]
     },
     {
       shotType: 'Scene 4: Call to Action (CTA)',
       visualDesc: `${modelText} tersenyum percaya diri mengajak penonton sambil menunjukkan ${productTitle} ke arah kamera di ${locationText}.`,
       voiceover: `Klik keranjang kuning sekarang mumpung diskon spesial dan promo gratis ongkir masih tersedia!`,
-      videoPrompt: `Smooth push-in camera move towards ${modelText} smiling and presenting ${productTitle} to the viewer, highly engaging eye contact, 9:16 vertical, 10s duration`
+      videoPrompt: `Smooth push-in camera move towards ${modelText} smiling and presenting ${productTitle} to the viewer, highly engaging eye contact, 9:16 vertical, 10s duration`,
+      angles: [
+        `Up-close smiling portrait of ${modelText} holding ${productTitle} next to cheek with radiant glowing smile, eye-contact TikTok CTA style`,
+        `Two-handed enthusiastic presentation of ${productTitle} by ${modelText} gesturing towards shopping cart, bright vibrant commercial lighting`,
+        `Warm outdoor/window-lit portrait of ${modelText} waving goodbye while holding ${productTitle} in ${locationText}, authentic influencer UGC`,
+        `Final hero product shot of ${productTitle} held firmly in center frame with ${modelText} smiling softly in background bokeh`
+      ]
     }
   ];
 
-  const scenes = sceneTemplates.map((template, idx) => ({
-    sceneNumber: idx + 1,
-    shotType: template.shotType,
-    durationSeconds: 10,
-    aspectRatio: '9:16',
-    visualDescription: template.visualDesc,
-    voiceover: template.voiceover,
-    prompt: `${template.videoPrompt}, aspect ratio 9:16, ${realismBoost}`,
-    videoPrompt: template.videoPrompt,
-    promptsList: [`${template.videoPrompt}, aspect ratio 9:16, ${realismBoost}`],
-    imageUrl: unifiedFallbackImgUrl
-  }));
+  const scenes = sceneTemplates.map((template, idx) => {
+    const prompts = template.angles.map(angle => `${angle}, aspect ratio 9:16, ${realismBoost}`);
+    const images = prompts.map((p, pIdx) => 
+      `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=768&height=1344&seed=${Math.floor(Math.random() * 9000000 + (idx * 10 + pIdx) * 10000)}&nologo=true`
+    );
+
+    return {
+      sceneNumber: idx + 1,
+      shotType: template.shotType,
+      durationSeconds: 10,
+      aspectRatio: '9:16',
+      visualDescription: template.visualDesc,
+      voiceover: template.voiceover,
+      prompt: prompts[0],
+      videoPrompt: template.videoPrompt,
+      promptsList: prompts,
+      imagesList: images,
+      imageUrl: images[0]
+    };
+  });
 
   const fallbackFormattedText = `=== STORYBOARD: ${productTitle} (Total durasi: 40 detik) ===\n\n` +
     scenes.map(s => `>>> ${s.shotType.toUpperCase()} (10 detik) <<<\nDeskripsi: ${s.visualDescription}\nVoice Over: "${s.voiceover}"\nVideo Prompt: ${s.videoPrompt}\n>>> END SCENE ${s.sceneNumber} <<<`).join('\n\n') +

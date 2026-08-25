@@ -1409,6 +1409,18 @@ async function generateStoryboardWithAI() {
   }
 }
 
+function selectScenePhoto(sceneIdx, photoIdx) {
+  const scene = currentStoryboard.scenes[sceneIdx];
+  if (!scene) return;
+  if (scene.promptsList && scene.promptsList[photoIdx]) {
+    scene.prompt = scene.promptsList[photoIdx];
+  }
+  if (scene.imagesList && scene.imagesList[photoIdx]) {
+    scene.imageUrl = scene.imagesList[photoIdx];
+  }
+  renderStoryboardPreview();
+}
+
 function renderStoryboardPreview() {
   const container = document.getElementById("scenes-container");
   if (!container) return;
@@ -1419,26 +1431,44 @@ function renderStoryboardPreview() {
   }
 
   container.innerHTML = currentStoryboard.scenes.map((scene, idx) => {
-    const hasMultiplePrompts = scene.promptsList && scene.promptsList.length > 1;
-    const promptButtons = hasMultiplePrompts ? 
-      `<div class="flex items-center gap-1.5 mb-1">` +
-        scene.promptsList.map((p, pIdx) => 
-          `<button onclick="switchScenePrompt(${idx}, ${pIdx})" class="px-2 py-0.5 rounded-md text-[9px] font-bold ${scene.prompt === p ? "bg-orange-500 text-white" : "bg-slate-900 text-slate-400 hover:text-white"} border border-slate-700 font-mono transition">Var ${pIdx + 1}</button>`
-        ).join("") +
-      `</div>` : "";
-
-    const safeImageUrl = scene.imageUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400";
+    const imagesList = scene.imagesList || [scene.imageUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"];
+    const promptsList = scene.promptsList || [scene.prompt || ""];
+    const safeImageUrl = scene.imageUrl || imagesList[0];
     const encodedPrompt = encodeURIComponent(scene.prompt || "");
+
+    const photoTabs = [
+      { label: "1. Macro Hook", icon: "fa-bullseye" },
+      { label: "2. Talent UGC", icon: "fa-user" },
+      { label: "3. Detail Tekstur", icon: "fa-gem" },
+      { label: "4. Lifestyle CTA", icon: "fa-star" }
+    ];
+
+    const photoSelectorButtons = `
+      <div class="grid grid-cols-4 gap-1.5 p-1 rounded-2xl bg-black/40 border border-slate-800">
+        ${imagesList.slice(0, 4).map((img, pIdx) => {
+          const isSelected = (scene.imageUrl === img) || (!scene.imageUrl && pIdx === 0);
+          const tabMeta = photoTabs[pIdx] || { label: `Foto ${pIdx + 1}`, icon: "fa-image" };
+          return `
+            <button onclick="selectScenePhoto(${idx}, ${pIdx})" class="group relative rounded-xl overflow-hidden aspect-[9/16] border-2 transition active:scale-95 ${isSelected ? 'border-amber-400 ring-2 ring-orange-500/40 shadow-lg shadow-orange-500/20' : 'border-slate-800 opacity-60 hover:opacity-100 hover:border-slate-600'}">
+              <img src="${img}" class="w-full h-full object-cover" alt="Foto ${pIdx + 1}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400';">
+              <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent p-1 text-[8px] font-bold text-center text-white truncate font-mono">
+                <i class="fa-solid ${tabMeta.icon} text-[7px] text-amber-400"></i> ${pIdx + 1}
+              </div>
+            </button>
+          `;
+        }).join('')}
+      </div>
+    `;
 
     return `
       <div class="rounded-3xl bg-[#0f121d] border border-slate-800/90 hover:border-orange-500/40 p-3.5 sm:p-4 space-y-3 shadow-xl transition">
         <div class="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
           <div class="flex items-center gap-2 min-w-0 flex-1">
             <span class="px-2.5 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black text-[10px] font-display shadow-sm flex-shrink-0">
-              SCENE ${idx + 1}
+              SCENE ${idx + 1} (4 FOTO)
             </span>
             <input type="text" value="${scene.shotType || 'Medium Shot'}" oninput="updateSceneShotType(${idx}, this.value)" class="w-full max-w-[200px] bg-slate-950/80 border border-slate-800 rounded-lg px-2 py-0.5 text-xs font-bold text-amber-300 focus:outline-none focus:border-amber-400 font-mono truncate" placeholder="Shot Type">
-            <span class="px-2 py-0.5 rounded-md bg-slate-950 text-[10px] font-mono text-slate-400 border border-slate-800 flex-shrink-0">${scene.durationSeconds || 3}s</span>
+            <span class="px-2 py-0.5 rounded-md bg-slate-950 text-[10px] font-mono text-slate-400 border border-slate-800 flex-shrink-0">${scene.durationSeconds || 10}s</span>
           </div>
           <div class="flex items-center gap-1.5 flex-shrink-0">
             <button onclick="copyEntireScene(${idx})" class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-300 hover:text-white text-xs font-bold border border-slate-700/80 transition flex items-center gap-1 shadow-sm" title="Salin Seluruh Konten Scene ${idx + 1}">
@@ -1451,58 +1481,63 @@ function renderStoryboardPreview() {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-center">
-          <div class="md:col-span-4 w-full">
-            <div class="relative w-full rounded-2xl overflow-hidden bg-black aspect-[9/16] max-h-60 sm:max-h-64 border border-slate-800/90 shadow-inner flex items-center justify-center mx-auto group">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-start">
+          <div class="md:col-span-5 w-full space-y-2">
+            <!-- Main Active Photo Display -->
+            <div class="relative w-full rounded-2xl overflow-hidden bg-black aspect-[9/16] max-h-72 border border-slate-800/90 shadow-inner flex items-center justify-center mx-auto group">
               <img id="scene-img-${idx}" src="${safeImageUrl}" class="w-full h-full object-cover" alt="Scene Visual" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400';">
-              <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[8px] font-mono text-amber-300 border border-white/10 shadow flex items-center gap-1">
-                <i class="fa-solid fa-wand-magic-sparkles text-[7px] text-orange-400"></i> ANTIGRAVITY AI
+              <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded-md bg-black/80 text-[8px] font-mono text-cyan-300 border border-cyan-500/30 shadow flex items-center gap-1">
+                <i class="fa-solid fa-sparkles text-[7px] text-cyan-400"></i> GEMINI AI DIRECTOR
               </div>
-              <div class="absolute inset-x-2 bottom-2 p-1 rounded-xl bg-black/85 backdrop-blur-md border border-white/15 shadow-2xl flex items-center gap-1 z-10">
-                <select id="select-ratio-${idx}" class="flex-1 bg-slate-900/90 border border-slate-700/80 text-amber-300 rounded-lg px-1.5 py-1 text-[9px] font-mono focus:outline-none focus:border-orange-500">
+              <div class="absolute inset-x-2 bottom-2 p-1 rounded-xl bg-black/90 border border-white/15 shadow-2xl flex items-center gap-1 z-10">
+                <select id="select-ratio-${idx}" class="flex-1 bg-slate-900 border border-slate-700/80 text-amber-300 rounded-lg px-1.5 py-1 text-[9px] font-mono focus:outline-none focus:border-orange-500">
                   <option value="9:16" selected>9:16 (Story)</option>
                   <option value="1:1">1:1 (Square)</option>
                   <option value="16:9">16:9 (Landscape)</option>
                   <option value="4:5">4:5 (Portrait)</option>
                 </select>
-                <button onclick="downloadSceneWithCustomSize('${safeImageUrl}', document.getElementById('select-ratio-${idx}').value, ${idx + 1})" class="px-2 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] shadow flex items-center gap-1 transition flex-shrink-0" title="Unduh Foto">
+                <button onclick="downloadSceneWithCustomSize('${safeImageUrl}', document.getElementById('select-ratio-${idx}').value, ${idx + 1})" class="px-2 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] shadow flex items-center gap-1 transition flex-shrink-0" title="Unduh Foto Aktif">
                   <i class="fa-solid fa-download text-[9px]"></i>
                   <span>Unduh</span>
                 </button>
               </div>
             </div>
+
+            <!-- 4-Photo Selector Grid per Scene -->
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-[9px] font-bold text-slate-400 px-1 font-mono">
+                <span>PILIH DARI 4 FOTO SCENE:</span>
+                <span class="text-amber-400">4 Variasi Tersedia</span>
+              </div>
+              ${photoSelectorButtons}
+            </div>
           </div>
 
-          <div class="md:col-span-8 space-y-2.5">
+          <div class="md:col-span-7 space-y-2.5">
             <div class="p-2.5 rounded-2xl bg-orange-950/20 border border-orange-500/30 space-y-1.5">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-bold text-amber-300 font-display flex items-center gap-1.5">
-                  <i class="fa-solid fa-wand-magic-sparkles text-orange-400"></i> Prompt Visual Antigravity AI
+                  <i class="fa-solid fa-sparkles text-orange-400"></i> Prompt Visual Foto Aktif
                 </span>
                 <button onclick="copyPromptText('${encodedPrompt}')" class="text-[9px] text-slate-400 hover:text-amber-300 transition flex items-center gap-1 font-mono">
-                  <i class="fa-solid fa-copy text-[8px]"></i> Salin
+                  <i class="fa-solid fa-copy text-[8px]"></i> Salin Prompt
                 </button>
               </div>
-              ${promptButtons}
               <div class="flex gap-1.5 items-stretch">
-                <textarea id="scene-prompt-input-${idx}" rows="2" oninput="updateScenePrompt(${idx}, this.value)" class="flex-1 bg-slate-950/90 border border-slate-800 focus:border-amber-400 rounded-xl p-2 text-[10px] text-amber-200 font-mono focus:outline-none leading-relaxed transition" placeholder="Instruksi prompt foto...">${scene.prompt || ""}</textarea>
-                <button onclick="regenerateSceneImage(${idx})" id="btn-gen-scene-${idx}" class="px-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] shadow flex flex-col items-center justify-center gap-1 transition flex-shrink-0" title="Generate & Ubah Foto">
-                  <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-                  <span>Ubah</span>
-                </button>
+                <textarea id="scene-prompt-input-${idx}" rows="3" oninput="updateScenePrompt(${idx}, this.value)" class="w-full bg-slate-950/90 border border-slate-800 focus:border-amber-400 rounded-xl p-2 text-[10px] text-amber-200 font-mono focus:outline-none leading-relaxed transition" placeholder="Instruksi prompt foto...">${scene.prompt || ""}</textarea>
               </div>
             </div>
 
             <div class="space-y-0.5">
               <span class="text-[9px] font-bold text-slate-400 uppercase font-mono flex items-center gap-1">
-                <i class="fa-solid fa-video text-amber-400"></i> Prompt Video (Aksi & Gerakan)
+                <i class="fa-solid fa-video text-cyan-400"></i> Prompt Video Generator (Kling / Flow / Veo)
               </span>
-              <input type="text" value="${scene.visualDescription || ''}" oninput="updateSceneVisualDesc(${idx}, this.value)" class="w-full bg-slate-950/80 border border-slate-800/80 focus:border-amber-500 rounded-xl px-2.5 py-1.5 text-[11px] text-white placeholder-slate-500 focus:outline-none transition" placeholder="Deskripsi aksi kamera dan talent...">
+              <input type="text" value="${scene.videoPrompt || scene.visualDescription || ''}" oninput="updateSceneVisualDesc(${idx}, this.value)" class="w-full bg-slate-950/80 border border-slate-800/80 focus:border-cyan-500 rounded-xl px-2.5 py-1.5 text-[11px] text-white placeholder-slate-500 focus:outline-none transition font-mono" placeholder="Prompt video AI generator...">
             </div>
 
             <div class="space-y-0.5">
               <span class="text-[9px] font-bold text-slate-400 uppercase font-mono flex items-center gap-1">
-                <i class="fa-solid fa-microphone text-orange-400"></i> Narasi Voiceover / Audio
+                <i class="fa-solid fa-microphone text-orange-400"></i> Naskah Voiceover (10 Detik)
               </span>
               <textarea rows="2" oninput="updateSceneVoiceover(${idx}, this.value)" class="w-full bg-slate-950/80 border border-slate-800/80 focus:border-amber-500 rounded-xl p-2 text-[11px] text-white placeholder-slate-500 focus:outline-none leading-relaxed transition" placeholder="Tuliskan naskah audio yang diucapkan...">${scene.voiceover || ''}</textarea>
             </div>
