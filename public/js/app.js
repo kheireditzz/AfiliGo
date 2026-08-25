@@ -2132,8 +2132,16 @@ async function loadSettings() {
   try {
     const res = await fetch("/api/settings");
     const settings = await res.json();
-    if (settings.geminiApiKey) document.getElementById("setting-gemini-key").value = settings.geminiApiKey;
-    if (settings.huggingFaceKey) document.getElementById("setting-hf-key").value = settings.huggingFaceKey;
+    const geminiInput = document.getElementById("setting-gemini-key");
+    const hfInput = document.getElementById("setting-hf-key");
+    if (geminiInput && settings.geminiApiKey) {
+      geminiInput.placeholder = settings.geminiApiKey;
+      if (!geminiInput.value) geminiInput.value = settings.geminiApiKey;
+    }
+    if (hfInput && settings.huggingFaceKey) {
+      hfInput.placeholder = settings.huggingFaceKey;
+      if (!hfInput.value) hfInput.value = settings.huggingFaceKey;
+    }
   } catch (err) { console.error("Error loading settings:", err); }
 }
 
@@ -2146,10 +2154,14 @@ async function saveSettings() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ geminiApiKey, huggingFaceKey })
     });
-    if (res.ok) {
-      showToastNotification("success", "Simpan Sukses", "Pengaturan API Key berhasil disimpan.");
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToastNotification("success", "Tersimpan", "Pengaturan Google Gemini API Key berhasil disimpan!");
+      activeUserHasApiKey = true;
+      loadGeminiKeysPool();
+      loadSettings();
     } else {
-      showToastNotification("error", "Simpan Gagal", "Gagal menyimpan pengaturan API Key.");
+      showToastNotification("error", "Simpan Gagal", data.message || "Gagal menyimpan pengaturan API Key.");
     }
   } catch (err) {
     console.error("Error saving settings:", err);
