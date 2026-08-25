@@ -977,7 +977,7 @@ Format response WAJIB berupa JSON valid murni dengan struktur spesifik berikut:
 
 // Vision AI Auto-Analyzer with Multimodal Google Gemini Vision
 app.post('/api/analyze-uploaded-visuals', async (req, res) => {
-  const { productImgBase64, modelImgBase64, locationImgBase64, currentTitle } = req.body;
+  const { productImgBase64, modelImgBase64, locationImgBase64, currentTitle, targetType } = req.body;
 
   const keyToUse = process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'YOUR_GEMINI_API_KEY'
     ? process.env.GEMINI_API_KEY
@@ -990,44 +990,60 @@ app.post('/api/analyze-uploaded-visuals', async (req, res) => {
   if (hasImage) {
     try {
       const parts = [];
-      let promptInstructions = `You are an expert Indonesian E-Commerce, Visual Director & Short-Form Video AI.\n`;
+      let promptInstructions = `You are an expert Indonesian E-Commerce, Visual Director & Short-Form Video AI for TikTok Shop and Shopee.\n`;
 
-      if (productImgBase64 && productImgBase64.includes('base64,')) {
-        const match = productImgBase64.match(/^data:([^;]+);base64,(.+)$/);
-        if (match) {
-          parts.push({
-            inlineData: { mimeType: match[1] || 'image/jpeg', data: match[2] }
-          });
-          promptInstructions += `Image is the PRODUCT. Identify exact commercial product name in Indonesian and 2-3 key selling points / USP.\n`;
+      if (targetType === 'product' || (!targetType && productImgBase64)) {
+        if (productImgBase64 && productImgBase64.includes('base64,')) {
+          const match = productImgBase64.match(/^data:([^;]+);base64,(.+)$/);
+          if (match) {
+            parts.push({
+              inlineData: { mimeType: match[1] || 'image/jpeg', data: match[2] }
+            });
+            promptInstructions += `This image is the PRODUCT. Read the text on packaging/bottle/box carefully. Identify the exact commercial Indonesian product name (e.g. 'Skintific 5X Ceramide Barrier Moisture Gel', 'TWS Earbuds Bluetooth Wireless ANC') and generate 2-3 key selling points / USP in Indonesian.\n`;
+          }
         }
+      } else if (targetType === 'model') {
+        if (modelImgBase64 && modelImgBase64.includes('base64,')) {
+          const match = modelImgBase64.match(/^data:([^;]+);base64,(.+)$/);
+          if (match) {
+            parts.push({
+              inlineData: { mimeType: match[1] || 'image/jpeg', data: match[2] }
+            });
+            promptInstructions += `This image is the MODEL / TALENT. Describe this person's appearance, approximate age (e.g. 21-25yo), gender, Indonesian ethnicity look, clothing/outfit style, hairstyle, and makeup in concise detail for AI generation.\n`;
+          }
+        }
+      } else if (targetType === 'location') {
+        if (locationImgBase64 && locationImgBase64.includes('base64,')) {
+          const match = locationImgBase64.match(/^data:([^;]+);base64,(.+)$/);
+          if (match) {
+            parts.push({
+              inlineData: { mimeType: match[1] || 'image/jpeg', data: match[2] }
+            });
+            promptInstructions += `This image is the LOCATION / SETTING. Describe this room/environment, lighting (warm ambient, sunlight, bokeh), decor, and aesthetic vibe in English for generating high-end cinematic backgrounds.\n`;
+          }
+        }
+      } else {
+        if (productImgBase64 && productImgBase64.includes('base64,')) {
+          const match = productImgBase64.match(/^data:([^;]+);base64,(.+)$/);
+          if (match) parts.push({ inlineData: { mimeType: match[1] || 'image/jpeg', data: match[2] } });
+        }
+        if (modelImgBase64 && modelImgBase64.includes('base64,')) {
+          const match = modelImgBase64.match(/^data:([^;]+);base64,(.+)$/);
+          if (match) parts.push({ inlineData: { mimeType: match[1] || 'image/jpeg', data: match[2] } });
+        }
+        if (locationImgBase64 && locationImgBase64.includes('base64,')) {
+          const match = locationImgBase64.match(/^data:([^;]+);base64,(.+)$/);
+          if (match) parts.push({ inlineData: { mimeType: match[1] || 'image/jpeg', data: match[2] } });
+        }
+        promptInstructions += `Identify product name, USP, model character description, and location setting.\n`;
       }
 
-      if (modelImgBase64 && modelImgBase64.includes('base64,')) {
-        const match = modelImgBase64.match(/^data:([^;]+);base64,(.+)$/);
-        if (match) {
-          parts.push({
-            inlineData: { mimeType: match[1] || 'image/jpeg', data: match[2] }
-          });
-          promptInstructions += `Image is the MODEL / TALENT. Describe this person's appearance, age, gender, Indonesian look, clothing/outfit style, and hairstyle in detail.\n`;
-        }
-      }
-
-      if (locationImgBase64 && locationImgBase64.includes('base64,')) {
-        const match = locationImgBase64.match(/^data:([^;]+);base64,(.+)$/);
-        if (match) {
-          parts.push({
-            inlineData: { mimeType: match[1] || 'image/jpeg', data: match[2] }
-          });
-          promptInstructions += `Image is the LOCATION / SETTING. Describe this room/environment, decor, lighting, and aesthetic backdrop in detail in English.\n`;
-        }
-      }
-
-      promptInstructions += `Return a valid JSON object with the following schema:
+      promptInstructions += `Return a valid JSON object matching this schema:
 {
-  "suggestedTitle": "Exact commercial Indonesian product name (e.g. 'Skintific 5X Ceramide Barrier Repair Moisture Gel', 'TWS Bluetooth Earphones ANC Wireless')",
-  "suggestedUsp": "2-3 high-converting selling points / USP in Indonesian in 1-2 compelling sentences",
-  "suggestedModel": "Description of the model (appearance, age, fashion style, look) in Indonesian/English",
-  "suggestedLocation": "Cinematic aesthetic background location & lighting in English for 8K rendering"
+  "suggestedTitle": "Exact commercial Indonesian product name",
+  "suggestedUsp": "2-3 high-converting selling points / USP in Indonesian",
+  "suggestedModel": "Description of the model character (Indonesian look, age, outfit, makeup)",
+  "suggestedLocation": "Cinematic aesthetic background setting in English"
 }`;
 
       parts.push({ text: promptInstructions });

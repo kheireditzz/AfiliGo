@@ -1101,106 +1101,81 @@ function applyCrop() {
     badge.innerHTML = "<i class=\"fa-solid fa-check text-[8px]\"></i> " + (currentCropTarget.charAt(0).toUpperCase() + currentCropTarget.slice(1)) + " Ready";
   }
 
+  const targetJustUploaded = currentCropTarget;
   closeCropperModal();
-  triggerVisionAnalysis();
+  triggerTargetVisionAnalysis(targetJustUploaded);
   triggerAutoSave();
 }
 
-async function triggerVisionAnalysis() {
+async function triggerTargetVisionAnalysis(targetType) {
   const badge = document.getElementById("autosave-status-badge");
+  const targetLabel = targetType === "product" ? "Foto Produk" : targetType === "model" ? "Karakter Model" : targetType === "location" ? "Latar Tempat" : "Gambar";
   if (badge) {
-    badge.innerHTML = "<i class=\"fa-solid fa-wand-magic-sparkles text-amber-400 fa-spin\"></i> Google Vision AI Menganalisa...";
+    badge.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-amber-400 fa-spin"></i> Vision AI Menganalisa ${targetLabel}...`;
     badge.classList.remove("hidden");
   }
 
-  // Immediately render Skeleton Shimmer loading placeholders
-  renderVisionSkeletonLoading();
-
-  showToastNotification("info", "Vision AI Menganalisa...", "Mendeteksi nama, USP, varian prompt video & caption...");
-
   const currentTitle = document.getElementById("sb-product-title")?.value.trim() || "";
-  const targetPlatform = document.getElementById("sb-platform")?.value || "TikTok / Reels (9:16)";
 
   try {
-    let data = null;
+    const res = await fetch("/api/analyze-uploaded-visuals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        productImgBase64: uploadedImages.product || null,
+        modelImgBase64: uploadedImages.model || null,
+        locationImgBase64: uploadedImages.location || null,
+        currentTitle: currentTitle,
+        targetType: targetType
+      })
+    });
 
-    if (uploadedImages.product) {
-      try {
-        const res = await fetch("/api/ai/analyze-affiliate-product", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            image: uploadedImages.product,
-            target_platform: targetPlatform,
-            additional_context: currentTitle
-          })
-        });
-        data = await res.json();
-      } catch (e) {
-        console.warn("Primary affiliate endpoint error, falling back:", e);
-      }
-    }
-
-    if (!data || !data.success) {
-      const fallbackRes = await fetch("/api/analyze-uploaded-visuals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productImgBase64: uploadedImages.product || null,
-          modelImgBase64: uploadedImages.model || null,
-          locationImgBase64: uploadedImages.location || null,
-          currentTitle: currentTitle
-        })
-      });
-      data = await fallbackRes.json();
-    }
-
+    const data = await res.json();
     if (data && data.success) {
-      const titleEl = document.getElementById("sb-product-title");
-      const uspEl = document.getElementById("sb-product-usp");
-      const modelEl = document.getElementById("sb-model-desc");
-      const locationEl = document.getElementById("sb-location-setting");
-
-      const detectedTitle = (data.analisa_produk && data.analisa_produk.nama_produk) || data.suggestedTitle;
-      const detectedUsp = (data.analisa_produk && (data.analisa_produk.fitur_menonjol + " - " + (data.analisa_produk.deskripsi_singkat || ""))) || data.suggestedUsp;
-
-      if (titleEl && detectedTitle) {
-        titleEl.value = detectedTitle;
-        titleEl.classList.add("ring-2", "ring-emerald-400", "border-emerald-400");
-        setTimeout(() => titleEl.classList.remove("ring-2", "ring-emerald-400", "border-emerald-400"), 4000);
+      if (targetType === "product" || (!targetType && uploadedImages.product)) {
+        const titleEl = document.getElementById("sb-product-title");
+        const uspEl = document.getElementById("sb-product-usp");
+        if (titleEl && data.suggestedTitle) {
+          titleEl.value = data.suggestedTitle;
+          titleEl.classList.add("ring-2", "ring-emerald-400", "border-emerald-400");
+          setTimeout(() => titleEl.classList.remove("ring-2", "ring-emerald-400", "border-emerald-400"), 4000);
+        }
+        if (uspEl && data.suggestedUsp) {
+          uspEl.value = data.suggestedUsp;
+          uspEl.classList.add("ring-2", "ring-emerald-400/50", "border-emerald-400");
+          setTimeout(() => uspEl.classList.remove("ring-2", "ring-emerald-400/50", "border-emerald-400"), 4000);
+        }
+        showToastNotification("success", "Produk Terdeteksi!", `Nama & USP terisi: "${data.suggestedTitle || 'Produk'}"`);
       }
 
-      if (uspEl && detectedUsp) {
-        uspEl.value = detectedUsp;
-        uspEl.classList.add("ring-2", "ring-emerald-400/50", "border-emerald-400");
-        setTimeout(() => uspEl.classList.remove("ring-2", "ring-emerald-400/50", "border-emerald-400"), 4000);
+      if (targetType === "model" || (!targetType && uploadedImages.model)) {
+        const modelEl = document.getElementById("sb-model-desc");
+        if (modelEl && data.suggestedModel) {
+          modelEl.value = data.suggestedModel;
+          modelEl.classList.add("ring-2", "ring-cyan-400/50", "border-cyan-400");
+          setTimeout(() => modelEl.classList.remove("ring-2", "ring-cyan-400/50", "border-cyan-400"), 4000);
+        }
+        showToastNotification("success", "Model Terdeteksi!", "Prompt karakter model berhasil diisi.");
       }
 
-      if (modelEl && data.suggestedModel) {
-        modelEl.value = data.suggestedModel;
-        modelEl.classList.add("ring-2", "ring-cyan-400/50", "border-cyan-400");
-        setTimeout(() => modelEl.classList.remove("ring-2", "ring-cyan-400/50", "border-cyan-400"), 4000);
+      if (targetType === "location" || (!targetType && uploadedImages.location)) {
+        const locationEl = document.getElementById("sb-location-setting");
+        if (locationEl && data.suggestedLocation) {
+          locationEl.value = data.suggestedLocation;
+          locationEl.classList.add("ring-2", "ring-amber-400/50", "border-amber-400");
+          setTimeout(() => locationEl.classList.remove("ring-2", "ring-amber-400/50", "border-amber-400"), 4000);
+        }
+        showToastNotification("success", "Lokasi Terdeteksi!", "Prompt latar lokasi berhasil diisi.");
       }
-
-      if (locationEl && data.suggestedLocation) {
-        locationEl.value = data.suggestedLocation;
-        locationEl.classList.add("ring-2", "ring-amber-400/50", "border-amber-400");
-        setTimeout(() => locationEl.classList.remove("ring-2", "ring-amber-400/50", "border-amber-400"), 4000);
-      }
-
-      // Render the rich Vision Results & Script Vault Card
-      renderAffiliateVisionResults(data);
 
       if (badge) {
-        badge.innerHTML = "<i class=\"fa-solid fa-check text-emerald-400\"></i> Data Gambar Siap & Terisi";
+        badge.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> ${targetLabel} Siap`;
         setTimeout(() => badge.classList.add("hidden"), 3000);
       }
-
-      showToastNotification("success", "Analisa Selesai!", "Nama produk, model, lokasi & USP terisi. Silakan edit bila perlu lalu klik tombol Generate.");
       triggerAutoSave();
     }
   } catch (err) {
-    console.error("Vision analysis error:", err);
+    console.error("Target vision analysis error:", err);
     if (badge) badge.classList.add("hidden");
   }
 }
@@ -1466,7 +1441,7 @@ async function generateStoryboardWithAI() {
   const platform = document.getElementById("sb-platform").value;
 
   if (!title) {
-    const productInput = document.getElementById("input-product-name");
+    const productInput = document.getElementById("input-product-name") || document.getElementById("sb-product-title");
     if (productInput) {
       productInput.focus();
       productInput.classList.add("ring-2", "ring-orange-500", "border-orange-500");
@@ -1483,13 +1458,15 @@ async function generateStoryboardWithAI() {
   btn.disabled = true;
   btn.classList.add("laser-btn-active");
   icon.className = "fa-solid fa-circle-notch fa-spin text-[12px] text-amber-200";
-  text.innerText = "Sedang Merancang AI...";
+  text.innerText = "Antigravity AI Merancang...";
 
-  // Immediately render Skeleton Shimmer scene cards for instant feedback
+  // Immediately render Skeleton Shimmer loading placeholders for both Vault & Scenes
+  renderVisionSkeletonLoading();
   renderStoryboardSkeletonLoading(numScenes);
 
   try {
-    const res = await fetch("/api/generate-storyboard-ai", {
+    // 1. Generate Storyboard with Antigravity / Gemini 2.5 Pro
+    const sbPromise = fetch("/api/generate-storyboard-ai", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
@@ -1502,27 +1479,53 @@ async function generateStoryboardWithAI() {
         duration, 
         platform 
       })
-    });
+    }).then(r => r.json());
 
-    const data = await res.json();
-    currentStoryboard = {
-      id: "sb-" + Date.now(),
-      title: data.title,
-      platform: data.platform,
-      totalDuration: data.totalDuration || duration,
-      modelDescription: data.modelDescription,
-      locationSetting: data.locationSetting,
-      hook: data.hook,
-      cta: data.cta,
-      scenes: data.scenes || []
-    };
+    // 2. Generate Vision & Script Vault Prompts & Captions
+    const vaultPromise = (async () => {
+      try {
+        const vaultRes = await fetch("/api/ai/analyze-affiliate-product", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            image: uploadedImages.product || (currentStoryboard?.scenes?.[0]?.imageUrl) || "data:image/jpeg;base64,placeholder",
+            target_platform: platform,
+            additional_context: `Produk: ${title}, USP: ${usp}, Model: ${modelDescription}, Lokasi: ${locationSetting}`
+          })
+        });
+        return await vaultRes.json();
+      } catch (e) {
+        return null;
+      }
+    })();
 
-    renderStoryboardPreview();
+    const [sbData, vaultData] = await Promise.all([sbPromise, vaultPromise]);
+
+    if (sbData && sbData.scenes) {
+      currentStoryboard = {
+        id: "sb-" + Date.now(),
+        title: sbData.title || title,
+        platform: sbData.platform || platform,
+        totalDuration: sbData.totalDuration || duration,
+        modelDescription: sbData.modelDescription || modelDescription,
+        locationSetting: sbData.locationSetting || locationSetting,
+        hook: sbData.hook,
+        cta: sbData.cta,
+        scenes: sbData.scenes || []
+      };
+
+      renderStoryboardPreview();
+    }
+
+    if (vaultData && vaultData.success) {
+      renderAffiliateVisionResults(vaultData);
+    }
+
     triggerAutoSave();
-    showToastNotification("success", "Storyboard Berhasil!", "Skrip, hook, dan prompt storyboard berhasil dibuat.");
+    showToastNotification("success", "Antigravity AI Berhasil!", "Naskah video, hook, prompt visual & storyboard siap.");
   } catch (err) {
     console.error("Generate Storyboard Error:", err);
-    showToastNotification("error", "Storyboard Gagal", "Gagal membuat storyboard. Silakan periksa koneksi atau coba lagi.");
+    showToastNotification("error", "Storyboard Gagal", "Gagal membuat storyboard. Silakan coba lagi.");
   } finally {
     btn.disabled = false;
     btn.classList.remove("laser-btn-active");
