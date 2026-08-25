@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "AffiliateGo - Flow AI Brutal Video & Storyboard Generator",
-  "version": "2.5.0",
-  "description": "Generate brutal affiliate video prompts, multi-image product/model/location scenes, and 1-click batch download for Flow AI.",
+  "name": "Flow Ai Extension",
+  "version": "3.1.0",
+  "description": "Flow Ai Extension - Brutal Video & Storyboard Generator with Omni Flash and Veo 3.1 (Lite, Fast, Quality).",
   "permissions": [
     "storage",
     "activeTab",
@@ -19,7 +19,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "AffiliateGo Flow AI Brutal Generator"
+    "default_title": "Flow Ai Extension"
   },
   "content_scripts": [
     {

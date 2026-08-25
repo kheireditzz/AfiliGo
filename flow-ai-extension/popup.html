@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AffiliateGo - Flow AI Brutal Generator</title>
+  <title>Flow Ai Extension</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
@@ -19,10 +19,6 @@
       background: rgba(13, 19, 34, 0.85);
       backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .neon-border {
-      border: 1px solid rgba(249, 115, 22, 0.4);
-      box-shadow: 0 0 15px rgba(249, 115, 22, 0.15);
     }
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: #070b14; }
@@ -51,10 +47,10 @@
       </div>
       <div>
         <div class="text-xs font-black tracking-tight text-white flex items-center gap-1.5">
-          <span>Flow AI</span>
-          <span class="px-1.5 py-0.2 rounded bg-orange-500/20 text-orange-400 text-[9px] font-mono border border-orange-500/40">BRUTAL v2.5</span>
+          <span>Flow Ai Extension</span>
+          <span class="px-1.5 py-0.2 rounded bg-orange-500/20 text-orange-400 text-[9px] font-mono border border-orange-500/40">v3.1</span>
         </div>
-        <div class="text-[9px] text-slate-400 font-mono">AffiliateGo Video Director</div>
+        <div class="text-[9px] text-slate-400 font-mono">Omni Flash & Veo 3.1 Suite</div>
       </div>
     </div>
     
@@ -121,16 +117,16 @@
     </div>
   </div>
 
-  <!-- 2. AI MODEL SELECTOR & DURATION CONFIG -->
+  <!-- 2. AI MODEL SELECTOR (OMNI FLASH & VEO 3.1) & DURATION CONFIG -->
   <div class="ultra-glass p-3 rounded-2xl space-y-2.5 border border-slate-800">
     <div class="grid grid-cols-2 gap-2">
       <div>
-        <label class="block text-[10px] font-bold text-slate-300 mb-1">Engine Model AI</label>
+        <label class="block text-[10px] font-bold text-slate-300 mb-1">Model Flow AI</label>
         <select id="ext-ai-model" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-2 py-1.5 text-[10px] text-amber-300 font-mono focus:outline-none focus:border-orange-500">
-          <option value="omni-flash" selected>Omni Flash (Gemini 2.5)</option>
-          <option value="gemini-pro">Gemini 2.5 Pro (Cinematic)</option>
-          <option value="veo2-kling">Veo 2 & Kling 1.5 Motion</option>
-          <option value="flux-ultra">Flux 8K Ultra Photoreal</option>
+          <option value="omni-flash" selected>Omni Flash</option>
+          <option value="veo-3.1-lite">Veo 3.1 - Lite</option>
+          <option value="veo-3.1-fast">Veo 3.1 - Fast</option>
+          <option value="veo-3.1-quality">Veo 3.1 - Quality</option>
         </select>
       </div>
 
@@ -152,11 +148,11 @@
       <input type="text" id="ext-product-usp" placeholder="Keunggulan / USP Produk (contoh: Noise cancelling hening, bass nendang)" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-1.5 text-[11px] text-emerald-300 placeholder-slate-500 focus:outline-none focus:border-emerald-500">
     </div>
 
-    <!-- Live Timer & Progress Bar (Hidden until generation starts) -->
+    <!-- Live Timer & Progress Bar -->
     <div id="ext-timer-container" class="hidden p-2 rounded-xl bg-orange-950/40 border border-orange-500/40 space-y-1">
       <div class="flex items-center justify-between text-[9px] font-mono">
         <span class="text-amber-300 font-bold flex items-center gap-1">
-          <i class="fa-solid fa-stopwatch animate-spin"></i> Proses Brutal Flow AI...
+          <i class="fa-solid fa-stopwatch animate-spin"></i> Proses Flow AI...
         </span>
         <span id="ext-timer-text" class="text-orange-400 font-black">0s</span>
       </div>
@@ -185,7 +181,7 @@
     </div>
 
     <div id="ext-scenes-container" class="space-y-2.5">
-      <!-- Scene Cards Dynamically Injected -->
+      <!-- Scene Cards -->
     </div>
   </div>
 

@@ -767,11 +767,13 @@ app.get('/api/vip/status', (req, res) => {
 // FLOW AI EXTENSION DOWNLOAD ENDPOINT (ZIP)
 // =========================================================================
 app.get('/api/extension/download-flow-ai', (req, res) => {
-  const zipPath = path.join(__dirname, 'public', 'AffiliateGo-FlowAI-Extension.zip');
-  if (fs.existsSync(zipPath)) {
+  const zipPath = path.join(__dirname, 'public', 'Flow-Ai-Extension.zip');
+  const fallbackPath = path.join(__dirname, 'public', 'AffiliateGo-FlowAI-Extension.zip');
+  const target = fs.existsSync(zipPath) ? zipPath : fallbackPath;
+  if (fs.existsSync(target)) {
     res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', 'attachment; filename="AffiliateGo-FlowAI-Extension.zip"');
-    return res.sendFile(zipPath);
+    res.setHeader('Content-Disposition', 'attachment; filename="Flow-Ai-Extension.zip"');
+    return res.sendFile(target);
   }
   res.status(404).json({ success: false, message: 'File extension belum dibuat.' });
 });

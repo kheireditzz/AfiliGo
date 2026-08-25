@@ -1,10 +1,10 @@
-// AffiliateGo - Flow AI In-Page Floating Brutal Generator
+// Flow Ai Extension - In-Page Floating Brutal Generator
 (function() {
-  if (window.__AFFILIATEGO_FLOW_INJECTED__) return;
-  window.__AFFILIATEGO_FLOW_INJECTED__ = true;
+  if (window.__FLOW_AI_EXTENSION_INJECTED__) return;
+  window.__FLOW_AI_EXTENSION_INJECTED__ = true;
 
   const host = document.createElement('div');
-  host.id = 'affiliatego-flow-host';
+  host.id = 'flow-ai-extension-host';
   host.style.position = 'fixed';
   host.style.zIndex = '2147483647';
   host.style.top = '20px';
@@ -222,10 +222,10 @@
   function render() {
     if (isMinimized) {
       wrapper.innerHTML = `
-        <div class="floating-pill" id="btn-expand-pill" title="Klik untuk membuka Flow AI Brutal Studio">
+        <div class="floating-pill" id="btn-expand-pill" title="Klik untuk membuka Flow Ai Extension">
           <div class="pill-icon">⚡</div>
-          <span>Flow AI Brutal</span>
-          <span class="pill-badge">v2.5</span>
+          <span>Flow Ai Extension</span>
+          <span class="pill-badge">v3.1</span>
         </div>
       `;
       wrapper.querySelector('#btn-expand-pill').addEventListener('click', () => {
@@ -240,8 +240,8 @@
             <div style="display:flex; align-items:center; gap:8px;">
               <div class="pill-icon">⚡</div>
               <div>
-                <div style="font-size:11px; font-weight:800; color:#fff;">AffiliateGo Flow AI Brutal</div>
-                <div style="font-size:8.5px; color:#94a3b8;">Melayang di Flow AI (Tanpa Tab Baru)</div>
+                <div style="font-size:11px; font-weight:800; color:#fff;">Flow Ai Extension</div>
+                <div style="font-size:8.5px; color:#94a3b8;">Omni Flash & Veo 3.1 Suite (Melayang)</div>
               </div>
             </div>
             <button class="btn-minimize" id="btn-minimize-studio" title="Perkecil / Minimize">-</button>
@@ -273,11 +273,12 @@
             <div class="card-section">
               <div class="grid-2">
                 <div>
-                  <label style="font-size:8.5px; color:#94a3b8; font-weight:bold; display:block; margin-bottom:2px;">Model AI</label>
+                  <label style="font-size:8.5px; color:#94a3b8; font-weight:bold; display:block; margin-bottom:2px;">Model Flow AI</label>
                   <select class="select-input" id="inp-model-ai">
-                    <option value="omni-flash">Omni Flash (Gemini 2.5)</option>
-                    <option value="gemini-pro">Gemini 2.5 Pro</option>
-                    <option value="veo2-kling">Veo 2 & Kling 1.5</option>
+                    <option value="omni-flash" selected>Omni Flash</option>
+                    <option value="veo-3.1-lite">Veo 3.1 - Lite</option>
+                    <option value="veo-3.1-fast">Veo 3.1 - Fast</option>
+                    <option value="veo-3.1-quality">Veo 3.1 - Quality</option>
                   </select>
                 </div>
                 <div>
@@ -352,8 +353,9 @@
       wrapper.querySelector('#btn-generate-now').addEventListener('click', async () => {
         const title = wrapper.querySelector('#inp-title').value.trim() || 'Produk Affiliate';
         const usp = wrapper.querySelector('#inp-usp').value.trim() || 'Kualitas terbaik';
+        const modelAi = wrapper.querySelector('#inp-model-ai').value;
         const genBtn = wrapper.querySelector('#btn-generate-now');
-        genBtn.innerText = '⏳ Merancang Brutal AI...';
+        genBtn.innerText = '⏳ Merancang (' + modelAi + ')...';
         genBtn.disabled = true;
 
         try {
@@ -379,7 +381,7 @@
           }
         } catch(e) {
           scenes.forEach(s => {
-            s.promptVideo = `Cinematic ${s.shotType} of ${title}, ${usp}, 4k 60fps motion`;
+            s.promptVideo = `Cinematic ${s.shotType} of ${title}, ${usp}, 4k 60fps [${modelAi}]`;
           });
         } finally {
           genBtn.innerText = '⚡ Generate Brutal Video di Flow AI';
@@ -393,7 +395,7 @@
       });
 
       wrapper.querySelector('#btn-download-all-inline').addEventListener('click', () => {
-        const data = { app: "AffiliateGo Flow AI", scenes: scenes };
+        const data = { app: "Flow Ai Extension", scenes: scenes };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
