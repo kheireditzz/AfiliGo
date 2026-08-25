@@ -159,6 +159,49 @@
       box-shadow: 0 0 20px #FE2C55, 0 0 40px rgba(254, 44, 85, 0.6);
       mix-blend-mode: screen;
     }
+
+    /* SKELETON SHIMMER LOADING SYSTEM */
+    @keyframes skeleton-shimmer-anim {
+      0% {
+        background-position: -200% 0;
+      }
+      100% {
+        background-position: 200% 0;
+      }
+    }
+
+    .skeleton-shimmer {
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.03) 0%,
+        rgba(255, 255, 255, 0.09) 50%,
+        rgba(255, 255, 255, 0.03) 100%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-shimmer-anim 1.5s infinite ease-in-out;
+    }
+
+    .skeleton-shimmer-orange {
+      background: linear-gradient(
+        90deg,
+        rgba(249, 115, 22, 0.06) 0%,
+        rgba(249, 115, 22, 0.18) 50%,
+        rgba(249, 115, 22, 0.06) 100%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-shimmer-anim 1.5s infinite ease-in-out;
+    }
+
+    .skeleton-shimmer-emerald {
+      background: linear-gradient(
+        90deg,
+        rgba(16, 185, 129, 0.06) 0%,
+        rgba(16, 185, 129, 0.2) 50%,
+        rgba(16, 185, 129, 0.06) 100%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-shimmer-anim 1.5s infinite ease-in-out;
+    }
   </style>
 
   <script>

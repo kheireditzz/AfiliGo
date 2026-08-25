@@ -1113,6 +1113,9 @@ async function triggerVisionAnalysis() {
     badge.classList.remove("hidden");
   }
 
+  // Immediately render Skeleton Shimmer loading placeholders
+  renderVisionSkeletonLoading();
+
   showToastNotification("info", "Vision AI Menganalisa...", "Mendeteksi nama, USP, varian prompt video & caption...");
 
   const currentTitle = document.getElementById("sb-product-title")?.value.trim() || "";
@@ -1194,6 +1197,58 @@ async function triggerVisionAnalysis() {
   } catch (err) {
     console.error("Vision analysis error:", err);
     if (badge) badge.classList.add("hidden");
+  }
+}
+
+function renderVisionSkeletonLoading() {
+  const container = document.getElementById("vision-analysis-results-container");
+  const analysisBox = document.getElementById("vision-product-analysis-box");
+  const promptsBox = document.getElementById("vision-video-prompts-box");
+  const captionsBox = document.getElementById("vision-captions-box");
+
+  if (!container) return;
+  container.classList.remove("hidden");
+
+  if (analysisBox) {
+    analysisBox.innerHTML = `
+      <div class="space-y-2 p-1">
+        <div class="h-3.5 w-2/5 skeleton-shimmer-emerald rounded-lg"></div>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="h-5 skeleton-shimmer rounded-lg"></div>
+          <div class="h-5 skeleton-shimmer rounded-lg"></div>
+        </div>
+        <div class="h-5 w-11/12 skeleton-shimmer rounded-lg"></div>
+        <div class="h-5 w-4/5 skeleton-shimmer-orange rounded-lg"></div>
+        <div class="h-4 w-full skeleton-shimmer rounded-lg"></div>
+      </div>
+    `;
+  }
+
+  if (promptsBox) {
+    promptsBox.innerHTML = [1, 2, 3].map(i => `
+      <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="h-4 w-28 skeleton-shimmer-orange rounded-md"></div>
+          <div class="h-4 w-14 skeleton-shimmer rounded-md"></div>
+        </div>
+        <div class="h-12 w-full skeleton-shimmer rounded-lg"></div>
+        <div class="h-3.5 w-3/4 skeleton-shimmer rounded-md"></div>
+      </div>
+    `).join("");
+  }
+
+  if (captionsBox) {
+    captionsBox.innerHTML = [1, 2, 3].map(i => `
+      <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="h-4 w-32 skeleton-shimmer-emerald rounded-md"></div>
+          <div class="h-4 w-16 skeleton-shimmer rounded-md"></div>
+        </div>
+        <div class="h-5 w-3/4 skeleton-shimmer rounded-md"></div>
+        <div class="h-10 w-full skeleton-shimmer rounded-lg"></div>
+        <div class="h-3.5 w-1/2 skeleton-shimmer-orange rounded-md"></div>
+      </div>
+    `).join("");
   }
 }
 
@@ -1298,6 +1353,52 @@ function copyCaptionText(encodedCaption) {
   showToastNotification("success", "Caption Disalin!", "Caption lengkap & hashtag siap diposting di TikTok/Reels.");
 }
 
+function renderStoryboardSkeletonLoading(count = 4) {
+  const container = document.getElementById("scenes-container");
+  if (!container) return;
+
+  const num = parseInt(count) || 4;
+  container.innerHTML = Array.from({ length: num }).map((_, idx) => `
+    <div class="p-3 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-900/90 to-slate-950/90 border border-slate-800/90 space-y-3 relative overflow-hidden">
+      <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+        <div class="flex items-center gap-2">
+          <div class="h-5 w-28 skeleton-shimmer-orange rounded-lg"></div>
+          <div class="h-4 w-16 skeleton-shimmer rounded-lg"></div>
+        </div>
+        <div class="h-4 w-20 skeleton-shimmer rounded-lg"></div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+        <!-- Visual Skeleton Frame -->
+        <div class="sm:col-span-4 aspect-[9/16] rounded-xl skeleton-shimmer relative overflow-hidden flex items-center justify-center border border-slate-800">
+          <div class="text-center space-y-2 p-2">
+            <div class="w-10 h-10 rounded-full skeleton-shimmer-orange mx-auto"></div>
+            <div class="h-3.5 w-20 skeleton-shimmer rounded mx-auto"></div>
+          </div>
+        </div>
+
+        <!-- Inputs / Prompts Skeleton -->
+        <div class="sm:col-span-8 space-y-2.5">
+          <div class="space-y-1.5">
+            <div class="h-3 w-32 skeleton-shimmer rounded"></div>
+            <div class="h-16 w-full skeleton-shimmer rounded-xl"></div>
+          </div>
+
+          <div class="space-y-1.5">
+            <div class="h-3 w-36 skeleton-shimmer rounded"></div>
+            <div class="h-12 w-full skeleton-shimmer rounded-xl"></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div class="h-8 skeleton-shimmer rounded-xl"></div>
+            <div class="h-8 skeleton-shimmer-orange rounded-xl"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
 function triggerAutoSave() {
   const statusBadge = document.getElementById("autosave-status-badge");
   if (statusBadge) {
@@ -1379,6 +1480,9 @@ async function generateStoryboardWithAI() {
   icon.className = "fa-solid fa-circle-notch fa-spin text-[12px] text-amber-200";
   text.innerText = "Sedang Merancang AI...";
 
+  // Immediately render Skeleton Shimmer scene cards for instant feedback
+  renderStoryboardSkeletonLoading(numScenes);
+
   try {
     const res = await fetch("/api/generate-storyboard-ai", {
       method: "POST",
@@ -1386,11 +1490,11 @@ async function generateStoryboardWithAI() {
       body: JSON.stringify({ 
         productTitle: title, 
         usp, 
-        modelDescription,
-        locationSetting,
-        numScenes,
-        promptsPerScene,
-        duration,
+        modelDescription, 
+        locationSetting, 
+        numScenes, 
+        promptsPerScene, 
+        duration, 
         platform 
       })
     });
