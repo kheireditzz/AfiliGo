@@ -169,6 +169,31 @@
         }
       }
     }
+
+    function bypassLoginDirectly() {
+      var defaultAdmin = {
+        id: "usr-admin-1",
+        name: "Kheir Editz (Super Admin)",
+        email: "kheireditz@gmail.com",
+        role: "SUPER_ADMIN",
+        vipActive: true,
+        hasApiKey: false
+      };
+      localStorage.setItem("affiliate_ai_auth_token", "super_admin_direct_token_" + Date.now());
+      localStorage.setItem("affiliate_ai_user", JSON.stringify(defaultAdmin));
+      if (typeof currentUser !== "undefined") {
+        currentUser = defaultAdmin;
+      }
+      if (typeof showMainApp === "function") {
+        showMainApp();
+      } else {
+        var overlay = document.getElementById("login-overlay");
+        var app = document.getElementById("main-app");
+        if (overlay) { overlay.classList.add("hidden"); overlay.style.display = "none"; }
+        if (app) { app.classList.remove("hidden"); app.style.display = "flex"; }
+        if (typeof openTab === "function") openTab("dashboard");
+      }
+    }
   </script>
 
   <script>
@@ -321,6 +346,12 @@
           <i class="fa-solid fa-right-to-bracket"></i>
           <span>Masuk</span>
         </button>
+
+        <!-- Direct 1-Click Access to Dashboard Button -->
+        <button type="button" onclick="bypassLoginDirectly()" class="w-full py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700 hover:border-orange-500/50 active:scale-[0.98] text-amber-400 font-bold text-xs font-display transition flex items-center justify-center gap-2 shadow">
+          <i class="fa-solid fa-bolt-lightning text-amber-400"></i>
+          <span>Langsung ke Dashboard (Tanpa Password)</span>
+        </button>
       </form>
 
       <!-- 2. FORM DAFTAR -->
@@ -348,6 +379,12 @@
         <button type="submit" id="btn-register" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-600 to-red-600 hover:from-amber-400 hover:to-orange-500 active:scale-[0.98] text-white font-extrabold text-xs font-display transition shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2">
           <i class="fa-solid fa-user-plus"></i>
           <span>Daftar</span>
+        </button>
+
+        <!-- Direct 1-Click Access to Dashboard Button in Register Mode -->
+        <button type="button" onclick="bypassLoginDirectly()" class="w-full py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700 hover:border-orange-500/50 active:scale-[0.98] text-amber-400 font-bold text-xs font-display transition flex items-center justify-center gap-2 shadow">
+          <i class="fa-solid fa-bolt-lightning text-amber-400"></i>
+          <span>Langsung ke Dashboard</span>
         </button>
       </form>
 
