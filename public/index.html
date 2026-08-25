@@ -1257,184 +1257,148 @@
         </div>
 
         <!-- ============================================== -->
-        <!-- TAB: GEMINI AI CHAT GATEWAY (PREMIUM AI GATEWAY) -->
-        <!-- ============================================== -->
+        <!-- TAB: GEMINI AI CHAT GATEWAY (PREMIUM MINIMALIST AI GATEWAY) -->
+        <!-- ========================================================== -->
         <div id="tab-gemini-chat" class="tab-content hidden h-[calc(100vh-115px)] flex flex-col space-y-2.5">
           <!-- TOP HEADER BAR -->
-          <div class="flex items-center justify-between gap-3 bg-gradient-to-r from-[#0d1527]/90 via-[#0a101f]/90 to-[#0d1527]/90 p-3 rounded-2xl border border-cyan-500/20 shadow-lg shadow-cyan-950/20 flex-shrink-0 backdrop-blur-md">
-            <div class="flex items-center gap-3">
-              <button onclick="toggleChatHistorySidebar()" class="md:hidden w-8 h-8 rounded-xl bg-slate-900/90 border border-slate-700/80 text-cyan-400 hover:text-white flex items-center justify-center text-xs transition active:scale-95 shadow">
-                <i class="fa-solid fa-bars-staggered"></i>
+          <div class="flex items-center justify-between gap-3 bg-[#0c101d] px-3.5 py-2.5 rounded-2xl border border-slate-800 shadow-md flex-shrink-0">
+            <div class="flex items-center gap-2.5">
+              <!-- History Drawer Toggle Button -->
+              <button onclick="toggleChatHistorySidebar()" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-cyan-950/50 border border-slate-700/80 hover:border-cyan-500/50 text-slate-300 hover:text-cyan-300 flex items-center gap-1.5 text-xs font-bold transition active:scale-95 shadow-sm" title="Buka Riwayat Obrolan">
+                <i class="fa-solid fa-clock-rotate-left text-cyan-400"></i>
+                <span class="hidden sm:inline">Riwayat</span>
               </button>
 
-              <div class="relative">
-                <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-cyan-500/30 via-blue-600/20 to-purple-600/30 text-cyan-300 border border-cyan-400/40 flex items-center justify-center text-sm shadow-md shadow-cyan-500/10">
-                  <i class="fa-solid fa-sparkles text-cyan-300 animate-pulse"></i>
+              <div class="h-4 w-px bg-slate-800 hidden sm:block"></div>
+
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white text-xs shadow-md shadow-cyan-500/20">
+                  <i class="fa-solid fa-sparkles"></i>
                 </div>
-                <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#090d16] rounded-full"></span>
-              </div>
-              
-              <div>
-                <div class="flex items-center gap-2 flex-wrap">
-                  <h2 class="text-sm sm:text-base font-extrabold text-white font-display tracking-tight flex items-center gap-1.5">
-                    Gemini AI <span class="bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400 bg-clip-text text-transparent">Gateway</span>
-                  </h2>
-                  <span id="chat-model-badge" class="px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 text-[10px] font-mono font-bold border border-cyan-500/40 shadow-inner flex items-center gap-1">
-                    <i class="fa-solid fa-bolt text-[9px] text-cyan-400"></i> Gemini 2.5 Flash
-                  </span>
-                </div>
-                <div class="text-[10px] text-slate-400 hidden sm:flex items-center gap-2 font-medium">
-                  <span>Direct Encrypted Gateway</span>
-                  <span class="text-slate-600">•</span>
-                  <span class="text-cyan-400/80 font-mono">AES-256 Secured</span>
-                </div>
+                <h2 class="text-sm font-black text-white font-display tracking-tight">
+                  Gemini <span class="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">AI</span>
+                </h2>
               </div>
             </div>
 
-            <!-- Header Controls (Model Selector, Clear & Key Settings) -->
+            <!-- Header Controls: Model Selector, New Chat, API Key -->
             <div class="flex items-center gap-2">
-              <div class="relative">
-                <select id="chat-model-select" onchange="changeChatModel(this.value)" class="appearance-none bg-slate-950/90 border border-cyan-500/30 hover:border-cyan-400/60 rounded-xl pl-3 pr-7 py-1.5 text-xs text-cyan-200 focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono font-bold transition cursor-pointer shadow-sm">
-                  <option value="gemini-2.5-flash">⚡ Gemini 2.5 Flash (Cepat)</option>
-                  <option value="gemini-2.5-pro">🧠 Gemini 2.5 Pro (Deep Reasoning)</option>
-                </select>
-                <i class="fa-solid fa-chevron-down text-[9px] text-cyan-400 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2"></i>
-              </div>
+              <select id="chat-model-select" onchange="changeChatModel(this.value)" class="bg-[#050811] border border-slate-800 hover:border-cyan-500/50 rounded-xl px-2.5 py-1.5 text-[11px] text-cyan-300 font-bold outline-none cursor-pointer transition">
+                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+              </select>
 
-              <button onclick="startNewChatSession()" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-cyan-950/40 border border-slate-700/80 hover:border-cyan-500/40 text-slate-300 hover:text-cyan-300 font-bold text-xs transition active:scale-95 shadow">
-                <i class="fa-solid fa-plus text-xs"></i>
-                <span class="hidden md:inline">Sesi Baru</span>
+              <button onclick="startNewChatSession()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs flex items-center gap-1.5 transition active:scale-95 shadow-sm">
+                <i class="fa-solid fa-plus text-[10px]"></i>
+                <span class="hidden sm:inline">Baru</span>
               </button>
 
-              <button onclick="selectMenu('settings')" class="p-2 rounded-xl bg-slate-900/90 hover:bg-cyan-950/50 border border-slate-700/80 hover:border-cyan-500/50 text-slate-400 hover:text-cyan-300 transition active:scale-95 shadow" title="Pengaturan Google Gemini API Key">
+              <button onclick="selectMenu('settings')" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-cyan-300 transition active:scale-95" title="API Key">
                 <i class="fa-solid fa-key text-xs"></i>
               </button>
             </div>
           </div>
 
           <!-- CHAT INTERFACE CONTAINER -->
-          <div class="flex-1 flex gap-3 overflow-hidden min-h-0 relative">
+          <div class="flex-1 flex gap-2.5 overflow-hidden min-h-0 relative">
             
-            <!-- Left: Chat Sessions History (Collapsible / Responsive) -->
-            <div id="gemini-chat-sidebar" class="w-64 bg-gradient-to-b from-[#0e1424] to-[#0a0e1a] rounded-2xl border border-slate-800/90 p-3.5 flex flex-col justify-between hidden md:flex flex-shrink-0 shadow-xl transition-all duration-300 z-10">
-              <div class="space-y-3">
-                <button onclick="startNewChatSession()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-600 to-blue-600 hover:from-cyan-400 hover:to-blue-500 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/20 transition duration-200">
-                  <i class="fa-solid fa-plus text-xs"></i>
-                  <span>Obrolan Baru</span>
-                </button>
-
-                <div class="flex items-center justify-between px-1 pt-1 border-b border-slate-800/80 pb-1.5">
-                  <div class="text-[10px] font-mono uppercase text-slate-400 font-bold tracking-wider flex items-center gap-1.5">
+            <!-- Left: Chat Sessions History Sidebar -->
+            <div id="gemini-chat-sidebar" class="w-64 bg-[#0c101d] rounded-2xl border border-slate-800/90 p-3 flex flex-col justify-between hidden md:flex flex-shrink-0 shadow-2xl transition-all duration-300 z-20">
+              <div class="space-y-2">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                  <span class="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
                     <i class="fa-solid fa-clock-rotate-left text-cyan-400 text-[10px]"></i> Riwayat Obrolan
-                  </div>
-                  <button onclick="loadChatSessions()" class="text-slate-500 hover:text-cyan-400 text-[10px] transition" title="Refresh Riwayat">
+                  </span>
+                  <button onclick="loadChatSessions()" class="text-slate-500 hover:text-cyan-400 text-xs transition" title="Refresh">
                     <i class="fa-solid fa-arrows-rotate"></i>
                   </button>
                 </div>
               </div>
 
               <!-- Sidebar Sessions List -->
-              <div id="chat-history-sidebar-list" class="flex-1 overflow-y-auto space-y-1.5 my-2.5 pr-1 custom-scrollbar">
+              <div id="chat-history-sidebar-list" class="flex-1 overflow-y-auto space-y-1.5 my-2 pr-1 custom-scrollbar">
                 <!-- Populated by JS -->
               </div>
 
-              <!-- Key Status Warning if not set -->
-              <div id="chat-key-warning-box" class="p-3 rounded-xl bg-gradient-to-br from-amber-950/60 to-red-950/40 border border-amber-500/40 text-[10px] text-amber-200 space-y-1.5 hidden shadow-lg">
-                <div class="font-bold flex items-center gap-1.5 text-amber-300 text-xs">
-                  <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> API Key Diperlukan
+              <!-- API Key Notice if empty -->
+              <div id="chat-key-warning-box" class="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-[10px] text-amber-200 space-y-1.5 hidden">
+                <div class="font-bold text-amber-300 flex items-center gap-1">
+                  <i class="fa-solid fa-circle-exclamation"></i> Masukkan API Key
                 </div>
-                <div class="text-slate-300 text-[10px] leading-snug">Sambungkan Google Gemini API Key Anda untuk mulai menggunakan AI Gateway.</div>
-                <button onclick="selectMenu('settings')" class="w-full mt-1 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-[10px] font-display transition shadow">
-                  Sambungkan Sekarang
+                <button onclick="selectMenu('settings')" class="w-full py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10px] transition">
+                  Buka Pengaturan
                 </button>
               </div>
             </div>
 
-            <!-- Right: Chat Messages Stream & Input -->
-            <div class="flex-1 bg-gradient-to-b from-[#0a0e18] via-[#070a12] to-[#0a0e18] rounded-2xl border border-slate-800/80 flex flex-col justify-between overflow-hidden relative shadow-2xl">
+            <!-- Right: Chat Messages Stream & Input Area -->
+            <div class="flex-1 bg-[#070b14] rounded-2xl border border-slate-800/80 flex flex-col justify-between overflow-hidden relative shadow-xl">
               
-              <!-- Subtle Background Ambient Glow -->
-              <div class="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-32 bg-cyan-500/5 blur-[80px] pointer-events-none rounded-full"></div>
-              
-              <!-- Messages Scrollable Body -->
-              <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 custom-scrollbar relative z-0">
+              <!-- Messages Scroll Body -->
+              <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5 custom-scrollbar relative z-0">
                 
-                <!-- Welcome Screen -->
-                <div id="chat-empty-welcome" class="h-full flex flex-col items-center justify-center text-center max-w-lg mx-auto space-y-4 p-4 my-auto">
-                  <div class="relative group">
-                    <div class="w-16 h-16 rounded-3xl bg-gradient-to-br from-cyan-500/20 via-blue-600/10 to-indigo-600/20 border border-cyan-500/40 text-cyan-300 flex items-center justify-center text-3xl shadow-xl shadow-cyan-500/10 transition-transform group-hover:scale-105 duration-300">
-                      <i class="fa-solid fa-brain"></i>
-                    </div>
-                    <div class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center text-[10px] font-black">
-                      AI
-                    </div>
+                <!-- Minimalist Clean Welcome Screen -->
+                <div id="chat-empty-welcome" class="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto space-y-5 p-4 my-auto">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500/20 to-indigo-600/20 border border-cyan-500/30 text-cyan-300 flex items-center justify-center text-2xl shadow-lg shadow-cyan-500/10">
+                    <i class="fa-solid fa-sparkles animate-pulse"></i>
                   </div>
 
-                  <div class="space-y-1.5">
-                    <h3 class="text-lg sm:text-xl font-black text-white font-display tracking-tight">
-                      Google Gemini <span class="bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400 bg-clip-text text-transparent">AI Gateway</span>
+                  <div class="space-y-1">
+                    <h3 class="text-base sm:text-lg font-black text-white font-display tracking-tight">
+                      Apa yang bisa saya bantu hari ini?
                     </h3>
-                    <p class="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
-                      Akses langsung model <span class="text-cyan-300 font-semibold">Gemini 2.5 Flash & Pro</span> menggunakan API Key pribadi Anda dengan enkripsi tingkat militer <span class="text-slate-300 font-mono">AES-256-GCM</span>.
+                    <p class="text-[11px] text-slate-400 max-w-xs mx-auto">
+                      Tanya ide konten, naskah video affiliate, copywriting, atau prompt gambar.
                     </p>
                   </div>
 
-                  <!-- Quick Prompt Cards Grid -->
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full pt-2">
-                    <button onclick="injectChatPrompt('Buatkan skrip video TikTok/Reels viral untuk produk fashion affiliate, lengkap dengan visual hook 3 detik pertama & CTA checkout!')" class="group p-3 rounded-xl bg-slate-900/80 hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/50 text-left transition duration-200 shadow-sm">
-                      <div class="flex items-center gap-2 text-cyan-400 text-xs font-bold font-display group-hover:text-cyan-300">
-                        <i class="fa-solid fa-video text-xs"></i> Skrip Video TikTok / Reels
+                  <!-- 4 Concise Quick Prompt Cards -->
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full pt-1">
+                    <button onclick="injectChatPrompt('Buatkan skrip video TikTok affiliate viral lengkap dengan hook 3 detik & CTA!')" class="p-2.5 rounded-xl bg-[#0c101d] hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/40 text-left transition shadow-sm group">
+                      <div class="text-cyan-400 font-bold text-[11px] flex items-center gap-1.5 group-hover:text-cyan-300">
+                        <i class="fa-solid fa-film text-[10px]"></i> Skrip Video TikTok
                       </div>
-                      <div class="text-[10px] text-slate-400 line-clamp-2 mt-1 leading-snug">Skrip affiliate dengan visual hook & strategi call-to-action konversi tinggi.</div>
+                      <div class="text-[9.5px] text-slate-400 mt-0.5">Hook pembuka & naskah jualan</div>
                     </button>
 
-                    <button onclick="injectChatPrompt('Tuliskan 5 ide hook copywriting yang memicu FOMO dan rasa penasaran untuk produk elektronik viral!')" class="group p-3 rounded-xl bg-slate-900/80 hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/50 text-left transition duration-200 shadow-sm">
-                      <div class="flex items-center gap-2 text-sky-400 text-xs font-bold font-display group-hover:text-sky-300">
-                        <i class="fa-solid fa-bolt text-xs"></i> 5 Hook Penjualan Viral
+                    <button onclick="injectChatPrompt('Tuliskan 5 ide hook copywriting yang memicu rasa penasaran untuk produk viral!')" class="p-2.5 rounded-xl bg-[#0c101d] hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/40 text-left transition shadow-sm group">
+                      <div class="text-sky-400 font-bold text-[11px] flex items-center gap-1.5 group-hover:text-sky-300">
+                        <i class="fa-solid fa-bolt text-[10px]"></i> 5 Hook Penjualan
                       </div>
-                      <div class="text-[10px] text-slate-400 line-clamp-2 mt-1 leading-snug">Hook copywriting psikologis untuk menaikkan rasio klik & penjualan.</div>
+                      <div class="text-[9.5px] text-slate-400 mt-0.5">Kalimat pemikat audiens</div>
                     </button>
 
-                    <button onclick="injectChatPrompt('Analisis keunggulan produk skincare dan buatkan tabel perbandingan USP vs kompetitor')" class="group p-3 rounded-xl bg-slate-900/80 hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/50 text-left transition duration-200 shadow-sm">
-                      <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold font-display group-hover:text-emerald-300">
-                        <i class="fa-solid fa-chart-line text-xs"></i> Analisis USP & Riset Produk
+                    <button onclick="injectChatPrompt('Analisis keunggulan produk skincare dan buatkan tabel USP vs kompetitor')" class="p-2.5 rounded-xl bg-[#0c101d] hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/40 text-left transition shadow-sm group">
+                      <div class="text-emerald-400 font-bold text-[11px] flex items-center gap-1.5 group-hover:text-emerald-300">
+                        <i class="fa-solid fa-chart-line text-[10px]"></i> Riset Produk & USP
                       </div>
-                      <div class="text-[10px] text-slate-400 line-clamp-2 mt-1 leading-snug">Breakdown keunggulan produk dan target audiens market potensial.</div>
+                      <div class="text-[9.5px] text-slate-400 mt-0.5">Analisa nilai jual produk</div>
                     </button>
 
-                    <button onclick="injectChatPrompt('Buatkan prompt gambar Flux 8K Ultra-realistic untuk produk kecantikan di atas podium marmer mewah dengan pencahayaan sinematik')" class="group p-3 rounded-xl bg-slate-900/80 hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/50 text-left transition duration-200 shadow-sm">
-                      <div class="flex items-center gap-2 text-purple-400 text-xs font-bold font-display group-hover:text-purple-300">
-                        <i class="fa-solid fa-wand-magic-sparkles text-xs"></i> Prompt Gambar AI Studio
+                    <button onclick="injectChatPrompt('Buatkan prompt foto produk estetik studio 8k di atas meja kayu dengan lighting natural')" class="p-2.5 rounded-xl bg-[#0c101d] hover:bg-cyan-950/40 border border-slate-800/90 hover:border-cyan-500/40 text-left transition shadow-sm group">
+                      <div class="text-purple-400 font-bold text-[11px] flex items-center gap-1.5 group-hover:text-purple-300">
+                        <i class="fa-solid fa-image text-[10px]"></i> Prompt Gambar 8K
                       </div>
-                      <div class="text-[10px] text-slate-400 line-clamp-2 mt-1 leading-snug">Prompt fotorealistik studio 8K siap render di Image Generator.</div>
+                      <div class="text-[9.5px] text-slate-400 mt-0.5">Deskripsi visual siap render</div>
                     </button>
                   </div>
                 </div>
 
               </div>
 
-              <!-- Chat Input Box & Prompt Bar -->
-              <div class="p-3 sm:p-4 bg-[#0d1322]/95 border-t border-slate-800/90 space-y-2 backdrop-blur-md relative z-10">
+              <!-- Chat Input Bar -->
+              <div class="p-3 bg-[#0b0f1b] border-t border-slate-800/90 backdrop-blur-md relative z-10">
                 <form id="chat-form" onsubmit="handleSendChatMessage(event)" class="relative flex items-center">
-                  <input type="text" id="chat-input-text" autocomplete="off" placeholder="Ketik pesan, instruksi, atau pertanyaan untuk Gemini..." class="w-full bg-[#070b14] border border-slate-700/80 hover:border-slate-600 focus:border-cyan-500/80 rounded-2xl px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 pr-14 shadow-inner transition duration-150">
+                  <input type="text" id="chat-input-text" autocomplete="off" placeholder="Tanya sesuatu ke Gemini..." class="w-full bg-[#050811] border border-slate-700/80 hover:border-slate-600 focus:border-cyan-500 rounded-2xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none pr-12 transition">
                   
-                  <button type="submit" id="btn-send-chat" class="absolute right-2 w-9 h-9 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 active:scale-90 text-white flex items-center justify-center shadow-lg shadow-cyan-600/30 transition disabled:opacity-40 disabled:cursor-not-allowed" title="Kirim Pesan">
-                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                  <button type="submit" id="btn-send-chat" class="absolute right-1.5 w-8 h-8 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 active:scale-95 text-white flex items-center justify-center shadow-md transition disabled:opacity-40" title="Kirim">
+                    <i class="fa-solid fa-arrow-up text-xs"></i>
                   </button>
                 </form>
 
-                <div class="flex items-center justify-between text-[10px] text-slate-400 px-1 font-mono">
-                  <div class="flex items-center gap-2">
-                    <span class="flex items-center gap-1.5 text-cyan-400/90">
-                      <i class="fa-solid fa-shield-halved text-[9px]"></i> AES-256 Encrypted
-                    </span>
-                    <span class="text-slate-600 hidden sm:inline">•</span>
-                    <span class="text-slate-500 hidden sm:inline">Google AI Studio Direct API</span>
-                  </div>
-                  <div class="flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                    <span id="chat-stream-status" class="text-slate-300 font-semibold">Siap</span>
-                  </div>
+                <div class="flex items-center justify-between text-[9px] text-slate-500 px-1 pt-1.5 font-mono">
+                  <span>Gemini AI Engine</span>
+                  <span id="chat-stream-status" class="text-slate-400">Siap</span>
                 </div>
               </div>
 

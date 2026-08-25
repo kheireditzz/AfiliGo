@@ -48,6 +48,7 @@ const DB_DIR = path.join(__dirname, 'data');
 const DB_PRODUCTS = path.join(DB_DIR, 'products.json');
 const DB_STORYBOARDS = path.join(DB_DIR, 'storyboards.json');
 const DB_PROMPTS = path.join(DB_DIR, 'prompts.json');
+const DB_CHATS = path.join(DB_DIR, 'chats.json');
 const DB_SETTINGS = path.join(DB_DIR, 'settings.json');
 
 if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
@@ -61,6 +62,7 @@ const initFile = (filePath, defaultData) => {
 initFile(DB_PRODUCTS, []);
 initFile(DB_STORYBOARDS, []);
 initFile(DB_PROMPTS, []);
+initFile(DB_CHATS, []);
 initFile(DB_SETTINGS, {
   geminiApiKey: '',
   huggingFaceKey: '',
@@ -76,7 +78,6 @@ const writeJson = (file, data) => fs.writeFileSync(file, JSON.stringify(data, nu
 
 
 const DB_USERS = path.join(DB_DIR, 'users.json');
-const DB_CHATS = path.join(DB_DIR, 'chats.json');
 
 initFile(DB_USERS, [
   {
@@ -1176,6 +1177,149 @@ app.post('/api/analyze-uploaded-visuals', async (req, res) => {
     suggestedModel: inferredModel,
     suggestedLocation: inferredLocation
   });
+});
+
+// =========================================================================
+// GEMINI AI GATEWAY CHAT STREAMING & PERSISTENT SESSIONS API
+// =========================================================================
+app.get('/api/chats', (req, res) => {
+  try {
+    const chats = readJson(DB_CHATS);
+    res.json({ success: true, chats: chats.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)) });
+  } catch(e) {
+    res.json({ success: true, chats: [] });
+  }
+});
+
+app.delete('/api/chats/:id', (req, res) => {
+  try {
+    const id = req.params.id;
+    let chats = readJson(DB_CHATS);
+    chats = chats.filter(c => c.id !== id);
+    writeJson(DB_CHATS, chats);
+    res.json({ success: true });
+  } catch(e) {
+    res.status(500).json({ success: false });
+  }
+});
+
+app.post('/api/chat', async (req, res) => {
+  const { message, model = 'gemini-2.5-flash', chatId } = req.body;
+  if (!message) {
+    return res.status(400).json({ success: false, message: 'Pesan tidak boleh kosong.' });
+  }
+
+  const settings = readJson(DB_SETTINGS);
+  const apiKey = process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'YOUR_GEMINI_API_KEY'
+    ? process.env.GEMINI_API_KEY
+    : (settings.geminiApiKey || 'AIzaSyC5n4K5LAJEZM7IZbhenCUvQt18k-nd3Aw');
+
+  // Prepare SSE Headers
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const modelId = model.includes('pro') ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${apiKey}`;
+
+  // Find or create chat session in DB
+  let chats = readJson(DB_CHATS);
+  let activeChat = chats.find(c => c.id === chatId);
+  const isNew = !activeChat;
+  const currentId = activeChat ? activeChat.id : ('chat-' + Date.now());
+
+  if (isNew) {
+    activeChat = {
+      id: currentId,
+      title: message.slice(0, 32) + (message.length > 32 ? '...' : ''),
+      model: modelId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      messages: []
+    };
+    chats.unshift(activeChat);
+  } else {
+    activeChat.updatedAt = new Date().toISOString();
+  }
+
+  // Add User Message to History
+  activeChat.messages.push({
+    role: 'user',
+    content: message,
+    timestamp: new Date().toISOString()
+  });
+
+  // Prepare Contents Array for Multi-turn Gemini API
+  const historyContents = activeChat.messages.map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }]
+  }));
+
+  let accumulatedAiResponse = '';
+
+  try {
+    const upstreamRes = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: historyContents,
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 3000
+        }
+      })
+    });
+
+    if (!upstreamRes.ok) {
+      const errText = await upstreamRes.text();
+      res.write(`data: ${JSON.stringify({ error: 'Gemini API Error: ' + errText })}\n\n`);
+      res.end();
+      return;
+    }
+
+    const reader = upstreamRes.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const rawJson = line.replace('data: ', '').trim();
+            if (rawJson) {
+              const parsed = JSON.parse(rawJson);
+              if (parsed.candidates && parsed.candidates[0]?.content?.parts[0]?.text) {
+                const textPart = parsed.candidates[0].content.parts[0].text;
+                accumulatedAiResponse += textPart;
+                res.write(`data: ${JSON.stringify({ chunk: textPart })}\n\n`);
+              }
+            }
+          } catch(e) {}
+        }
+      }
+    }
+
+    // Save AI response to History
+    activeChat.messages.push({
+      role: 'assistant',
+      content: accumulatedAiResponse,
+      timestamp: new Date().toISOString()
+    });
+    writeJson(DB_CHATS, chats);
+
+    res.write(`data: ${JSON.stringify({ done: true, chatId: currentId })}\n\n`);
+    res.end();
+  } catch(err) {
+    res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+    res.end();
+  }
 });
 
 
