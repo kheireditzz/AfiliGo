@@ -31,6 +31,7 @@
     minus: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
     plus: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
     cloudUp: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16l-4-4-4 4M12 12v9M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>`,
+    trash: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
     chevronUp: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>`
   };
 
@@ -581,6 +582,13 @@
         </button>
       </div>
 
+      
+      <!-- Remove All Uploaded Images & Videos in Flow AI -->
+      <button class="btn-ctrl" id="btn-clear-all-flow-assets" style="width:100%; height:26px; border-radius:7px; font-size:9px; background:rgba(220,38,38,0.15); border:1px solid rgba(248,113,113,0.35); color:#fca5a5; margin-top:2px;" title="Hapus semua gambar & video yang terlampir di Flow AI">
+        ${ICONS.trash}
+        <span style="margin-left:4px;">Hapus Semua Gambar & Video di Flow AI</span>
+      </button>
+
       <!-- 1-Click Image Download & Web Sync Button -->
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px;">
         <button class="btn-ctrl" id="btn-download-img-now" style="width:100%; height:26px; border-radius:7px; font-size:9px; color:#fbd38d;">
@@ -696,6 +704,52 @@
     setupResizeHandler(wrapper.querySelector('.floating-studio'), wrapper.querySelector('#gripper-resize'));
   }
 
+  
+    // Function to Remove All Uploaded Images & Videos in Flow AI
+    function removeAllUploadedFlowAssets() {
+      let removedCount = 0;
+
+      // 1. Click all delete / remove / close buttons on attachment previews in Flow AI
+      const removeButtons = Array.from(document.querySelectorAll('button[aria-label*="remove" i], button[aria-label*="delete" i], button[aria-label*="clear" i], button[aria-label*="close" i], [data-testid*="remove" i], [data-testid*="delete" i], .remove-btn, .delete-btn, .close-button, svg[aria-label*="remove" i]'));
+      for (const btn of removeButtons) {
+        try {
+          btn.click();
+          removedCount++;
+        } catch(e) {}
+      }
+
+      // 2. Clear all hidden file input elements
+      const fileInputs = Array.from(document.querySelectorAll('input[type="file"]'));
+      for (const fi of fileInputs) {
+        try {
+          fi.value = "";
+          fi.dispatchEvent(new Event("change", { bubbles: true }));
+          fi.dispatchEvent(new Event("input", { bubbles: true }));
+          removedCount++;
+        } catch(e) {}
+      }
+
+      // 3. Clear prompt textareas / contenteditables
+      const promptInputs = Array.from(document.querySelectorAll('textarea, [contenteditable="true"][role="textbox"]'));
+      for (const pi of promptInputs) {
+        try {
+          if (pi.tagName === "TEXTAREA" || pi.tagName === "INPUT") {
+            pi.value = "";
+            pi.dispatchEvent(new Event("input", { bubbles: true }));
+            pi.dispatchEvent(new Event("change", { bubbles: true }));
+          } else {
+            pi.innerText = "";
+            pi.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "deleteContentBackward" }));
+          }
+        } catch(e) {}
+      }
+
+      // 4. Reset video watcher detected url
+      detectedVideoUrl = null;
+
+      alert("🧹 Berhasil membersihkan semua gambar, video, dan lampiran yang terupload di Flow AI!");
+    }
+
   function attachVideoStudioListeners() {
     const currentScene = scenes[activeSceneIndex] || scenes[0];
 
@@ -787,6 +841,10 @@
     });
 
     setupStoryboardImageUpload();
+    wrapper.querySelector("#btn-clear-all-flow-assets")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      removeAllUploadedFlowAssets();
+    });
   }
 
   function attachNanoBananaListeners() {
