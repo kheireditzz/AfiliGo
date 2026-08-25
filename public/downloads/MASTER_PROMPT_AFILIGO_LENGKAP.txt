@@ -1,0 +1,158 @@
+================================================================================
+MASTER PROMPT & SYSTEM SPECIFICATION: AFILIGO (AFFILIATE AI SUITE 2.0)
+PROMPT LENGKAP UNTUK GOOGLE GEMINI CANVAS / CANVA MAGIC STUDIO / AI GENERATOR
+================================================================================
+
+[BAGIAN 1: PROMPT UTAMA UNTUK GOOGLE GEMINI CANVAS / AI CODE GENERATOR]
+Salin teks di bawah ini ke Google Gemini Canvas untuk membangun ulang seluruh sistem aplikasi web:
+
+"""
+Act as an Elite Principal Full-Stack Architect, AI Engineer, and UI/UX Designer.
+Build a complete, production-ready, single-page web application named "AfiliGo (Affiliate AI Suite 2.0)" — an all-in-one AI Studio for TikTok Affiliate Marketers, Shopee Video Creators, and E-commerce Content Marketers.
+
+================================================================================
+1. BRAND IDENTITY & DESIGN SYSTEM SPECIFICATIONS
+================================================================================
+- Application Name: AfiliGo / AffiliateGo (Affiliate AI Suite 2.0)
+- Tagline: Studio AI Konten Affiliate & Storyboard 8K
+- Theme: Dark Luxury Obsidian Cyberpunk with Frosted Glassmorphism
+- Color Palette:
+  * Deep Background: #06090e to #0c101c
+  * Secondary Surface: #0f1424 (Glass cards with backdrop-blur-md)
+  * Border Strokes: rgba(245, 158, 11, 0.25) to rgba(16, 185, 129, 0.3)
+  * Primary Accent: Solar Amber & Warm Orange (#f59e0b to #ea580c)
+  * Success / Active: Neon Emerald (#10b981)
+  * AI Gateway Accent: Cyber Cyan (#06b6d4)
+  * Motion Video Accent: Electric Purple (#a855f7)
+- Typography:
+  * Display Headings: Plus Jakarta Sans / Syne / Cabinet Grotesk (800 ExtraBold)
+  * Body Text: Plus Jakarta Sans / Inter (400-600)
+  * Code & Prompts: JetBrains Mono / Fira Code (Monospace)
+- Frameworks & Libraries:
+  * Semantic HTML5 & Modern ES6+ JavaScript
+  * Tailwind CSS via CDN (Full utility classes)
+  * FontAwesome 6 Pro CDN Icons
+  * SweetAlert2 / Custom Toast Notification System
+
+================================================================================
+2. COMPREHENSIVE MODULES & FEATURE SPECIFICATIONS
+================================================================================
+
+--------------------------------------------------------------------------------
+MODULE A: TOP NAVIGATION HEADER & COLLAPSIBLE SIDEBAR DRAWER
+--------------------------------------------------------------------------------
+1. Top Header Navbar:
+   - Left: Hamburger drawer toggle button + Brand Logo "AffiliateGo" (Orange accent) + VIP badge.
+   - Right Action Buttons:
+     * [🧩 Flow Ai Extension] (Opens modal popup to download/install extension)
+     * [➕ Buat] (Instant jump to Storyboard Creator tab)
+2. Sidebar Drawer (Mobile-first responsive):
+   - Super Administrator VIP Profile Card (Crown icon, Master Account status).
+   - Navigation Items:
+     * 📊 Dashboard Utama
+     * 🎬 AI Storyboard & Foto (4-Panel Continuous Creator)
+     * 🎞️ Galeri Storyboard (Saved projects & JSON exports)
+     * 💬 Gemini AI Gateway (AI Chatbot & Script Brainstorming)
+     * 📦 Database Produk (Affiliate SKU catalog)
+     * 📚 Prompt Library (Viral E-commerce Prompt Templates)
+
+--------------------------------------------------------------------------------
+MODULE B: DASHBOARD UTAMA
+--------------------------------------------------------------------------------
+1. Server Generate Capsule Controller (Single Master Switch):
+   - Glowing gradient card with an interactive ON/OFF toggle switch labeled "Aktifkan Kapsul".
+   - Status badge toggling realtime between "ON" (Emerald) and "OFF" (Slate).
+   - Subtitle: "Kapsul server AI yang bisa digeser bebas & diselipkan ke tepi layar".
+2. Hero Banner:
+   - "Studio AI Konten Affiliate & Storyboard 8K" with animated glow orbs.
+   - Quick action buttons: "Buat Storyboard Baru", "Unduh Extension Flow AI", "Database Produk".
+3. Metric Stat Cards (4 Dynamic Cards):
+   - Total Storyboard Dibuat (+1,240)
+   - Produk Terdaftar (+84 SKU)
+   - Gemini Pro Token Pool (Active & Failover Ready)
+   - Estimasi Konversi Viral (+48.6%)
+
+--------------------------------------------------------------------------------
+MODULE C: 4-PANEL CONTINUOUS ACTION STORYBOARD ENGINE (CORE SYSTEM)
+--------------------------------------------------------------------------------
+1. User Configuration Form:
+   - Product Image Uploader (Square 1:1 auto-crop preview, drag & drop).
+   - Character Talent Selector: Indonesian Youth Talent (22th Trendy), Korean Aesthetic Idol, Hijabi Professional Model, Casual Western Talent.
+   - Location & Environment Presets: Modern Minimalist Studio, Luxury Glass Cafe, Outdoor Golden Hour Street, Aesthetic Cozy Bedroom.
+   - Lighting & Camera Presets: Commercial Softbox 8K, Cinematic Rim Light, Cyberpunk Neon Glow, Studio Clean Ring Light.
+   - Viral Hook Angles: Problem-Solution Shock, Unboxing Shock & First Impression, ASMR Texture & Review, Social Proof & Challenge.
+2. Prompt Formula Output Engine (STRICT 4-PANEL CONTINUITY FORMULA):
+   - Produces 1 Vertical 9:16 Aspect Ratio Image Prompt per scene, split into 4 HORIZONTAL STACKED PANELS (arranged top to bottom):
+     * PANEL 1: Hook Action (Character enters frame, expression, camera angle).
+     * PANEL 2: Product Showcase (Character holding/demonstrating product, enthusiastic reaction).
+     * PANEL 3: Feature Demonstration (Product in action, close-up texture, benefit highlight).
+     * PANEL 4: Call to Action & Continuity Anchor (Ending pose designed as transition connector to next scene).
+   - Continuity Rules: Character face, outfit, hairstyle, lighting, and background MUST BE IDENTICAL across all 4 panels.
+   - Output Actions: 1-Click "Salin Prompt", 1-Click "Unduh JSON", and direct Flow AI submission.
+
+--------------------------------------------------------------------------------
+MODULE D: DRAGGABLE FLOATING SERVER GENERATE CAPSULE
+--------------------------------------------------------------------------------
+1. Interactive Draggable Widget:
+   - Absolute floating capsule, draggable anywhere via Mouse & Touch events.
+   - Auto-docking / edge-tuck behavior when dragged near screen borders.
+   - Expandable / Collapsible dropdown menu with chevron toggle.
+2. 5 Multi-Server Hub Cards:
+   - Server 1: Google Gemini 1.5 Pro AI Studio (Official AI Studio chat & prompts).
+   - Server 2: Google Flow AI Labs (VIP Auto) with 4 quick buttons:
+     * [Tap Baru] (Direct Flow AI launch with extension injection)
+     * [Tab Proxy] (Cloudflare Edge proxy session)
+     * [Resmi] (Official Google Flow AI Labs website)
+     * [Ekstensi] (Direct download of Flow AI Assistant ZIP)
+   - Server 3: Flux 8K Ultra Photorealistic Engine (Instant high-res commercial visual render).
+   - Server 4: Kling AI & Luma Video Engine (AI Motion & cinematic video generator).
+   - Server 5: HuggingFace Schnell ZeroGPU (High-speed zero-queue generator).
+
+--------------------------------------------------------------------------------
+MODULE E: GEMINI AI GATEWAY & AUTO-FAILOVER KEY ROTATOR
+--------------------------------------------------------------------------------
+1. Gemini AI Studio Chat Interface:
+   - Multi-session sidebar (New Chat, Saved Sessions, History deletion).
+   - Realtime markdown parser for AI responses, scriptwriting, and copywriting.
+2. Gemini API Key Pool Modal:
+   - Add multiple Google Gemini API Keys with custom labels.
+   - Realtime Auto-Failover: Automatically switches to the next available API key in the pool if Rate Limit (HTTP 429) is encountered.
+
+--------------------------------------------------------------------------------
+MODULE F: PRODUCT DATABASE & VIRAL PROMPT LIBRARY
+--------------------------------------------------------------------------------
+1. Product SKU Catalog:
+   - Add/Edit/Delete products with SKU, Title, Category, Price, Target Commission, and Product Photo.
+   - 1-Click "Buat Storyboard untuk Produk Ini".
+2. Prompt Template Library:
+   - Categorized by E-commerce Niches (Fashion, Skincare, Gadget, F&B, Home & Living).
+   - 1-Click "Gunakan Prompt" or "Salin Prompt Template".
+
+================================================================================
+3. TECHNICAL IMPLEMENTATION REQUIREMENTS
+================================================================================
+- Frontend: Single HTML file with embedded Tailwind CSS, modular JavaScript controllers, and custom CSS scrollbars.
+- Backend Integration: REST APIs ready for Express.js & Google Gemini SDK (@google/genai or REST API gemini-3.6-flash).
+- State Persistence: LocalStorage + IndexedDB for offline persistence and instant loading.
+"""
+
+================================================================================
+[BAGIAN 2: PROMPT UNTUK CANVA MAGIC DESIGN / FIGMA UI MOCKUP]
+Gunakan spesifikasi visual berikut di Canva Magic Studio / Figma:
+================================================================================
+
+PROMPT CANVA MAGIC STUDIO:
+"Ultra-sleek modern web application dashboard UI design for 'AfiliGo - Affiliate AI Suite 2.0'.
+Style: Dark Obsidian Glassmorphism (#070b12 background) with neon solar amber (#f59e0b) and cyber emerald (#10b981) glowing accents.
+Elements to show:
+1. Top navigation bar with logo 'AffiliateGo' and glowing orange '8K AI Suite' badge.
+2. Dashboard hero card with title 'Studio AI Konten Affiliate & Storyboard 8K'.
+3. Single interactive 'Server Generate' capsule activation pill switch with ON/OFF status.
+4. AI Storyboard Creator mockup displaying a 9:16 vertical smartphone frame divided into 4 stacked horizontal action panels showing an Indonesian influencer promoting a skincare product.
+5. Floating Server AI Hub widget showing Gemini Pro, Flow AI, Flux 8K, and Kling AI icons.
+6. Clean glassmorphic metric cards showing +1.2K Storyboards and 99.8% AI accuracy. Highly professional, 8K resolution, Behance trending UI/UX."
+
+================================================================================
+FILE SPESIFIKASI INI DAPAT DIUNDUH SECARA LANGSUNG PADA SERVER ANDA:
+URL: http://localhost:3000/MASTER_PROMPT_AFILIGO_LENGKAP.txt
+================================================================================
