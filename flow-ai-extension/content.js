@@ -1,4 +1,4 @@
-// Flow Ai Extension v5.0 - Ultra-Compact Micro Bar with Full Mobile Touch & Mouse Drag
+// Flow Ai Extension v6.0 - Luxury Dark AffiliateGo Theme & Ultra-Compact Touch Studio
 (function() {
   if (window.__FLOW_AI_EXTENSION_INJECTED__) {
     const existing = document.getElementById('flow-ai-extension-host');
@@ -10,9 +10,10 @@
   host.id = 'flow-ai-extension-host';
   host.style.position = 'fixed';
   host.style.zIndex = '2147483647';
-  host.style.top = '10px';
+  host.style.top = '12px';
   host.style.left = '50%';
   host.style.transform = 'translateX(-50%)';
+  host.style.pointerEvents = 'auto';
   host.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   document.body.appendChild(host);
 
@@ -20,30 +21,29 @@
 
   const style = document.createElement('style');
   style.textContent = `
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; pointer-events: auto; }
     
-    /* Ultra-Compact Minimized Pill */
+    /* Minimized Capsule (Sleek Dark Pill) */
     .floating-pill {
       display: flex;
       align-items: center;
       gap: 6px;
       padding: 6px 12px;
-      background: linear-gradient(135deg, rgba(13, 17, 30, 0.98), rgba(20, 26, 46, 0.98));
-      border: 1.5px solid rgba(249, 115, 22, 0.8);
+      background: linear-gradient(135deg, #0b0f19, #141b2d);
+      border: 1px solid rgba(249, 115, 22, 0.7);
       border-radius: 9999px;
       color: #fff;
       font-size: 10px;
       font-weight: 800;
-      cursor: grab;
-      touch-action: none;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8), 0 0 14px rgba(249, 115, 22, 0.35);
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85), 0 0 14px rgba(249, 115, 22, 0.3);
       backdrop-filter: blur(14px);
       user-select: none;
     }
     .pill-icon {
       width: 18px;
       height: 18px;
-      border-radius: 50%;
+      border-radius: 6px;
       background: linear-gradient(135deg, #f59e0b, #ea580c);
       display: flex;
       align-items: center;
@@ -51,22 +51,20 @@
       font-size: 9px;
     }
 
-    /* Ultra-Compact Mini Floating Studio (Small & Slim) */
+    /* Luxury Formal Floating Studio (AffiliateGo Dark Palette) */
     .floating-studio {
-      width: 290px;
-      max-width: 94vw;
-      max-height: 80vh;
-      background: linear-gradient(180deg, #0b0f19 0%, #060810 100%);
-      border: 1.5px solid rgba(249, 115, 22, 0.6);
+      width: 275px;
+      max-width: 95vw;
+      background: #090d16;
+      border: 1.5px solid rgba(249, 115, 22, 0.5);
       border-radius: 14px;
       color: #f8fafc;
-      box-shadow: 0 16px 40px rgba(0,0,0,0.95), 0 0 20px rgba(249, 115, 22, 0.2);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.95), 0 0 25px rgba(249, 115, 22, 0.15);
       backdrop-filter: blur(16px);
       display: flex;
       flex-direction: column;
       overflow: hidden;
       position: relative;
-      resize: both;
       animation: popIn 0.15s ease-out;
     }
     @keyframes popIn {
@@ -76,46 +74,42 @@
 
     .studio-header {
       padding: 6px 10px;
-      background: rgba(15, 23, 42, 0.98);
+      background: linear-gradient(90deg, #0d1322, #141c30);
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
       justify-content: space-between;
       cursor: grab;
-      touch-action: none;
       user-select: none;
       flex-shrink: 0;
     }
     .studio-body {
       padding: 8px;
-      overflow-y: auto;
-      flex: 1;
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
-    .studio-body::-webkit-scrollbar { width: 3px; }
-    .studio-body::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
 
     .btn-ctrl {
-      background: #1e293b;
+      background: #1a2236;
       color: #cbd5e1;
       width: 20px;
       height: 20px;
-      border-radius: 4px;
+      border-radius: 5px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 9px;
+      font-size: 10px;
       font-weight: bold;
     }
+    .btn-ctrl:active { transform: scale(0.92); }
 
     .card-section {
-      background: rgba(13, 19, 34, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      border-radius: 9px;
+      background: #0d121f;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
       padding: 6px;
       display: flex;
       flex-direction: column;
@@ -123,8 +117,8 @@
     }
     .input-text, .select-input {
       width: 100%;
-      background: #030712;
-      border: 1px solid #1f2937;
+      background: #040711;
+      border: 1px solid #1f293d;
       border-radius: 6px;
       color: #fff;
       padding: 4px 6px;
@@ -144,19 +138,19 @@
       padding-bottom: 1px;
     }
     .scene-tab-pill {
-      padding: 3px 6px;
-      border-radius: 5px;
+      padding: 3px 7px;
+      border-radius: 6px;
       font-size: 8px;
       font-weight: 800;
       font-family: monospace;
       cursor: pointer;
-      border: 1px solid #334155;
-      background: #0f172a;
+      border: 1px solid #1e293b;
+      background: #0b0f19;
       color: #94a3b8;
       white-space: nowrap;
     }
     .scene-tab-pill.active {
-      background: #ea580c;
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
       color: #fff;
       border-color: #f97316;
       box-shadow: 0 0 8px rgba(249, 115, 22, 0.4);
@@ -165,8 +159,8 @@
     .image-slot-mini {
       aspect-ratio: 1;
       border-radius: 6px;
-      background: #030712;
-      border: 1px dashed #374151;
+      background: #040711;
+      border: 1px dashed #334155;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -193,7 +187,7 @@
 
     .btn-action-primary {
       background: linear-gradient(135deg, #083344, #0e7490);
-      border: 1.5px solid #06b6d4;
+      border: 1px solid #06b6d4;
       color: #a5f3fc;
       padding: 6px 8px;
       border-radius: 7px;
@@ -204,12 +198,13 @@
       align-items: center;
       justify-content: center;
       gap: 4px;
+      transition: all 0.15s;
     }
-    .btn-action-primary:active { transform: scale(0.97); }
+    .btn-action-primary:active { transform: scale(0.96); }
 
     .btn-auto-sequence {
       background: linear-gradient(135deg, #15803d, #16a34a);
-      border: 1.5px solid #4ade80;
+      border: 1px solid #4ade80;
       color: #fff;
       padding: 6px 8px;
       border-radius: 7px;
@@ -220,27 +215,17 @@
       align-items: center;
       justify-content: center;
       gap: 4px;
+      transition: all 0.15s;
     }
     .btn-auto-sequence.running {
       background: linear-gradient(135deg, #b91c1c, #dc2626);
       border-color: #f87171;
     }
 
-    .resize-handle {
-      position: absolute;
-      bottom: 1px;
-      right: 1px;
-      width: 10px;
-      height: 10px;
-      cursor: nwse-resize;
-      background: linear-gradient(135deg, transparent 50%, #f97316 50%);
-      border-bottom-right-radius: 12px;
-    }
-
     .crop-modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.85);
+      background: rgba(0,0,0,0.88);
       backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
@@ -253,7 +238,7 @@
       border: 1.5px solid #ea580c;
       border-radius: 12px;
       padding: 10px;
-      width: 270px;
+      width: 250px;
       max-width: 95vw;
       display: flex;
       flex-direction: column;
@@ -263,7 +248,7 @@
   `;
   shadow.appendChild(style);
 
-  let isMinimized = true;
+  let isMinimized = false; // Opens directly so user can see and click immediately!
   let activeSceneIndex = 0;
   let isAutoRunning = false;
   let autoTimerInterval = null;
@@ -356,11 +341,13 @@
           <span style="font-size:8px; color:#fb923c; font-family:monospace;">SCENE ${activeSceneIndex+1}</span>
         </div>
       `;
-      wrapper.querySelector('#btn-expand-pill').addEventListener('click', () => {
+      const pillBtn = wrapper.querySelector('#btn-expand-pill');
+      pillBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         isMinimized = false;
         render();
       });
-      makeDraggable(wrapper.querySelector('.floating-pill'));
+      makeDraggable(pillBtn);
     } else {
       if (activeSceneIndex >= scenes.length) activeSceneIndex = 0;
       const currentScene = scenes[activeSceneIndex] || scenes[0];
@@ -368,11 +355,11 @@
 
       wrapper.innerHTML = `
         <div class="floating-studio" id="main-floating-studio">
-          <!-- Slim Drag Header -->
+          <!-- Luxury Formal Header -->
           <div class="studio-header" id="studio-drag-bar">
             <div style="display:flex; align-items:center; gap:5px;">
               <div class="pill-icon">⚡</div>
-              <span style="font-size:10px; font-weight:800; color:#fff;">Flow AI (Mini)</span>
+              <span style="font-size:10px; font-weight:800; color:#fff;">Flow AI Studio</span>
             </div>
             
             <div style="display:flex; align-items:center; gap:3px;">
@@ -392,10 +379,10 @@
               <button class="scene-tab-pill" id="btn-add-scene-compact" style="color:#fbbf24; background:#1e293b;">+ S</button>
             </div>
 
-            <!-- Compact Active Scene -->
+            <!-- Active Scene Card -->
             <div class="card-section">
-              <div style="display:grid; grid-template-columns: 52px 1fr; gap:6px; align-items:center;">
-                <div class="image-slot-mini" id="slot-scene-active" style="height:52px; width:52px;">
+              <div style="display:grid; grid-template-columns: 48px 1fr; gap:5px; align-items:center;">
+                <div class="image-slot-mini" id="slot-scene-active" style="height:48px; width:48px;">
                   ${activeImg ? `<img src="${activeImg}"><button class="btn-slot-crop" id="btn-crop-scene-active">✂</button>` : `<div style="font-size:7px; color:#94a3b8;">+ Foto</div>`}
                   <input type="file" id="input-file-scene-active" accept="image/*" style="display:none">
                 </div>
@@ -415,7 +402,7 @@
                       <option value="10" ${currentScene.duration == 10 ? 'selected' : ''}>10 Detik</option>
                     </select>
                   </div>
-                  <input type="text" class="input-text" id="inp-prompt-video" style="color:#fef08a;" value="${currentScene.promptVideo}" placeholder="Prompt Video Scene ${activeSceneIndex+1}">
+                  <input type="text" class="input-text" id="inp-prompt-video" style="color:#fef08a;" value="${currentScene.promptVideo}" placeholder="Prompt Scene ${activeSceneIndex+1}">
                 </div>
               </div>
             </div>
@@ -432,24 +419,22 @@
             </div>
 
             <!-- 3 Mini Photo Slots -->
-            <div class="grid-3" style="margin-top:1px;">
-              <div class="image-slot-mini" id="slot-product" style="height:36px;">
-                ${images.product ? `<img src="${images.product}">` : `<span style="font-size:6.5px; color:#64748b;">+Produk</span>`}
+            <div class="grid-3">
+              <div class="image-slot-mini" id="slot-product" style="height:32px;">
+                ${images.product ? `<img src="${images.product}">` : `<span style="font-size:6px; color:#64748b;">+Produk</span>`}
                 <input type="file" id="input-file-prod" accept="image/*" style="display:none">
               </div>
-              <div class="image-slot-mini" id="slot-model" style="height:36px;">
-                ${images.model ? `<img src="${images.model}">` : `<span style="font-size:6.5px; color:#64748b;">+Model</span>`}
+              <div class="image-slot-mini" id="slot-model" style="height:32px;">
+                ${images.model ? `<img src="${images.model}">` : `<span style="font-size:6px; color:#64748b;">+Model</span>`}
                 <input type="file" id="input-file-mod" accept="image/*" style="display:none">
               </div>
-              <div class="image-slot-mini" id="slot-location" style="height:36px;">
-                ${images.location ? `<img src="${images.location}">` : `<span style="font-size:6.5px; color:#64748b;">+Lokasi</span>`}
+              <div class="image-slot-mini" id="slot-location" style="height:32px;">
+                ${images.location ? `<img src="${images.location}">` : `<span style="font-size:6px; color:#64748b;">+Lokasi</span>`}
                 <input type="file" id="input-file-loc" accept="image/*" style="display:none">
               </div>
             </div>
 
           </div>
-
-          <div class="resize-handle" id="gripper-resize" title="Tarik untuk ubah ukuran"></div>
         </div>
       `;
 
@@ -466,12 +451,14 @@
         });
       });
 
-      wrapper.querySelector('#btn-minimize-studio').addEventListener('click', () => {
+      wrapper.querySelector('#btn-minimize-studio').addEventListener('click', (e) => {
+        e.stopPropagation();
         isMinimized = true;
         render();
       });
 
-      wrapper.querySelector('#btn-add-scene-compact').addEventListener('click', () => {
+      wrapper.querySelector('#btn-add-scene-compact').addEventListener('click', (e) => {
+        e.stopPropagation();
         scenes.push({
           id: scenes.length + 1,
           shotType: "Close-Up",
@@ -484,7 +471,8 @@
         render();
       });
 
-      wrapper.querySelector('#btn-sync-web-mini').addEventListener('click', () => {
+      wrapper.querySelector('#btn-sync-web-mini').addEventListener('click', (e) => {
+        e.stopPropagation();
         if (!tryAutoSyncFromWeb()) {
           fetchStoryboardFromAffiliateGo();
         } else {
@@ -515,11 +503,13 @@
         });
       }
 
-      wrapper.querySelector('#btn-inject-current-scene').addEventListener('click', async () => {
+      wrapper.querySelector('#btn-inject-current-scene').addEventListener('click', async (e) => {
+        e.stopPropagation();
         await injectSingleSceneWithImage(activeSceneIndex);
       });
 
-      wrapper.querySelector('#btn-toggle-auto-runner').addEventListener('click', () => {
+      wrapper.querySelector('#btn-toggle-auto-runner').addEventListener('click', (e) => {
+        e.stopPropagation();
         if (isAutoRunning) {
           stopAutoRunner();
         } else {
@@ -530,7 +520,6 @@
       setupSceneImageUpload();
       setupMainImageUploads();
       makeDraggable(wrapper.querySelector('.floating-studio'), wrapper.querySelector('#studio-drag-bar'));
-      setupResizeHandler(wrapper.querySelector('.floating-studio'), wrapper.querySelector('#gripper-resize'));
     }
   }
 
@@ -745,18 +734,17 @@
     });
   }
 
-  // Smooth Universal Draggable (Mouse + Touch Support for Mobile / Android)
+  // Smooth Dragging (Fix: Do not block click on tap!)
   function makeDraggable(element, handle) {
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
     const dragTarget = handle || element;
+    let isTouchMoving = false;
 
-    // Mouse Events
     dragTarget.addEventListener('mousedown', dragMouseDown);
-
-    // Touch Events (Mobile Kiwi / Chrome)
-    dragTarget.addEventListener('touchstart', dragTouchStart, { passive: false });
+    dragTarget.addEventListener('touchstart', dragTouchStart, { passive: true });
 
     function dragMouseDown(e) {
+      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
       e.preventDefault();
       pos3 = e.clientX;
       pos4 = e.clientY;
@@ -766,7 +754,7 @@
 
     function dragTouchStart(e) {
       if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-      e.preventDefault();
+      isTouchMoving = false;
       const touch = e.touches[0];
       pos3 = touch.clientX;
       pos4 = touch.clientY;
@@ -786,15 +774,19 @@
     }
 
     function elementTouchDrag(e) {
-      e.preventDefault();
       const touch = e.touches[0];
-      pos1 = pos3 - touch.clientX;
-      pos2 = pos4 - touch.clientY;
-      pos3 = touch.clientX;
-      pos4 = touch.clientY;
-      host.style.transform = 'none';
-      host.style.top = Math.max(0, host.offsetTop - pos2) + "px";
-      host.style.left = Math.max(0, host.offsetLeft - pos1) + "px";
+      const moveDist = Math.hypot(touch.clientX - pos3, touch.clientY - pos4);
+      if (moveDist > 4) {
+        isTouchMoving = true;
+        e.preventDefault();
+        pos1 = pos3 - touch.clientX;
+        pos2 = pos4 - touch.clientY;
+        pos3 = touch.clientX;
+        pos4 = touch.clientY;
+        host.style.transform = 'none';
+        host.style.top = Math.max(0, host.offsetTop - pos2) + "px";
+        host.style.left = Math.max(0, host.offsetLeft - pos1) + "px";
+      }
     }
 
     function closeDragElement() {
@@ -805,56 +797,6 @@
     function closeDragTouch() {
       document.removeEventListener('touchend', closeDragTouch);
       document.removeEventListener('touchmove', elementTouchDrag);
-    }
-  }
-
-  function setupResizeHandler(studio, gripper) {
-    if (!studio || !gripper) return;
-    let startX, startY, startWidth, startHeight;
-
-    gripper.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      startX = e.clientX;
-      startY = e.clientY;
-      startWidth = parseInt(document.defaultView.getComputedStyle(studio).width, 10);
-      startHeight = parseInt(document.defaultView.getComputedStyle(studio).height, 10);
-      document.addEventListener('mousemove', doResize);
-      document.addEventListener('mouseup', stopResize);
-    });
-
-    gripper.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const touch = e.touches[0];
-      startX = touch.clientX;
-      startY = touch.clientY;
-      startWidth = parseInt(document.defaultView.getComputedStyle(studio).width, 10);
-      startHeight = parseInt(document.defaultView.getComputedStyle(studio).height, 10);
-      document.addEventListener('touchmove', doTouchResize, { passive: false });
-      document.addEventListener('touchend', stopTouchResize);
-    }, { passive: false });
-
-    function doResize(e) {
-      studio.style.width = Math.max(220, startWidth + e.clientX - startX) + 'px';
-      studio.style.height = Math.max(180, startHeight + e.clientY - startY) + 'px';
-    }
-
-    function doTouchResize(e) {
-      e.preventDefault();
-      const touch = e.touches[0];
-      studio.style.width = Math.max(220, startWidth + touch.clientX - startX) + 'px';
-      studio.style.height = Math.max(180, startHeight + touch.clientY - startY) + 'px';
-    }
-
-    function stopResize() {
-      document.removeEventListener('mousemove', doResize);
-      document.removeEventListener('mouseup', stopResize);
-    }
-
-    function stopTouchResize() {
-      document.removeEventListener('touchmove', doTouchResize);
-      document.removeEventListener('touchend', stopTouchResize);
     }
   }
 
