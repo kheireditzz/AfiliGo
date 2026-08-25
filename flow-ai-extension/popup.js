@@ -2,20 +2,20 @@
 let scenes = [
   {
     id: 1,
-    shotType: "Hook / Macro Close-Up",
-    duration: 3,
-    promptVisual: "Hyperrealistic commercial close-up of product with soft studio bokeh lighting, 8k resolution, photorealistic",
+    shotType: "Hook Close-Up",
+    duration: 4,
+    promptVisual: "Hyperrealistic commercial close-up of product with studio bokeh lighting, 8k resolution",
     promptVideo: "Slow cinematic zoom in on product texture, hands gently unboxing with dynamic motion blur",
     voiceover: "Stop scrolling! Ini rahasia kenapa produk ini lagi viral banget!",
     imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"
   },
   {
     id: 2,
-    shotType: "Demonstration / Medium Shot",
-    duration: 4,
-    promptVisual: "Indonesian female creator demonstrating product in aesthetic modern room, natural sunlight, 4k",
-    promptVideo: "Medium camera pan showing creator testing the key features with enthusiastic expression",
-    voiceover: "Lihat hasilnya yang bener-bener instan dan worth it banget buat dicoba!",
+    shotType: "Action Demo",
+    duration: 6,
+    promptVisual: "Indonesian female creator demonstrating product in aesthetic room, natural sunlight, 4k",
+    promptVideo: "Medium camera pan showing creator testing key features with enthusiastic expression",
+    voiceover: "Lihat hasilnya yang bener-bener instan dan worth it banget!",
     imageUrl: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400"
   }
 ];
@@ -31,14 +31,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function setupEventListeners() {
   document.getElementById("btn-add-scene").addEventListener("click", () => {
-    const newId = scenes.length + 1;
+    const dur = parseInt(document.getElementById("ext-duration").value) || 6;
     scenes.push({
-      id: newId,
-      shotType: "Lifestyle / Close-Up",
-      duration: 3,
+      id: scenes.length + 1,
+      shotType: "Close-Up",
+      duration: dur,
       promptVisual: "Cinematic commercial shot of product in aesthetic setting, 8k",
       promptVideo: "Smooth camera motion showing product benefit and satisfaction",
-      voiceover: "Klik keranjang kuning sekarang mumpung lagi diskon spesial!",
+      voiceover: "Klik keranjang kuning sekarang mumpung diskon spesial!",
       imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"
     });
     renderScenes();
@@ -50,12 +50,53 @@ function setupEventListeners() {
   document.getElementById("btn-download-all-zip").addEventListener("click", downloadAllAssets);
   document.getElementById("btn-inject-flow-tab").addEventListener("click", injectToActiveFlowTab);
   document.getElementById("btn-copy-all-prompts").addEventListener("click", copyAllPromptsText);
+  document.getElementById("btn-sync-from-web").addEventListener("click", syncFromAffiliateGoWeb);
+}
+
+async function syncFromAffiliateGoWeb() {
+  try {
+    const res = await fetch("https://affiliatego.vercel.app/api/storyboards");
+    const list = await res.json();
+    if (Array.isArray(list) && list.length > 0) {
+      const latest = list[0];
+      if (latest.scenes && latest.scenes.length > 0) {
+        scenes = latest.scenes.map((s, idx) => ({
+          id: idx + 1,
+          shotType: s.shotType || ("Scene " + (idx + 1)),
+          duration: s.durationSeconds || 4,
+          promptVisual: s.prompt || "",
+          promptVideo: s.visualDescription || s.prompt || "",
+          voiceover: s.voiceover || "",
+          imageUrl: s.imageUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"
+        }));
+        if (latest.scenes[0] && latest.scenes[0].imageUrl) {
+          uploadedImages.product = latest.scenes[0].imageUrl;
+          const thumb = document.getElementById("ext-thumb-product");
+          const ph = document.getElementById("ext-placeholder-product");
+          if (thumb) { thumb.src = latest.scenes[0].imageUrl; thumb.classList.remove("hidden"); }
+          if (ph) ph.classList.add("hidden");
+        }
+        renderScenes();
+        saveState();
+        alert("✅ Berhasil menyinkronkan Scene 1..N dan Gambar dari Web AffiliateGo!");
+        return;
+      }
+    }
+    alert("Belum ada data storyboard tersimpan di AffiliateGo.");
+  } catch(e) {
+    alert("Gagal terhubung ke AffiliateGo.");
+  }
 }
 
 function setupImageUploads() {
   ['product', 'model', 'location'].forEach(key => {
+    const box = document.getElementById('box-' + key);
     const fileInput = document.getElementById('ext-file-' + key);
-    if (!fileInput) return;
+    if (!box || !fileInput) return;
+
+    box.addEventListener('click', (e) => {
+      if (e.target.id !== 'btn-crop-' + key) fileInput.click();
+    });
 
     fileInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -68,8 +109,10 @@ function setupImageUploads() {
 
         const thumb = document.getElementById('ext-thumb-' + key);
         const placeholder = document.getElementById('ext-placeholder-' + key);
+        const cropBtn = document.getElementById('btn-crop-' + key);
         if (thumb) { thumb.src = base64; thumb.classList.remove('hidden'); }
         if (placeholder) { placeholder.classList.add('hidden'); }
+        if (cropBtn) { cropBtn.classList.remove('hidden'); }
 
         saveState();
       };
@@ -107,10 +150,6 @@ function renderScenes() {
           <img src="${sc.imageUrl}" class="w-full h-full object-cover" alt="Visual Preview">
         </div>
         <div class="col-span-8 space-y-1.5">
-          <div>
-            <span class="text-[8px] font-bold text-orange-400 uppercase font-mono">Prompt Visual AI:</span>
-            <textarea rows="2" onchange="updateSceneField(${idx}, 'promptVisual', this.value)" class="w-full bg-slate-950 border border-slate-800 focus:border-amber-400 rounded-lg p-1 text-[9px] text-amber-200 font-mono focus:outline-none leading-tight">${sc.promptVisual || ''}</textarea>
-          </div>
           <div>
             <span class="text-[8px] font-bold text-amber-400 uppercase font-mono">Prompt Video Motion:</span>
             <input type="text" value="${sc.promptVideo || ''}" onchange="updateSceneField(${idx}, 'promptVideo', this.value)" class="w-full bg-slate-950 border border-slate-800 focus:border-amber-400 rounded-lg px-1.5 py-1 text-[9px] text-white focus:outline-none truncate">
@@ -153,25 +192,13 @@ async function handleBrutalGeneration() {
   const title = document.getElementById("ext-product-title").value.trim() || "Produk Affiliate";
   const usp = document.getElementById("ext-product-usp").value.trim() || "Kualitas terbaik dan viral";
   const modelType = document.getElementById("ext-ai-model").value;
-  const duration = parseInt(document.getElementById("ext-duration").value) || 15;
+  const dur = parseInt(document.getElementById("ext-duration").value) || 6;
 
   const btn = document.getElementById("btn-ext-generate-brutal");
   const btnText = document.getElementById("btn-ext-gen-text");
-  const timerContainer = document.getElementById("ext-timer-container");
-  const timerText = document.getElementById("ext-timer-text");
-  const progressBar = document.getElementById("ext-progress-bar");
 
   btn.disabled = true;
-  btn.classList.add("opacity-80", "shimmer-active");
-  btnText.innerText = "Merancang Brutal AI...";
-  timerContainer.classList.remove("hidden");
-
-  let elapsed = 0;
-  const timerInterval = setInterval(() => {
-    elapsed += 0.2;
-    timerText.innerText = elapsed.toFixed(1) + "s";
-    progressBar.style.width = Math.min(95, (elapsed / 4) * 100) + "%";
-  }, 200);
+  btnText.innerText = "Merancang (" + modelType + ")...";
 
   try {
     const res = await fetch("https://affiliatego.vercel.app/api/generate-storyboard-ai", {
@@ -180,11 +207,8 @@ async function handleBrutalGeneration() {
       body: JSON.stringify({
         productTitle: title,
         usp: usp,
-        modelDescription: "Indonesian Creator, natural look, enthusiastic smile",
-        locationSetting: "Modern Aesthetic Studio with warm ambient lighting",
         numScenes: scenes.length,
-        duration: duration,
-        platform: "TikTok / Reels (9:16)"
+        duration: dur * scenes.length
       })
     });
 
@@ -192,8 +216,8 @@ async function handleBrutalGeneration() {
     if (data && data.scenes && data.scenes.length > 0) {
       scenes = data.scenes.map((sc, idx) => ({
         id: idx + 1,
-        shotType: sc.shotType || "Scene " + (idx + 1),
-        duration: sc.durationSeconds || Math.round(duration / scenes.length),
+        shotType: sc.shotType || ("Scene " + (idx + 1)),
+        duration: dur,
         promptVisual: sc.prompt,
         promptVideo: sc.visualDescription,
         voiceover: sc.voiceover,
@@ -203,49 +227,36 @@ async function handleBrutalGeneration() {
       saveState();
     }
   } catch (err) {
-    console.warn("Server API offline, generating local brutal prompts:", err);
-    scenes.forEach((sc, idx) => {
-      sc.promptVisual = `Hyperrealistic ${sc.shotType} of ${title} featuring ${usp}, 8k UHD resolution, photorealistic cinematic lighting, engine ${modelType}`;
-      sc.promptVideo = `Fast dynamic motion transition showing ${title} in action, ${usp}, 4k 60fps`;
-      sc.imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(sc.promptVisual)}?width=768&height=1344&seed=${Math.floor(Math.random()*999999)}&model=flux&nologo=true`;
+    scenes.forEach((sc) => {
+      sc.duration = dur;
+      sc.promptVideo = "Cinematic " + sc.shotType + " of " + title + ", " + usp + ", 4k 60fps [" + modelType + "]";
     });
     renderScenes();
     saveState();
   } finally {
-    clearInterval(timerInterval);
-    progressBar.style.width = "100%";
-    timerText.innerText = "Selesai 100%!";
-    setTimeout(() => timerContainer.classList.add("hidden"), 2000);
-
     btn.disabled = false;
-    btn.classList.remove("opacity-80", "shimmer-active");
     btnText.innerText = "Generate Brutal Video di Flow AI";
   }
 }
 
 function savePromptsJson() {
   const data = {
-    app: "AffiliateGo Flow AI Brutal Extension",
+    app: "Flow Ai Extension",
     product: document.getElementById("ext-product-title")?.value || "",
     usp: document.getElementById("ext-product-usp")?.value || "",
-    totalDuration: document.getElementById("ext-duration")?.value || 15,
-    generatedAt: new Date().toISOString(),
+    duration: document.getElementById("ext-duration")?.value || 6,
     scenes: scenes
   };
 
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url;
-  a.download = "FlowAI-Brutal-Prompts.json";
-  document.body.appendChild(a);
+  a.href = URL.createObjectURL(blob);
+  a.download = "FlowAI-Prompts.json";
   a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
 }
 
 function copyAllPromptsText() {
-  const text = scenes.map((sc, i) => `[SCENE ${i+1} - ${sc.shotType}] (${sc.duration}s)\n🎬 PROMPT VIDEO: ${sc.promptVideo}\n🖼️ PROMPT VISUAL: ${sc.promptVisual}\n🎙️ VOICEOVER: "${sc.voiceover}"`).join("\n\n");
+  const text = scenes.map((sc, i) => "[Scene " + (i+1) + " (" + sc.duration + "s)]: " + sc.promptVideo + "\nNarasi: \"" + sc.voiceover + "\"").join("\n\n");
   navigator.clipboard.writeText(text);
   alert("Semua Prompt Scene berhasil disalin ke Clipboard!");
 }
@@ -255,25 +266,53 @@ function downloadAllAssets() {
   scenes.forEach((sc, idx) => {
     setTimeout(() => {
       window.downloadSingleImage(sc.imageUrl, idx + 1);
-    }, idx * 400);
+    }, idx * 300);
   });
 }
 
 function injectToActiveFlowTab() {
-  const scriptText = scenes.map(sc => sc.promptVideo).join(" -> ");
+  const fullScript = scenes.map((sc, i) => "[Scene " + (i+1) + " (" + sc.duration + "s)]: " + sc.promptVideo).join("\n");
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (!tabs || !tabs[0]) return;
-    chrome.tabs.sendMessage(tabs[0].id, {
-      type: "INJECT_FLOW_PROMPT",
-      prompt: scriptText,
-      scenes: scenes
-    }, (res) => {
-      if (chrome.runtime.lastError) {
-        alert("Prompt disalin! Silakan paste langsung di kotak input Flow AI / Google Labs.");
-        navigator.clipboard.writeText(scriptText);
-      } else {
-        alert("Prompt berhasil di-inject ke halaman Flow AI!");
-      }
+    chrome.scripting.executeScript({
+      target: { tabId: tabs[0].id },
+      func: (text) => {
+        const promptSelectors = [
+          'textarea[placeholder*="prompt" i]',
+          'textarea[placeholder*="describe" i]',
+          'textarea[placeholder*="video" i]',
+          'textarea[aria-label*="prompt" i]',
+          'textarea[aria-label*="describe" i]',
+          '[contenteditable="true"][role="textbox"]',
+          'div[contenteditable="true"]',
+          'textarea:not([type="search"]):not([placeholder*="search" i]):not([placeholder*="cari" i])'
+        ];
+        let target = null;
+        for (const s of promptSelectors) {
+          const els = Array.from(document.querySelectorAll(s)).filter(el => {
+            const ph = (el.getAttribute('placeholder') || '').toLowerCase();
+            const aria = (el.getAttribute('aria-label') || '').toLowerCase();
+            return !ph.includes('search') && !ph.includes('cari') && !aria.includes('search');
+          });
+          if (els.length > 0) { target = els[0]; break; }
+        }
+        if (target) {
+          target.focus();
+          if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
+            target.value = text;
+            target.dispatchEvent(new Event('input', { bubbles: true }));
+            target.dispatchEvent(new Event('change', { bubbles: true }));
+          } else {
+            target.innerText = text;
+            target.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: text }));
+          }
+          alert('✅ Prompt berhasil di-inject ke chat prompt Flow AI!');
+        } else {
+          navigator.clipboard.writeText(text);
+          alert('📋 Prompt disalin ke clipboard! Silakan paste langsung ke Flow AI.');
+        }
+      },
+      args: [fullScript]
     });
   });
 }
@@ -282,18 +321,18 @@ function saveState() {
   const state = {
     title: document.getElementById("ext-product-title")?.value || "",
     usp: document.getElementById("ext-product-usp")?.value || "",
-    duration: document.getElementById("ext-duration")?.value || "15",
+    duration: document.getElementById("ext-duration")?.value || "6",
     model: document.getElementById("ext-ai-model")?.value || "omni-flash",
     scenes: scenes,
     images: uploadedImages
   };
-  chrome.storage?.local?.set({ "flow_ai_brutal_state": state });
+  chrome.storage?.local?.set({ "flow_ai_state_v4": state });
 }
 
 function loadSavedState() {
-  chrome.storage?.local?.get(["flow_ai_brutal_state"], (res) => {
-    if (res && res.flow_ai_brutal_state) {
-      const st = res.flow_ai_brutal_state;
+  chrome.storage?.local?.get(["flow_ai_state_v4"], (res) => {
+    if (res && res.flow_ai_state_v4) {
+      const st = res.flow_ai_state_v4;
       if (st.title) document.getElementById("ext-product-title").value = st.title;
       if (st.usp) document.getElementById("ext-product-usp").value = st.usp;
       if (st.duration) document.getElementById("ext-duration").value = st.duration;
@@ -301,17 +340,6 @@ function loadSavedState() {
       if (st.scenes && st.scenes.length > 0) {
         scenes = st.scenes;
         renderScenes();
-      }
-      if (st.images) {
-        uploadedImages = st.images;
-        ['product', 'model', 'location'].forEach(k => {
-          if (uploadedImages[k]) {
-            const thumb = document.getElementById('ext-thumb-' + k);
-            const placeholder = document.getElementById('ext-placeholder-' + k);
-            if (thumb) { thumb.src = uploadedImages[k]; thumb.classList.remove('hidden'); }
-            if (placeholder) { placeholder.classList.add('hidden'); }
-          }
-        });
       }
     }
   });
