@@ -2008,7 +2008,21 @@ function copyPromptText(encodedText) {
   });
 }
 
+let activeToastTimeout = null;
+let lastToastSignature = "";
+let lastToastTime = 0;
+
 function showToastNotification(type, title, message) {
+  const now = Date.now();
+  const signature = `${type}|${title}|${message}`;
+  
+  // Prevent duplicate spam within 800ms
+  if (signature === lastToastSignature && (now - lastToastTime) < 800) {
+    return;
+  }
+  lastToastSignature = signature;
+  lastToastTime = now;
+
   let toastContainer = document.getElementById("toast-global-container");
   if (!toastContainer) {
     toastContainer = document.createElement("div");
@@ -2016,6 +2030,13 @@ function showToastNotification(type, title, message) {
     toastContainer.className = "fixed top-4 left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-auto sm:right-6 sm:bottom-6 sm:top-auto z-[99999] flex flex-col gap-2.5 pointer-events-none max-w-sm w-[92vw] sm:w-full";
     document.body.appendChild(toastContainer);
   }
+
+  // Remove any currently existing toasts immediately to avoid stacking
+  if (activeToastTimeout) {
+    clearTimeout(activeToastTimeout);
+    activeToastTimeout = null;
+  }
+  toastContainer.innerHTML = "";
 
   const toast = document.createElement("div");
   let iconClass = "fa-solid fa-circle-info text-cyan-400";
@@ -2066,10 +2087,12 @@ function showToastNotification(type, title, message) {
   }, 10);
 
   // Auto dismiss
-  setTimeout(() => {
+  activeToastTimeout = setTimeout(() => {
     toast.classList.add("-translate-y-3", "sm:translate-y-4", "opacity-0");
-    setTimeout(() => toast.remove(), 300);
-  }, 4000);
+    setTimeout(() => {
+      if (toast.parentElement) toast.remove();
+    }, 300);
+  }, 3500);
 }
 
 // Override default browser alert
