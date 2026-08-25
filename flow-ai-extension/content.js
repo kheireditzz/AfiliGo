@@ -1087,13 +1087,15 @@
     function elementTouchDrag(e) {
       const touch = e.touches[0];
       const moveDist = Math.hypot(touch.clientX - pos3, touch.clientY - pos4);
-      if (moveDist > 4) {
-        e.preventDefault();
+      if (moveDist > 3) {
+        if (e.cancelable) {
+          try { e.preventDefault(); } catch(err) {}
+        }
         pos1 = pos3 - touch.clientX;
         pos2 = pos4 - touch.clientY;
         pos3 = touch.clientX;
         pos4 = touch.clientY;
-        host.style.transform = 'none';
+        host.style.transform = "none";
         host.style.top = Math.max(0, host.offsetTop - pos2) + "px";
         host.style.left = Math.max(0, host.offsetLeft - pos1) + "px";
       }
@@ -1142,8 +1144,7 @@
       studio.style.height = Math.max(220, startHeight + e.clientY - startY) + 'px';
     }
 
-    function doTouchResize(e) {
-      e.preventDefault();
+    function doTouchResize(e) { if (e.cancelable) { try { e.preventDefault(); } catch(err) {} }
       const touch = e.touches[0];
       studio.style.width = Math.max(260, startWidth + touch.clientX - startX) + 'px';
       studio.style.height = Math.max(220, startHeight + touch.clientY - startY) + 'px';
