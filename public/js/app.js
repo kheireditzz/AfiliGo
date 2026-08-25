@@ -1334,16 +1334,23 @@ async function generateStoryboardWithAI() {
   btn.disabled = true;
   btn.classList.add("laser-btn-active");
   icon.className = "fa-solid fa-circle-notch fa-spin text-[12px] text-amber-200";
-  text.innerText = "Antigravity AI Merancang...";
+  text.innerText = "Merancang (Maks 10s)...";
 
   // Render Skeleton Shimmer scene cards for instant feedback
   renderStoryboardSkeletonLoading(numScenes);
 
+  // Strict 10-Second Timeout AbortController
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => {
+    abortController.abort();
+  }, 10000);
+
   try {
-    // Generate Storyboard with Antigravity / Gemini 2.5 Pro
+    // Generate Storyboard with Antigravity / Gemini 2.5 Pro (Max 10s timeout)
     const res = await fetch("/api/generate-storyboard-ai", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: abortController.signal,
       body: JSON.stringify({ 
         productTitle: title, 
         usp, 
@@ -1355,6 +1362,8 @@ async function generateStoryboardWithAI() {
         platform 
       })
     });
+
+    clearTimeout(timeoutId);
 
     const data = await res.json();
     if (data && data.scenes) {
@@ -1372,12 +1381,27 @@ async function generateStoryboardWithAI() {
 
       renderStoryboardPreview();
       triggerAutoSave();
-      showToastNotification("success", "Antigravity AI Berhasil!", "Skrip, hook, prompt visual & storyboard siap.");
+      showToastNotification("success", "Antigravity AI Berhasil!", "Skrip 4 scene, hook, prompt visual & storyboard siap.");
+    } else {
+      throw new Error(data.message || "Gagal mendapatkan data storyboard.");
     }
   } catch (err) {
+    clearTimeout(timeoutId);
     console.error("Generate Storyboard Error:", err);
-    showToastNotification("error", "Storyboard Gagal", "Gagal membuat storyboard. Silakan coba lagi.");
+
+    // Auto-Close & Reset Container if Timed Out or Failed
+    const container = document.getElementById("scenes-container");
+    if (container && (!currentStoryboard.scenes || currentStoryboard.scenes.length === 0)) {
+      container.innerHTML = `<div class="text-slate-500 text-xs py-10 text-center font-medium">Proses ditutup karena batas waktu 10 detik. Silakan klik tombol Generate kembali.</div>`;
+    }
+
+    if (err.name === 'AbortError' || err.message?.includes('aborted')) {
+      showToastNotification("warning", "Waktu Habis (10 Detik - Ditutup Otomatis)", "Proses pembuatan storyboard ditutup otomatis karena server/koneksi internet membutuhkan waktu lebih dari 10 detik. Silakan klik tombol Generate kembali.");
+    } else {
+      showToastNotification("error", "Storyboard Gagal", "Gagal membuat storyboard: " + (err.message || "Koneksi terputus. Silakan coba lagi."));
+    }
   } finally {
+    clearTimeout(timeoutId);
     btn.disabled = false;
     btn.classList.remove("laser-btn-active");
     icon.className = "fa-solid fa-wand-magic-sparkles text-[11px]";
