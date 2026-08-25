@@ -779,6 +779,56 @@ app.get('/api/extension/download-flow-ai', (req, res) => {
 });
 
 // =========================================================================
+// SYNC GENERATED ASSETS (VIDEO & IMAGES) FROM FLOW AI TO AFFILIATEGO WEB
+// =========================================================================
+app.post('/api/storyboards/sync-flow-asset', (req, res) => {
+  try {
+    const { sceneId, videoUrl, imageUrl, prompt, model, duration, timestamp } = req.body;
+    const storyboards = readJson(DB_STORYBOARDS);
+    
+    // Create or append to a synced Flow AI Storyboard record
+    let flowStoryboard = storyboards.find(sb => sb.isFlowAiSynced === true);
+    if (!flowStoryboard) {
+      flowStoryboard = {
+        id: 'flow-ai-' + Date.now(),
+        productTitle: 'Flow AI Generated Video Suite',
+        usp: 'Hasil generate otomatis dari Flow AI Extension',
+        modelDesc: model || 'Veo 3.1 / Nano Banana Pro',
+        locationDesc: 'Studio Flow AI',
+        isFlowAiSynced: true,
+        createdAt: new Date().toISOString(),
+        scenes: []
+      };
+      storyboards.unshift(flowStoryboard);
+    }
+
+    // Add or update scene asset
+    const existingSceneIndex = flowStoryboard.scenes.findIndex(s => s.id === sceneId);
+    const sceneData = {
+      id: sceneId || (flowStoryboard.scenes.length + 1),
+      shotType: 'Scene ' + (sceneId || (flowStoryboard.scenes.length + 1)),
+      durationSeconds: parseInt(duration) || 6,
+      visualDescription: prompt || 'Generated with Flow AI Extension',
+      imageUrl: imageUrl || (flowStoryboard.scenes[0] && flowStoryboard.scenes[0].imageUrl) || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600',
+      videoUrl: videoUrl || null,
+      syncedAt: timestamp || new Date().toISOString()
+    };
+
+    if (existingSceneIndex >= 0) {
+      flowStoryboard.scenes[existingSceneIndex] = { ...flowStoryboard.scenes[existingSceneIndex], ...sceneData };
+    } else {
+      flowStoryboard.scenes.push(sceneData);
+    }
+
+    writeJson(DB_STORYBOARDS, storyboards);
+    return res.json({ success: true, message: 'Aset Flow AI berhasil disinkronkan ke Galeri Web!', storyboard: flowStoryboard });
+  } catch(err) {
+    console.error('Error syncing Flow AI asset:', err);
+    return res.status(500).json({ success: false, message: 'Gagal sinkron aset.' });
+  }
+});
+
+// =========================================================================
 // AI AFFILIATE PRODUCT VISION & SCRIPT VAULT GENERATION API (@google/genai)
 // =========================================================================
 app.post('/api/ai/analyze-affiliate-product', async (req, res) => {
