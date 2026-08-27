@@ -2271,63 +2271,71 @@ function clearMediaGallery() {
   showToastNotification("success", "Galeri Bersih", "Seluruh foto di galeri telah dibersihkan.");
 }
 
-async function loadSettings() {
-  try {
-    const localKey = localStorage.getItem("direct_gemini_api_key") || "";
-    const directInput = document.getElementById("feature-gemini-api-key");
-    if (directInput && localKey) {
-      directInput.value = localKey;
-    }
+function updateApiKeyStatusUI(isValid, keyPreview) {
+  const dot = document.getElementById("api-status-dot");
+  const icon = document.getElementById("api-status-icon");
+  const text = document.getElementById("api-status-text");
+  const btn = document.getElementById("btn-api-key-status");
+  const modalBadgeText = document.getElementById("modal-api-status-text");
+  const modalBadgeContainer = document.getElementById("modal-api-status-badge");
 
-    const res = await fetch("/api/settings");
-    const settings = await res.json();
-    const geminiInput = document.getElementById("setting-gemini-key");
-    const hfInput = document.getElementById("setting-hf-key");
-    if (geminiInput && settings.geminiApiKey) {
-      geminiInput.placeholder = settings.geminiApiKey;
-      if (!geminiInput.value) geminiInput.value = settings.geminiApiKey;
+  if (isValid) {
+    if (dot) { dot.className = "w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/80 animate-pulse"; }
+    if (icon) { icon.className = "fa-solid fa-key text-emerald-400 text-xs transition group-hover:rotate-12"; }
+    if (text) { 
+      text.className = "text-[11px] font-bold text-emerald-400";
+      text.innerText = "API Aktif";
     }
-    if (directInput && !directInput.value && settings.geminiApiKey) {
-      directInput.value = settings.geminiApiKey;
-      localStorage.setItem("direct_gemini_api_key", settings.geminiApiKey);
+    if (btn) {
+      btn.className = "relative px-3 py-1.5 rounded-xl bg-slate-950 border border-emerald-500/50 hover:scale-105 active:scale-95 text-xs font-bold font-mono flex items-center gap-2 transition shadow-md shadow-emerald-950/40 group";
     }
-    if (hfInput && settings.huggingFaceKey) {
-      hfInput.placeholder = settings.huggingFaceKey;
-      if (!hfInput.value) hfInput.value = settings.huggingFaceKey;
+    if (modalBadgeText) modalBadgeText.innerText = "Terhubung (Aktif)";
+    if (modalBadgeContainer) {
+      modalBadgeContainer.className = "flex items-center gap-1.5 text-[10px] font-mono text-emerald-400";
+      modalBadgeContainer.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span><span>Terhubung (Aktif)</span>';
     }
-  } catch (err) { console.error("Error loading settings:", err); }
-}
-
-let saveDirectKeyDebounce = null;
-function saveDirectApiKey(keyValue) {
-  const cleanKey = keyValue.trim();
-  localStorage.setItem("direct_gemini_api_key", cleanKey);
-  
-  const badge = document.getElementById("autosave-status-badge");
-  if (badge) {
-    badge.classList.remove("hidden");
-    setTimeout(() => { badge.classList.add("hidden"); }, 2000);
+  } else {
+    if (dot) { dot.className = "w-2 h-2 rounded-full bg-rose-500 shadow-sm shadow-rose-500/80 animate-pulse"; }
+    if (icon) { icon.className = "fa-solid fa-key text-rose-400 text-xs transition group-hover:rotate-12"; }
+    if (text) { 
+      text.className = "text-[11px] font-bold text-rose-400";
+      text.innerText = "Isi API Key";
+    }
+    if (btn) {
+      btn.className = "relative px-3 py-1.5 rounded-xl bg-slate-950 border border-rose-500/40 hover:scale-105 active:scale-95 text-xs font-bold font-mono flex items-center gap-2 transition shadow-md shadow-rose-950/40 group";
+    }
+    if (modalBadgeText) modalBadgeText.innerText = "Belum Terhubung";
+    if (modalBadgeContainer) {
+      modalBadgeContainer.className = "flex items-center gap-1.5 text-[10px] font-mono text-rose-400";
+      modalBadgeContainer.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span><span>Belum Terhubung</span>';
+    }
   }
-
-  clearTimeout(saveDirectKeyDebounce);
-  saveDirectKeyDebounce = setTimeout(async () => {
-    try {
-      await fetch("/api/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ geminiApiKey: cleanKey })
-      });
-      activeUserHasApiKey = !!cleanKey;
-      loadGeminiKeysPool();
-    } catch (e) {
-      console.warn("Direct key background sync error:", e);
-    }
-  }, 800);
 }
 
-function toggleDirectApiKeyVisibility() {
-  const input = document.getElementById("feature-gemini-api-key");
-  const eye = document.getElementById("eye-icon-direct-key");
+function openApiKeyModal() {
+  const modal = document.getElementById("modal-gemini-keys");
+  const input = document.getElementById("input-modal-gemini-key");
+  if (!modal) return;
+
+  const currentKey = localStorage.getItem("direct_gemini_api_key") || "";
+  if (input) input.value = currentKey;
+
+  updateApiKeyStatusUI(!!currentKey);
+
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+}
+
+function closeGeminiKeyModal() {
+  const modal = document.getElementById("modal-gemini-keys");
+  if (!modal) return;
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+}
+
+function toggleModalApiKeyVisibility() {
+  const input = document.getElementById("input-modal-gemini-key");
+  const eye = document.getElementById("eye-icon-modal-key");
   if (!input) return;
   if (input.type === "password") {
     input.type = "text";
@@ -2335,6 +2343,93 @@ function toggleDirectApiKeyVisibility() {
   } else {
     input.type = "password";
     if (eye) { eye.classList.remove("fa-eye-slash"); eye.classList.add("fa-eye"); }
+  }
+}
+
+async function saveModalApiKey() {
+  const input = document.getElementById("input-modal-gemini-key");
+  const btn = document.getElementById("btn-save-modal-key");
+  const cleanKey = input ? input.value.trim() : "";
+
+  if (!cleanKey) {
+    showToastNotification("error", "Key Kosong", "Harap masukkan Gemini API Key Anda!");
+    updateApiKeyStatusUI(false);
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+  }
+
+  try {
+    localStorage.setItem("direct_gemini_api_key", cleanKey);
+    const res = await fetch("/api/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ geminiApiKey: cleanKey })
+    });
+    
+    if (res.ok) {
+      updateApiKeyStatusUI(true);
+      showToastNotification("success", "API Key Aktif (Hijau)", "Gemini API Key berhasil disimpan & siap digunakan!");
+      closeGeminiKeyModal();
+    } else {
+      updateApiKeyStatusUI(false);
+      showToastNotification("error", "Gagal Simpan", "Gagal menyimpan API Key ke server.");
+    }
+  } catch (e) {
+    console.error("Save API Key error:", e);
+    updateApiKeyStatusUI(true); // tetap tersimpan di lokal
+    showToastNotification("success", "Tersimpan di Perangkat", "API Key tersimpan di memori perangkat Anda!");
+    closeGeminiKeyModal();
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-check text-xs"></i><span>Simpan & Aktifkan</span>';
+    }
+  }
+}
+
+async function deleteActiveApiKey() {
+  if (!confirm("Hapus Gemini API Key yang aktif?")) return;
+  localStorage.removeItem("direct_gemini_api_key");
+  const input = document.getElementById("input-modal-gemini-key");
+  if (input) input.value = "";
+  
+  try {
+    await fetch("/api/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ geminiApiKey: "" })
+    });
+  } catch(e){}
+
+  updateApiKeyStatusUI(false);
+  showToastNotification("info", "API Key Dihapus (Merah)", "API Key telah dihapus. Status kini menjadi merah.");
+  closeGeminiKeyModal();
+}
+
+async function loadSettings() {
+  try {
+    const localKey = localStorage.getItem("direct_gemini_api_key") || "";
+    if (localKey) {
+      updateApiKeyStatusUI(true);
+    } else {
+      updateApiKeyStatusUI(false);
+    }
+
+    const res = await fetch("/api/settings");
+    const settings = await res.json();
+    if (settings.geminiApiKey) {
+      if (!localKey) {
+        localStorage.setItem("direct_gemini_api_key", settings.geminiApiKey);
+        updateApiKeyStatusUI(true);
+      }
+    }
+  } catch (err) { 
+    const localKey = localStorage.getItem("direct_gemini_api_key") || "";
+    updateApiKeyStatusUI(!!localKey);
   }
 }
 
