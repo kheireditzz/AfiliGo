@@ -1678,21 +1678,72 @@ app.post('/api/chat', async (req, res) => {
 // =========================================================================
 // GOOGLE AI STUDIO PRO (GEMINI) DIRECT GENERATION ENGINE (WITH AUTO-FAILOVER)
 // =========================================================================
-async function callGeminiPro(promptText, customKey) {
+// GOOGLE GEMINI NATIVE IMAGE GENERATOR (NANO BANANA / GEMINI FLASH IMAGE)
+// =========================================================================
+async function generateGeminiNativeImage(promptText, customKey) {
   let keyToUse = customKey || getActiveGeminiKey();
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${keyToUse}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${keyToUse}`;
 
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(6000),
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: promptText }] }],
+        generationConfig: { responseModalities: ["IMAGE", "TEXT"] }
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.status === 429) {
+      return {
+        success: false,
+        isQuotaLimit: true,
+        message: 'Batas kuota gratis harian Gemini Image (Free Tier) pada API Key ini telah tercapai / terkena limit per menit. Silakan tunggu beberapa saat atau ganti API Key Gemini lain di Pengaturan.'
+      };
+    }
+
+    if (response.ok && data.candidates?.[0]?.content?.parts) {
+      for (const part of data.candidates[0].content.parts) {
+        if (part.inlineData) {
+          const base64Image = `data:${part.inlineData.mimeType || 'image/jpeg'};base64,${part.inlineData.data}`;
+          return {
+            success: true,
+            imageUrl: base64Image
+          };
+        }
+      }
+    }
+
+    return {
+      success: false,
+      message: data.error?.message || 'Gagal generate gambar dengan Google Gemini Image.'
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: err.message
+    };
+  }
+}
+
+// =========================================================================
+// GOOGLE AI STUDIO PRO (GEMINI) DIRECT SCRIPT GENERATION
+// =========================================================================
+async function callGeminiPro(promptText, customKey) {
+  let keyToUse = customKey || getActiveGeminiKey();
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${keyToUse}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(10000),
       body: JSON.stringify({
         contents: [{ parts: [{ text: promptText }] }],
         generationConfig: {
           temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
           maxOutputTokens: 8192,
           responseMimeType: "application/json"
         }
@@ -1982,22 +2033,25 @@ Style: Cinematic commercial photography, photorealistic 8k, consistent lighting,
 app.post('/api/generate-storyboard', handleGenerateStoryboard);
 app.post('/api/generate-storyboard-ai', handleGenerateStoryboard);
 
-// Standalone AI Image Generator
-app.post('/api/generate-image', (req, res) => {
-  const { prompt, width = 768, height = 1024, model = 'flux-realism' } = req.body;
-  const cleanPrompt = prompt.replace(/[^\w\s,.-]/gi, ' ').trim();
-  const realismBoost = ', commercial photography, sharp focus, aesthetic soft natural lighting, photorealistic 8k, highly detailed';
-  const fullPrompt = cleanPrompt + (cleanPrompt.includes('8k') ? '' : realismBoost);
-  const encodedPrompt = encodeURIComponent(fullPrompt);
-  const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${Math.floor(Math.random() * 9999999)}&model=${model}&nologo=true`;
+// Standalone AI Image Generator (Google Gemini Native Image)
+app.post('/api/generate-image', async (req, res) => {
+  const { prompt } = req.body;
+  const result = await generateGeminiNativeImage(prompt);
 
-  res.json({
-    imageUrl,
-    prompt: fullPrompt,
-    width,
-    height,
-    model
-  });
+  if (result.success) {
+    return res.json({
+      success: true,
+      imageUrl: result.imageUrl,
+      prompt,
+      model: 'gemini-2.5-flash-image (Nano Banana)'
+    });
+  } else {
+    return res.status(result.isQuotaLimit ? 429 : 400).json({
+      success: false,
+      isQuotaLimit: result.isQuotaLimit || false,
+      message: result.message || 'Batas kuota gratis Gemini Image hari ini telah habis.'
+    });
+  }
 });
 
 
