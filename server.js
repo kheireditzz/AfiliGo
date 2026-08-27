@@ -1451,7 +1451,15 @@ app.post('/api/analyze-uploaded-visuals', async (req, res) => {
 
       parts.push({ text: promptInstructions });
 
-      const visionModels = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-flash'];
+      const visionModels = [
+        'gemini-3.7-flash',
+        'gemini-3.7-pro',
+        'gemini-2.0-flash',
+        'gemini-2.0-pro-exp-02-05',
+        'gemini-1.5-flash',
+        'gemini-1.5-pro',
+        'gemini-2.5-flash'
+      ];
       for (const vModel of visionModels) {
         try {
           const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/${vModel}:generateContent?key=${keyToUse}`;
@@ -1751,8 +1759,11 @@ async function generateGeminiNativeImage(promptText, customKey) {
 async function callGeminiPro(promptText, customKey) {
   let keyToUse = customKey || getActiveGeminiKey();
   const models = [
-    'gemini-1.5-flash',
+    'gemini-3.7-flash',
+    'gemini-3.7-pro',
     'gemini-2.0-flash',
+    'gemini-2.0-pro-exp-02-05',
+    'gemini-1.5-flash',
     'gemini-1.5-pro',
     'gemini-2.5-flash'
   ];
