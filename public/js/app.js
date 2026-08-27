@@ -2503,38 +2503,21 @@ async function saveModalApiKey() {
     return;
   }
 
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
-  }
+  // 1. Simpan langsung ke memori lokal browser & APK (100% instan)
+  localStorage.setItem("direct_gemini_api_key", cleanKey);
+  window.direct_gemini_api_key = cleanKey;
+  updateApiKeyStatusUI(true);
+  showToastNotification("success", "API Key Aktif (Hijau)", "Google Gemini API Key berhasil disimpan & siap digunakan!");
+  closeGeminiKeyModal();
 
+  // 2. Sinkronkan ke server secara background
   try {
-    localStorage.setItem("direct_gemini_api_key", cleanKey);
-    const res = await fetch("/api/settings", {
+    fetch("/api/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ geminiApiKey: cleanKey })
-    });
-    
-    if (res.ok) {
-      updateApiKeyStatusUI(true);
-      showToastNotification("success", "API Key Aktif (Hijau)", "Gemini API Key berhasil disimpan & siap digunakan!");
-      closeGeminiKeyModal();
-    } else {
-      updateApiKeyStatusUI(false);
-      showToastNotification("error", "Gagal Simpan", "Gagal menyimpan API Key ke server.");
-    }
-  } catch (e) {
-    console.error("Save API Key error:", e);
-    updateApiKeyStatusUI(true); // tetap tersimpan di lokal
-    showToastNotification("success", "Tersimpan di Perangkat", "API Key tersimpan di memori perangkat Anda!");
-    closeGeminiKeyModal();
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-check text-xs"></i><span>Simpan & Aktifkan</span>';
-    }
-  }
+    }).catch(() => {});
+  } catch (e) {}
 }
 
 async function deleteActiveApiKey() {
