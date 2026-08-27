@@ -1382,15 +1382,58 @@ async function saveCurrentStoryboardSilently() {
 }
 
 async function generateStoryboardWithAI() {
-  const title = document.getElementById("sb-product-title").value.trim();
-  const usp = document.getElementById("sb-product-usp").value.trim();
-  const modelDescription = document.getElementById("sb-model-desc").value.trim();
-  const locationSetting = document.getElementById("sb-location-setting").value.trim();
+  let title = document.getElementById("sb-product-title").value.trim();
+  let usp = document.getElementById("sb-product-usp").value.trim();
+  let modelDescription = document.getElementById("sb-model-desc").value.trim();
+  let locationSetting = document.getElementById("sb-location-setting").value.trim();
   const numScenes = document.getElementById("sb-scene-count").value;
   const promptsPerScene = document.getElementById("sb-prompt-count").value;
   const duration = document.getElementById("sb-duration-select").value;
   const platform = document.getElementById("sb-platform") ? document.getElementById("sb-platform").value : "TikTok / Reels (9:16)";
   const gridLayout = document.getElementById("sb-grid-layout") ? document.getElementById("sb-grid-layout").value : "4_grid_2x2";
+  const directGeminiKey = (document.getElementById("feature-gemini-api-key") ? document.getElementById("feature-gemini-api-key").value.trim() : "") || localStorage.getItem("direct_gemini_api_key") || "";
+
+  const hasAnyPhoto = uploadedImages.product || uploadedImages.model || uploadedImages.location;
+
+  // Jika nama produk belum diisi tapi ada foto produk yang diupload, analisa dulu dengan Gemini Vision secara otomatis
+  if (!title && hasAnyPhoto) {
+    showToastNotification("info", "Menganalisa Foto...", "Google Gemini Vision sedang membaca foto yang diupload...");
+    try {
+      const res = await fetch("/api/analyze-uploaded-visuals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productImgBase64: uploadedImages.product || null,
+          modelImgBase64: uploadedImages.model || null,
+          locationImgBase64: uploadedImages.location || null,
+          currentTitle: "",
+          targetType: "all",
+          geminiApiKey: directGeminiKey
+        })
+      });
+      const vData = await res.json();
+      if (vData && vData.success) {
+        if (vData.suggestedTitle) {
+          title = vData.suggestedTitle;
+          document.getElementById("sb-product-title").value = title;
+        }
+        if (vData.suggestedUsp && !usp) {
+          usp = vData.suggestedUsp;
+          document.getElementById("sb-product-usp").value = usp;
+        }
+        if (vData.suggestedModel && !modelDescription) {
+          modelDescription = vData.suggestedModel;
+          document.getElementById("sb-model-desc").value = modelDescription;
+        }
+        if (vData.suggestedLocation && !locationSetting) {
+          locationSetting = vData.suggestedLocation;
+          document.getElementById("sb-location-setting").value = locationSetting;
+        }
+      }
+    } catch (e) {
+      console.warn("Pre-generate vision analysis error:", e);
+    }
+  }
 
   if (!title) {
     const productInput = document.getElementById("input-product-name") || document.getElementById("sb-product-title");
@@ -1399,7 +1442,7 @@ async function generateStoryboardWithAI() {
       productInput.classList.add("ring-2", "ring-orange-500", "border-orange-500");
       setTimeout(() => productInput.classList.remove("ring-2", "ring-orange-500", "border-orange-500"), 3000);
     }
-    showToastNotification("warning", "Nama Produk Diperlukan", "Harap isi nama produk terlebih dahulu sebelum membuat storyboard!");
+    showToastNotification("warning", "Nama Produk Diperlukan", "Harap isi nama produk atau upload foto produk terlebih dahulu!");
     return;
   }
 
