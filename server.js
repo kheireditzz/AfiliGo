@@ -1449,7 +1449,7 @@ app.post('/api/analyze-uploaded-visuals', async (req, res) => {
 
       parts.push({ text: promptInstructions });
 
-      const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyToUse}`;
+      const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${keyToUse}`;
       const visionRes = await fetch(visionUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

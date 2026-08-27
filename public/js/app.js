@@ -1474,120 +1474,75 @@ function renderStoryboardPreview() {
     return;
   }
 
-    const hasGeneratedImage = !!(scene.imageUrl || (scene.imagesList && scene.imagesList[0]));
-    const safeImageUrl = hasGeneratedImage ? (scene.imageUrl || scene.imagesList[0]) : '';
     const encodedPrompt = encodeURIComponent(scene.prompt || "");
-    const panels = scene.panels || [
-      { num: 1, title: 'Keadaan Awal', desc: 'Karakter memulai aktivitas di lokasi.' },
-      { num: 2, title: 'Aksi Berjalan', desc: 'Karakter bergerak mencari solusi.' },
-      { num: 3, title: 'Mempromosikan', desc: 'Karakter memperlihatkan produk ke kamera.' },
-      { num: 4, title: 'Aksi Lanjutan', desc: 'Transisi bersiap menuju scene berikutnya.' }
-    ];
-
+    const encodedVideoPrompt = encodeURIComponent(scene.videoPrompt || scene.visualDescription || "");
     const isConnected = idx > 0;
 
     return `
-      <div class="rounded-3xl bg-[#0f121d] border ${isConnected ? 'border-cyan-900/60 hover:border-cyan-500/50' : 'border-amber-900/60 hover:border-amber-500/50'} p-3.5 sm:p-5 space-y-4 shadow-2xl transition relative overflow-hidden">
-        <!-- Connecting Line Ribbon for Continuous Story -->
+      <div class="rounded-3xl bg-[#0f1424] border ${isConnected ? 'border-cyan-500/30 hover:border-cyan-500/60' : 'border-amber-500/30 hover:border-amber-500/60'} p-4 sm:p-6 space-y-4 shadow-2xl transition relative overflow-hidden">
+        <!-- Connecting Ribbon for Continuous Story -->
         ${isConnected ? `
-          <div class="flex items-center gap-2 px-3 py-1 rounded-xl bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-[10px] font-mono font-bold">
+          <div class="flex items-center gap-2 px-3 py-1 rounded-xl bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-[10px] font-mono font-bold w-max">
             <i class="fa-solid fa-link text-cyan-400"></i> BERSAMBUNG DARI SCENE ${idx}
           </div>
         ` : ''}
 
-        <div class="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
-          <div class="flex items-center gap-2 min-w-0 flex-1">
-            <span class="px-2.5 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black text-[10px] font-display shadow-sm flex-shrink-0">
+        <div class="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+          <div class="flex items-center gap-2.5 min-w-0 flex-1">
+            <span class="px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black text-xs font-display shadow-sm flex-shrink-0">
               SCENE ${idx + 1}
             </span>
-            <input type="text" value="${scene.shotType || `Scene ${idx + 1}`}" oninput="updateSceneShotType(${idx}, this.value)" class="w-full max-w-[280px] bg-slate-950/80 border border-slate-800 rounded-lg px-2 py-0.5 text-xs font-bold text-amber-300 focus:outline-none focus:border-amber-400 font-mono truncate" placeholder="Shot Type">
-            <span class="px-2 py-0.5 rounded-md bg-slate-950 text-[10px] font-mono text-slate-400 border border-slate-800 flex-shrink-0">${scene.durationSeconds || 10}s</span>
+            <input type="text" value="${scene.shotType || `Scene ${idx + 1}`}" oninput="updateSceneShotType(${idx}, this.value)" class="w-full max-w-[320px] bg-slate-950/90 border border-slate-800 focus:border-amber-400 rounded-xl px-3 py-1 text-xs font-bold text-amber-300 focus:outline-none font-mono truncate" placeholder="Judul Scene...">
+            <span class="px-2.5 py-1 rounded-lg bg-slate-900 text-[10px] font-mono text-slate-300 border border-slate-800 flex-shrink-0">${scene.durationSeconds || 5}s</span>
           </div>
           <div class="flex items-center gap-1.5 flex-shrink-0">
-            <button onclick="copyEntireScene(${idx})" class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-300 hover:text-white text-xs font-bold border border-slate-700/80 transition flex items-center gap-1 shadow-sm" title="Salin Seluruh Konten Scene ${idx + 1}">
-              <i class="fa-solid fa-copy text-[10px]"></i>
-              <span class="text-[11px] hidden sm:inline">Salin</span>
+            <button onclick="copyEntireScene(${idx})" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-300 hover:text-white text-xs font-bold border border-slate-700/80 transition flex items-center gap-1.5 shadow-sm" title="Salin Konten Lengkap Scene ${idx + 1}">
+              <i class="fa-solid fa-copy text-[11px]"></i>
+              <span class="text-xs hidden sm:inline">Salin Lengkap</span>
             </button>
-            <button onclick="removeScene(${idx})" class="w-7 h-7 rounded-xl bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white text-xs transition flex items-center justify-center border border-slate-800" title="Hapus Scene">
-              <i class="fa-solid fa-trash text-[10px]"></i>
+            <button onclick="removeScene(${idx})" class="w-8 h-8 rounded-xl bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white text-xs transition flex items-center justify-center border border-slate-800" title="Hapus Scene">
+              <i class="fa-solid fa-trash text-xs"></i>
             </button>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
-          <!-- Left: Frame 9:16 Vertical Smartphone Frame -->
-          <div class="md:col-span-5 w-full space-y-2">
-            <div class="relative w-full rounded-2xl overflow-hidden bg-slate-950 aspect-[9/16] max-h-[380px] border-2 ${hasGeneratedImage ? 'border-amber-500/80 shadow-[0_0_20px_rgba(245,158,11,0.2)]' : 'border-slate-800'} shadow-2xl flex items-center justify-center mx-auto group">
-              ${hasGeneratedImage ? `
-                <img id="scene-img-${idx}" src="${safeImageUrl}" class="w-full h-full object-cover" alt="Scene Visual 9:16">
-                <div class="absolute top-2 left-2 px-2.5 py-1 rounded-lg bg-black/85 text-[10px] font-mono text-amber-300 border border-amber-500/40 shadow-lg flex items-center gap-1.5 backdrop-blur-md">
-                  <i class="fa-solid fa-sparkles text-amber-400 text-[9px]"></i> 9:16 AI IMAGE
-                </div>
-                <div class="absolute inset-x-2 bottom-2 p-1.5 rounded-xl bg-black/90 border border-white/15 shadow-2xl flex items-center gap-1.5 z-10 backdrop-blur-md">
-                  <button onclick="generateImageForSceneDirectly(${idx})" class="flex-1 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-[10px] font-mono transition flex items-center justify-center gap-1 border border-slate-700">
-                    <i class="fa-solid fa-rotate text-[9px] text-amber-400"></i> Render Ulang
-                  </button>
-                  <button onclick="downloadSceneWithCustomSize('${safeImageUrl}', '9:16', ${idx + 1})" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] font-display shadow flex items-center gap-1 transition flex-shrink-0">
-                    <i class="fa-solid fa-download text-[9px]"></i>
-                    <span>Unduh</span>
-                  </button>
-                </div>
-              ` : `
-                <div class="p-4 text-center space-y-3 w-full">
-                  <div class="w-12 h-12 rounded-2xl bg-amber-950/40 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400 shadow-inner">
-                    <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
-                  </div>
-                  <div>
-                    <p class="text-xs font-bold text-slate-200 font-display">Format 9:16 Vertikal</p>
-                    <p class="text-[10px] text-slate-400 leading-tight mt-0.5">Siap render gambar untuk Scene ${idx + 1}</p>
-                  </div>
-                  <button id="btn-render-scene-${idx}" onclick="generateImageForSceneDirectly(${idx})" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 hover:opacity-90 active:scale-95 text-white font-bold text-xs font-display shadow-lg shadow-orange-950/50 flex items-center justify-center gap-2 transition">
-                    <i class="fa-solid fa-image text-xs"></i>
-                    <span>Generate Gambar 9:16</span>
-                  </button>
-                </div>
-              `}
+        <div class="space-y-4">
+          <!-- 1. PROMPT GAMBAR VISUAL 9:16 (STORYBOARD PROMPT) -->
+          <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-950/90 border border-amber-500/30 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-amber-300 font-display flex items-center gap-2">
+                <i class="fa-solid fa-camera text-orange-400 text-sm"></i> Prompt Gambar Storyboard (9:16 Vertikal)
+              </span>
+              <button onclick="copyPromptText('${encodedPrompt}')" class="px-2.5 py-1 rounded-lg bg-amber-950/60 hover:bg-amber-900 border border-amber-500/40 text-[10px] text-amber-300 font-mono font-bold transition flex items-center gap-1.5">
+                <i class="fa-solid fa-copy text-[9px]"></i> Salin Prompt Gambar
+              </button>
             </div>
-
-            <div class="p-2 rounded-xl bg-black/60 border border-slate-800 text-[10px] text-slate-400 text-center font-mono flex items-center justify-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-              <span>Rasio Asli 9:16 (TikTok / Reels / Shopee)</span>
-            </div>
+            <textarea id="scene-prompt-input-${idx}" rows="3" oninput="updateScenePrompt(${idx}, this.value)" class="w-full bg-[#0a0e17] border border-slate-800 focus:border-amber-400 rounded-xl p-3 text-xs text-amber-100 font-mono focus:outline-none leading-relaxed transition shadow-inner" placeholder="Instruksi prompt gambar 9:16...">${scene.prompt || ""}</textarea>
           </div>
 
-          <!-- Right: Prompt, Video & Voiceover Detail -->
-          <div class="md:col-span-7 space-y-3">
-            <!-- Visual Strip Prompt -->
-            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1.5">
-              <div class="flex items-center justify-between">
-                <span class="text-[10px] font-bold text-amber-300 font-display flex items-center gap-1.5">
-                  <i class="fa-solid fa-sparkles text-orange-400"></i> Prompt Visual Gambar (9:16)
-                </span>
-                <button onclick="copyPromptText('${encodedPrompt}')" class="text-[9px] text-slate-400 hover:text-amber-300 transition flex items-center gap-1 font-mono">
-                  <i class="fa-solid fa-copy text-[8px]"></i> Salin Prompt
-                </button>
-              </div>
-              <textarea id="scene-prompt-input-${idx}" rows="3" oninput="updateScenePrompt(${idx}, this.value)" class="w-full bg-slate-950/90 border border-slate-800 focus:border-amber-400 rounded-xl p-2.5 text-[11px] text-amber-200 font-mono focus:outline-none leading-relaxed transition" placeholder="Instruksi prompt gambar...">${scene.prompt || ""}</textarea>
-            </div>
-
-            <!-- Video Prompt -->
-            <div class="space-y-1">
-              <span class="text-[9px] font-bold text-slate-400 uppercase font-mono flex items-center gap-1">
-                <i class="fa-solid fa-video text-cyan-400"></i> Prompt Video Generator (Kling / Veo)
+          <!-- 2. PROMPT VIDEO AI GENERATOR (KLING / VEO / LUMA) -->
+          <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-950/90 border border-cyan-500/30 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-cyan-300 font-display flex items-center gap-2">
+                <i class="fa-solid fa-video text-cyan-400 text-sm"></i> Prompt Video AI Generator (Kling / Veo / Luma)
               </span>
-              <input type="text" value="${scene.videoPrompt || scene.visualDescription || ''}" oninput="updateSceneVisualDesc(${idx}, this.value)" class="w-full bg-slate-950/80 border border-slate-800/80 focus:border-cyan-500 rounded-xl px-2.5 py-1.5 text-[11px] text-white placeholder-slate-500 focus:outline-none transition font-mono" placeholder="Prompt video AI generator...">
+              <button onclick="copyPromptText('${encodedVideoPrompt}')" class="px-2.5 py-1 rounded-lg bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-500/40 text-[10px] text-cyan-300 font-mono font-bold transition flex items-center gap-1.5">
+                <i class="fa-solid fa-copy text-[9px]"></i> Salin Prompt Video
+              </button>
             </div>
+            <textarea rows="2" oninput="updateSceneVisualDesc(${idx}, this.value)" class="w-full bg-[#0a0e17] border border-slate-800 focus:border-cyan-400 rounded-xl p-3 text-xs text-cyan-100 font-mono focus:outline-none leading-relaxed transition shadow-inner" placeholder="Prompt video motion camera 9:16...">${scene.videoPrompt || scene.visualDescription || ''}</textarea>
+          </div>
 
-            <!-- Voiceover Script -->
-            <div class="space-y-1">
-              <span class="text-[9px] font-bold text-slate-400 uppercase font-mono flex items-center gap-1">
-                <i class="fa-solid fa-microphone text-orange-400"></i> Naskah Voiceover Audio (${scene.durationSeconds || 5} Detik)
+          <!-- 3. NASKAH VOICEOVER AUDIO -->
+          <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-slate-300 font-display flex items-center gap-2">
+                <i class="fa-solid fa-microphone text-orange-400 text-sm"></i> Naskah Voiceover Audio (${scene.durationSeconds || 5} Detik)
               </span>
-              <textarea rows="2" oninput="updateSceneVoiceover(${idx}, this.value)" class="w-full bg-slate-950/80 border border-slate-800/80 focus:border-amber-500 rounded-xl p-2.5 text-[11px] text-white placeholder-slate-500 focus:outline-none leading-relaxed transition" placeholder="Tuliskan naskah audio...">${scene.voiceover || ''}</textarea>
             </div>
+            <textarea rows="2" oninput="updateSceneVoiceover(${idx}, this.value)" class="w-full bg-[#0a0e17] border border-slate-800 focus:border-orange-500 rounded-xl p-3 text-xs text-slate-200 focus:outline-none leading-relaxed transition shadow-inner" placeholder="Naskah dialog yang diucapkan...">${scene.voiceover || ''}</textarea>
           </div>
         </div>
-      </div>
       </div>
     `;
   }).join("");
