@@ -1451,30 +1451,44 @@ app.post('/api/analyze-uploaded-visuals', async (req, res) => {
 
       parts.push({ text: promptInstructions });
 
-      const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${keyToUse}`;
-      const visionRes = await fetch(visionUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts }],
-          generationConfig: {
-            temperature: 0.2,
-            responseMimeType: 'application/json'
-          }
-        })
-      });
+      const visionModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-2.5-flash'];
+      for (const vModel of visionModels) {
+        try {
+          const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/${vModel}:generateContent?key=${keyToUse}`;
+          const visionRes = await fetch(visionUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(15000),
+            body: JSON.stringify({
+              contents: [{ parts }],
+              generationConfig: {
+                temperature: 0.2,
+                responseMimeType: 'application/json'
+              }
+            })
+          });
 
-      const visionData = await visionRes.json();
-      if (visionData.candidates && visionData.candidates[0]?.content?.parts?.[0]?.text) {
-        const parsed = JSON.parse(visionData.candidates[0].content.parts[0].text);
-        return res.json({
-          success: true,
-          suggestedTitle: parsed.suggestedTitle || currentTitle || 'Produk Unggulan',
-          suggestedUsp: parsed.suggestedUsp || 'Kualitas premium dengan performa terbaik untuk kebutuhan sehari-hari.',
-          suggestedModel: parsed.suggestedModel || 'Indonesian Youth Talent, 22 tahun, gaya kasual modis trendy, ekspresi percaya diri.',
-          suggestedLocation: parsed.suggestedLocation || 'Modern Minimalist Aesthetic Room with warm soft ambient lighting',
-          analyzedFromVision: true
-        });
+          if (!visionRes.ok) continue;
+
+          const visionData = await visionRes.json();
+          if (visionData.candidates && visionData.candidates[0]?.content?.parts?.[0]?.text) {
+            let rawVisionText = visionData.candidates[0].content.parts[0].text.trim();
+            if (rawVisionText.startsWith('```json')) rawVisionText = rawVisionText.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
+            else if (rawVisionText.startsWith('```')) rawVisionText = rawVisionText.replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
+
+            const parsed = JSON.parse(rawVisionText);
+            return res.json({
+              success: true,
+              suggestedTitle: parsed.suggestedTitle || currentTitle || 'Produk Unggulan',
+              suggestedUsp: parsed.suggestedUsp || 'Kualitas premium dengan performa terbaik untuk kebutuhan sehari-hari.',
+              suggestedModel: parsed.suggestedModel || 'Indonesian Youth Talent, 22 tahun, gaya kasual modis trendy, ekspresi percaya diri.',
+              suggestedLocation: parsed.suggestedLocation || 'Modern Minimalist Aesthetic Room with warm soft ambient lighting',
+              analyzedFromVision: true
+            });
+          }
+        } catch(vErr) {
+          console.warn(`Vision model ${vModel} error:`, vErr.message);
+        }
       }
     } catch (visionErr) {
       console.error('Vision AI analysis error:', visionErr);
@@ -1731,46 +1745,59 @@ async function generateGeminiNativeImage(promptText, customKey) {
 }
 
 // =========================================================================
-// GOOGLE AI STUDIO PRO (GEMINI) DIRECT SCRIPT GENERATION
+// GOOGLE AI STUDIO PRO (GEMINI) DIRECT SCRIPT GENERATION (MULTI-MODEL FALLBACK)
 // =========================================================================
 async function callGeminiPro(promptText, customKey) {
   let keyToUse = customKey || getActiveGeminiKey();
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${keyToUse}`;
+  const models = [
+    'gemini-1.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-pro',
+    'gemini-2.5-flash'
+  ];
 
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(10000),
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: promptText }] }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 8192,
-          responseMimeType: "application/json"
-        }
-      })
-    });
+  for (const modelName of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${keyToUse}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(15000),
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 8192,
+            responseMimeType: "application/json"
+          }
+        })
+      });
 
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = await response.json();
-    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-      let rawText = data.candidates[0].content.parts[0].text.trim();
-      if (rawText.startsWith('```json')) rawText = rawText.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
-      else if (rawText.startsWith('```')) rawText = rawText.replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
-      try {
-        return JSON.parse(rawText);
-      } catch (pe) {
-        return null;
+      if (!response.ok) {
+        console.warn(`Model ${modelName} returned status ${response.status}, trying next model...`);
+        continue;
       }
+
+      const data = await response.json();
+      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        let rawText = data.candidates[0].content.parts[0].text.trim();
+        if (rawText.startsWith('```json')) rawText = rawText.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
+        else if (rawText.startsWith('```')) rawText = rawText.replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
+        try {
+          const parsed = JSON.parse(rawText);
+          if (parsed && parsed.scenes && parsed.scenes.length > 0) {
+            return parsed;
+          }
+        } catch (pe) {
+          console.warn(`JSON parse error on ${modelName}:`, pe);
+        }
+      }
+    } catch (err) {
+      console.warn(`Fetch error on model ${modelName}:`, err.message);
     }
-    return null;
-  } catch (err) {
-    return null;
   }
+
+  return null;
 }
 
 // AI STORYBOARD & SCENE GENERATOR API (HYPER-REALISTIC & CUSTOM USER INPUTS)
