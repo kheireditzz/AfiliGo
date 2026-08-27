@@ -1935,7 +1935,8 @@ Style: Cinematic commercial photography, photorealistic 8k, consistent lighting,
   ];
 
   const scenes = continuousSceneTemplates.map((template, idx) => {
-    const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(template.stripPrompt)}?width=768&height=1344&seed=${Math.floor(Math.random() * 9000000 + idx * 25000)}&nologo=true`;
+    const cleanPrompt = encodeURIComponent(template.stripPrompt.replace(/[^\w\s,.-]/gi, ' ').trim());
+    const imgUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=768&height=1024&seed=${Math.floor(Math.random() * 9000000 + idx * 25000)}&model=flux-realism&nologo=true`;
     return {
       sceneNumber: template.sceneNumber,
       shotType: template.shotType,
@@ -1980,11 +1981,12 @@ app.post('/api/generate-storyboard-ai', handleGenerateStoryboard);
 
 // Standalone AI Image Generator
 app.post('/api/generate-image', (req, res) => {
-  const { prompt, width = 768, height = 1344, model = 'flux' } = req.body;
-  const realismBoost = ', 8k resolution, raw authentic photography, sharp details, true-to-life textures, natural lighting, shot on 85mm lens';
-  const fullPrompt = prompt + (prompt.includes('8k') ? '' : realismBoost);
+  const { prompt, width = 768, height = 1024, model = 'flux-realism' } = req.body;
+  const cleanPrompt = prompt.replace(/[^\w\s,.-]/gi, ' ').trim();
+  const realismBoost = ', commercial photography, sharp focus, aesthetic soft natural lighting, photorealistic 8k, highly detailed';
+  const fullPrompt = cleanPrompt + (cleanPrompt.includes('8k') ? '' : realismBoost);
   const encodedPrompt = encodeURIComponent(fullPrompt);
-  const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${Math.floor(Math.random() * 999999)}&model=${model}&nologo=true`;
+  const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${Math.floor(Math.random() * 9999999)}&model=${model}&nologo=true`;
 
   res.json({
     imageUrl,

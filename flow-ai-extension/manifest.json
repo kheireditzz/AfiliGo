@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Flow Ai Auto",
-  "version": "3.1.0",
-  "description": "Ekstensi Resmi Flow Ai Auto - Otomasi Video Brutal Multi-Scene, Model Omni Flash & Veo 3.1 Suite dengan Injeksi Foto Produk, Model & Lokasi.",
+  "name": "Flow AI Brutal Studio Ultra",
+  "version": "10.0.0",
+  "description": "Ekstensi Paling Canggih & Lengkap - Multi-Preset Kelompok, Floating Studio Melayang, Direct Upload Brutal 3-Foto, Storyboard Mode, Anti-Duplikat & 10s Auto Generate.",
   "permissions": [
     "storage",
     "activeTab",
@@ -10,26 +10,16 @@
     "downloads"
   ],
   "host_permissions": [
-    "*://labs.google/*",
-    "*://*.google.com/*",
-    "*://*.flow.ai/*",
-    "*://affiliatego.vercel.app/*",
-    "*://*.vercel.app/*",
-    "*://localhost/*"
+    "<all_urls>"
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Flow Ai Extension"
+    "default_title": "Flow AI Ultra Studio"
   },
   "content_scripts": [
     {
       "matches": [
-        "*://labs.google/*",
-        "*://*.google.com/*",
-        "*://*.flow.ai/*",
-        "*://affiliatego.vercel.app/*",
-        "*://*.vercel.app/*",
-        "http://localhost:*/*"
+        "<all_urls>"
       ],
       "js": [
         "content.js"

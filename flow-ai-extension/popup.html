@@ -2,180 +2,200 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flow Ai Extension</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Flow AI Ultra Studio</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
-      width: 480px;
-      max-height: 590px;
-      background: #070b14;
+      width: 100%;
+      min-width: 330px;
+      max-width: 440px;
+      margin: 0 auto;
+      background: radial-gradient(circle at top, #111827 0%, #030712 100%);
       color: #f8fafc;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      overflow-y: auto;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 8px;
+      overflow-x: hidden;
     }
-    .ultra-glass {
-      background: rgba(13, 19, 34, 0.85);
-      backdrop-filter: blur(16px);
+    .glass-card {
+      background: rgba(17, 24, 39, 0.75);
       border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
     }
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: #070b14; }
-    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #f97316; }
+    .glow-header {
+      border: 1px solid rgba(249, 115, 22, 0.5);
+      box-shadow: 0 0 20px rgba(249, 115, 22, 0.25);
+    }
+    .touch-btn {
+      touch-action: manipulation;
+      user-select: none;
+      cursor: pointer;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .touch-btn:active {
+      transform: scale(0.96);
+    }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: #030712; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
   </style>
 </head>
-<body class="p-3.5 space-y-3 antialiased select-none">
+<body class="space-y-2 antialiased">
 
-  <!-- TOP HEADER -->
-  <header class="ultra-glass p-3 rounded-2xl flex items-center justify-between border border-orange-500/30 shadow-lg">
-    <div class="flex items-center gap-2.5">
-      <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white text-sm shadow">
+  <!-- HEADER ELEGAN -->
+  <header class="glass-card glow-header flex items-center justify-between py-2 px-3">
+    <div class="flex items-center gap-2">
+      <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white text-xs shadow-lg shadow-orange-500/30">
         <i class="fa-solid fa-bolt-lightning"></i>
       </div>
       <div>
-        <div class="text-xs font-black tracking-tight text-white flex items-center gap-1.5">
-          <span>Flow Ai Extension</span>
-          <span class="px-1.5 py-0.2 rounded bg-orange-500/20 text-orange-400 text-[9px] font-mono border border-orange-500/40">v3.5</span>
+        <div class="text-[11px] font-black tracking-tight text-white flex items-center gap-1.5">
+          <span>Flow AI Studio</span>
+          <span class="px-1.5 py-0.2 rounded-full bg-orange-500/20 text-orange-400 text-[8px] font-mono font-bold border border-orange-500/40">v21.0 Fiber</span>
         </div>
-        <div class="text-[9px] text-slate-400 font-mono">Omni Flash & Veo 3.1 Suite</div>
       </div>
     </div>
     
     <div class="flex items-center gap-1.5">
-      <button id="btn-save-all-json" class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-white text-[10px] font-bold border border-slate-700 transition flex items-center gap-1">
-        <i class="fa-solid fa-file-code"></i>
-        <span>JSON</span>
+      <button id="btn-save-all-json" class="touch-btn px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-amber-300 text-[9px] font-bold border border-slate-700">
+        <i class="fa-solid fa-floppy-disk mr-0.5"></i>Save
       </button>
-      <button id="btn-download-all-zip" class="px-2.5 py-1 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90 active:scale-95 text-white text-[10px] font-extrabold shadow flex items-center gap-1 transition">
-        <i class="fa-solid fa-cloud-arrow-down"></i>
-        <span>Unduh All</span>
+      <button id="btn-reset-cache-all" class="touch-btn px-2 py-0.5 rounded-md bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-400 text-[9px] font-bold border border-slate-700">
+        <i class="fa-solid fa-rotate-right mr-0.5"></i>Reset
       </button>
     </div>
   </header>
 
-  <!-- SYNC FROM AFFILIATEGO WEB -->
-  <button id="btn-sync-from-web" class="w-full py-2 rounded-xl bg-gradient-to-r from-emerald-950/60 to-slate-900 hover:from-emerald-900/80 hover:to-slate-800 border border-emerald-500/40 text-emerald-300 hover:text-white text-[11px] font-bold shadow flex items-center justify-center gap-2 transition">
-    <i class="fa-solid fa-cloud-arrow-down text-emerald-400"></i>
-    <span>Ambil Gambar & Scene dari Web AffiliateGo</span>
-  </button>
-
-  <!-- 1. MULTI-IMAGE SLOTS (PRODUK, MODEL, LOKASI) WITH CROP -->
-  <div class="ultra-glass p-3 rounded-2xl space-y-2 border border-slate-800">
-    <div class="flex items-center justify-between">
-      <span class="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
-        <i class="fa-solid fa-images text-orange-400"></i> Masukkan Gambar (3 Slot)
+  <!-- KELOMPOK BAR -->
+  <div class="glass-card p-2 space-y-1.5">
+    <div class="flex items-center justify-between px-1">
+      <span class="text-[9.5px] font-bold text-amber-400 font-mono flex items-center gap-1">
+        <i class="fa-solid fa-folder-open text-orange-400"></i> Kelompok Preset:
       </span>
-      <span class="text-[9px] text-slate-400 font-mono">Klik foto untuk Crop</span>
-    </div>
-
-    <div class="grid grid-cols-3 gap-2">
-      <!-- Slot 1: Produk -->
-      <div class="space-y-1 text-center">
-        <div class="relative block aspect-square rounded-xl bg-slate-950 border border-dashed border-slate-700 hover:border-orange-500 cursor-pointer overflow-hidden group shadow flex flex-col items-center justify-center" id="box-product">
-          <img id="ext-thumb-product" class="hidden w-full h-full object-cover">
-          <div id="ext-placeholder-product" class="p-1 space-y-0.5 text-center">
-            <i class="fa-solid fa-box-open text-slate-500 group-hover:text-amber-400 text-xs"></i>
-            <div class="text-[8px] font-bold text-slate-300">Foto Produk</div>
-          </div>
-          <span id="btn-crop-product" class="hidden absolute top-1 right-1 px-1 py-0.5 rounded bg-black/80 text-[8px] font-bold text-amber-300 border border-white/20"><i class="fa-solid fa-crop"></i></span>
-          <input type="file" id="ext-file-product" accept="image/*" class="hidden">
-        </div>
-        <div class="text-[8px] text-slate-400 truncate">Produk</div>
-      </div>
-
-      <!-- Slot 2: Model -->
-      <div class="space-y-1 text-center">
-        <div class="relative block aspect-square rounded-xl bg-slate-950 border border-dashed border-slate-700 hover:border-orange-500 cursor-pointer overflow-hidden group shadow flex flex-col items-center justify-center" id="box-model">
-          <img id="ext-thumb-model" class="hidden w-full h-full object-cover">
-          <div id="ext-placeholder-model" class="p-1 space-y-0.5 text-center">
-            <i class="fa-solid fa-user text-slate-500 group-hover:text-orange-400 text-xs"></i>
-            <div class="text-[8px] font-bold text-slate-300">Foto Model</div>
-          </div>
-          <span id="btn-crop-model" class="hidden absolute top-1 right-1 px-1 py-0.5 rounded bg-black/80 text-[8px] font-bold text-amber-300 border border-white/20"><i class="fa-solid fa-crop"></i></span>
-          <input type="file" id="ext-file-model" accept="image/*" class="hidden">
-        </div>
-        <div class="text-[8px] text-slate-400 truncate">Model/Talent</div>
-      </div>
-
-      <!-- Slot 3: Lokasi -->
-      <div class="space-y-1 text-center">
-        <div class="relative block aspect-square rounded-xl bg-slate-950 border border-dashed border-slate-700 hover:border-orange-500 cursor-pointer overflow-hidden group shadow flex flex-col items-center justify-center" id="box-location">
-          <img id="ext-thumb-location" class="hidden w-full h-full object-cover">
-          <div id="ext-placeholder-location" class="p-1 space-y-0.5 text-center">
-            <i class="fa-solid fa-mountain-sun text-slate-500 group-hover:text-red-400 text-xs"></i>
-            <div class="text-[8px] font-bold text-slate-300">Foto Tempat</div>
-          </div>
-          <span id="btn-crop-location" class="hidden absolute top-1 right-1 px-1 py-0.5 rounded bg-black/80 text-[8px] font-bold text-amber-300 border border-white/20"><i class="fa-solid fa-crop"></i></span>
-          <input type="file" id="ext-file-location" accept="image/*" class="hidden">
-        </div>
-        <div class="text-[8px] text-slate-400 truncate">Lokasi/Latar</div>
+      <div class="flex items-center gap-1">
+        <button id="btn-add-group" class="touch-btn px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-[8.5px] font-bold border border-slate-700">+ Kelompok</button>
+        <button id="btn-delete-group" class="touch-btn px-1.5 py-0.5 rounded bg-slate-800 hover:bg-rose-900 text-slate-400 text-[8.5px] font-bold border border-slate-700"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>
+    <div id="group-pills-container" class="flex items-center gap-1.5 overflow-x-auto pb-0.5"></div>
   </div>
 
-  <!-- 2. AI MODEL (OMNI FLASH & VEO 3.1) & EXACT FLOW AI DURATIONS (4s, 6s, 8s, 10s) -->
-  <div class="ultra-glass p-3 rounded-2xl space-y-2.5 border border-slate-800">
-    <div class="grid grid-cols-2 gap-2">
-      <div>
-        <label class="block text-[10px] font-bold text-slate-300 mb-1">Model Flow AI</label>
-        <select id="ext-ai-model" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-2 py-1.5 text-[10px] text-amber-300 font-mono focus:outline-none focus:border-orange-500">
-          <option value="omni-flash" selected>Omni Flash</option>
-          <option value="veo-3.1-lite">Veo 3.1 - Lite</option>
-          <option value="veo-3.1-fast">Veo 3.1 - Fast</option>
-          <option value="veo-3.1-quality">Veo 3.1 - Quality</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-[10px] font-bold text-slate-300 mb-1">Durasi Flow AI</label>
-        <select id="ext-duration" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-2 py-1.5 text-[10px] text-white font-mono focus:outline-none focus:border-orange-500">
-          <option value="4">4s (4 Detik)</option>
-          <option value="6" selected>6s (6 Detik)</option>
-          <option value="8">8s (8 Detik)</option>
-          <option value="10">10s (10 Detik)</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Product Title & USP -->
-    <div class="space-y-1.5">
-      <input type="text" id="ext-product-title" placeholder="Nama Produk (contoh: Wireless Earbuds ANC Pro)" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-1.5 text-[11px] text-white placeholder-slate-500 focus:outline-none focus:border-orange-500">
-      <input type="text" id="ext-product-usp" placeholder="Keunggulan / USP Produk (contoh: Noise cancelling hening, bass punchy)" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-1.5 text-[11px] text-emerald-300 placeholder-slate-500 focus:outline-none focus:border-emerald-500">
-    </div>
-
-    <button id="btn-ext-generate-brutal" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-600 to-red-600 hover:from-amber-400 hover:to-orange-500 active:scale-95 text-white font-extrabold text-xs shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 transition">
-      <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-      <span id="btn-ext-gen-text">Generate Brutal Video di Flow AI</span>
+  <!-- MODE SWITCH TABS -->
+  <div class="grid grid-cols-2 gap-1 p-1 bg-black/60 rounded-xl border border-slate-800">
+    <button id="mode-tab-brutal" class="touch-btn py-1.5 rounded-lg text-[10px] font-black transition flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md shadow-orange-500/20">
+      <i class="fa-solid fa-layer-group text-[9px]"></i>
+      <span>Mode Brutal (3 Foto)</span>
+    </button>
+    <button id="mode-tab-storyboard" class="touch-btn py-1.5 rounded-lg text-[10px] font-extrabold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+      <i class="fa-solid fa-clapperboard text-[9px]"></i>
+      <span>1 Foto Storyboard</span>
     </button>
   </div>
 
-  <!-- 3. SCENES LIST -->
-  <div class="space-y-2">
+  <!-- SECTION 1: MODE BRUTAL -->
+  <div id="section-brutal-mode" class="space-y-2">
+    <div class="glass-card p-2 space-y-2">
+      <div class="grid grid-cols-3 gap-2">
+        <label for="ext-file-product" class="touch-btn relative block aspect-square rounded-xl bg-slate-950/80 border-2 border-dashed border-slate-800 hover:border-orange-500 cursor-pointer overflow-hidden flex flex-col items-center justify-center group" id="box-product">
+          <img id="ext-thumb-product" class="hidden w-full h-full object-cover">
+          <div id="ext-placeholder-product" class="p-1 text-center text-slate-500 group-hover:text-amber-400">
+            <i class="fa-solid fa-box-open text-base"></i>
+            <div class="text-[8px] font-bold mt-1">+ Produk</div>
+          </div>
+          <input type="file" id="ext-file-product" accept="image/*" class="hidden">
+        </label>
+
+        <label for="ext-file-model" class="touch-btn relative block aspect-square rounded-xl bg-slate-950/80 border-2 border-dashed border-slate-800 hover:border-orange-500 cursor-pointer overflow-hidden flex flex-col items-center justify-center group" id="box-model">
+          <img id="ext-thumb-model" class="hidden w-full h-full object-cover">
+          <div id="ext-placeholder-model" class="p-1 text-center text-slate-500 group-hover:text-amber-400">
+            <i class="fa-solid fa-user text-base"></i>
+            <div class="text-[8px] font-bold mt-1">+ Model</div>
+          </div>
+          <input type="file" id="ext-file-model" accept="image/*" class="hidden">
+        </label>
+
+        <label for="ext-file-location" class="touch-btn relative block aspect-square rounded-xl bg-slate-950/80 border-2 border-dashed border-slate-800 hover:border-orange-500 cursor-pointer overflow-hidden flex flex-col items-center justify-center group" id="box-location">
+          <img id="ext-thumb-location" class="hidden w-full h-full object-cover">
+          <div id="ext-placeholder-location" class="p-1 text-center text-slate-500 group-hover:text-amber-400">
+            <i class="fa-solid fa-mountain-sun text-base"></i>
+            <div class="text-[8px] font-bold mt-1">+ Lokasi</div>
+          </div>
+          <input type="file" id="ext-file-location" accept="image/*" class="hidden">
+        </label>
+      </div>
+
+      <div class="space-y-1">
+        <div class="flex items-center justify-between">
+          <label class="text-[9px] font-bold text-amber-400 font-mono uppercase">Prompt Video Motion:</label>
+          <button id="btn-save-brutal-preset" class="touch-btn px-2 py-0.2 rounded bg-emerald-950 text-emerald-300 text-[8px] font-bold border border-emerald-500/40">Save</button>
+        </div>
+        <textarea id="ext-brutal-prompt" rows="2" placeholder="Ketik prompt motion video di sini..." class="w-full bg-slate-950/90 border border-slate-800 rounded-xl p-2 text-[9.5px] text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 leading-relaxed resize-none"></textarea>
+      </div>
+
+      <div class="flex items-center justify-between text-[9px] text-slate-300 px-1">
+        <span class="font-bold">Jeda Antar Kelompok:</span>
+        <select id="select-interval-brutal" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-0.5 text-amber-400 font-mono text-[9px] outline-none">
+          <option value="10" selected>10 Detik</option>
+          <option value="15">15 Detik</option>
+          <option value="20">20 Detik</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-0.5">
+        <button id="btn-inject-brutal-single" class="touch-btn py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 text-[10px] font-bold flex items-center justify-center gap-1.5 shadow">
+          <i class="fa-solid fa-play text-orange-400 text-[8.5px]"></i>
+          <span>Jalankan (1x)</span>
+        </button>
+
+        <button id="btn-inject-brutal-all-groups" class="touch-btn py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-600 to-red-600 text-white font-extrabold text-[10px] shadow-lg shadow-orange-600/30 flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-wand-magic-sparkles text-[8.5px]"></i>
+          <span>Auto Semua Kelompok</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: MODE STORYBOARD -->
+  <div id="section-storyboard-mode" class="space-y-2 hidden">
     <div class="flex items-center justify-between px-1">
-      <span class="text-xs font-bold text-white font-display flex items-center gap-1.5">
-        <i class="fa-solid fa-clapperboard text-orange-400"></i> Daftar Scene Storyboard
+      <span class="text-[10px] font-bold text-white flex items-center gap-1">
+        <i class="fa-solid fa-clapperboard text-orange-400"></i> Scene Storyboard
       </span>
-      <button id="btn-add-scene" class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-white text-[10px] font-bold border border-slate-700 transition flex items-center gap-1">
-        <i class="fa-solid fa-plus text-[9px]"></i>
-        <span>Tambah Scene</span>
+      <button id="btn-add-scene" class="touch-btn px-2.5 py-0.5 rounded-lg bg-slate-800 text-amber-300 hover:text-white text-[9px] font-bold border border-slate-700 flex items-center gap-1">
+        <i class="fa-solid fa-plus text-[8px]"></i>
+        <span>+ Scene</span>
       </button>
     </div>
 
-    <div id="ext-scenes-container" class="space-y-2.5"></div>
-  </div>
+    <!-- Container Scene List -->
+    <div id="ext-scenes-container" class="space-y-2 max-h-[300px] overflow-y-auto pr-0.5"></div>
 
-  <!-- BOTTOM INJECT BAR (EXACT FLOW AI CHAT BOX) -->
-  <div class="p-2.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2">
-    <button id="btn-inject-flow-tab" class="flex-1 py-2 rounded-xl bg-gradient-to-r from-cyan-950 to-slate-900 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 text-[11px] font-bold transition flex items-center justify-center gap-1.5 shadow">
-      <i class="fa-solid fa-arrow-pointer text-cyan-400"></i>
-      <span>Inject ke Chat Flow AI</span>
-    </button>
-    <button id="btn-copy-all-prompts" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-[10px] font-bold transition flex items-center gap-1">
-      <i class="fa-solid fa-copy"></i>
-      <span>Salin</span>
-    </button>
+    <div class="glass-card p-2 space-y-1.5">
+      <div class="flex items-center justify-between text-[9px] text-slate-300">
+        <span class="font-bold">Jeda Antar Scene / Kelompok:</span>
+        <select id="select-interval-seq" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-0.5 text-amber-400 font-mono text-[9px] outline-none">
+          <option value="10" selected>10 Detik</option>
+          <option value="15">15 Detik</option>
+          <option value="20">20 Detik</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <button id="btn-run-storyboard-all-groups" class="touch-btn py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-600 to-red-600 text-white font-extrabold text-[10px] flex items-center justify-center gap-1.5 shadow-lg shadow-orange-600/30">
+          <i class="fa-solid fa-play text-[8.5px]"></i>
+          <span>Auto Semua Kelompok</span>
+        </button>
+
+        <button id="btn-copy-all-prompts" class="touch-btn py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-[10px] font-bold flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-copy text-amber-400 text-[8.5px]"></i>
+          <span>Salin Prompt</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <script src="popup.js"></script>

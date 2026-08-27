@@ -1,123 +1,207 @@
+let currentMode = "brutal";
+let activeGroupIndex = 0;
 
-let scenes = [
+let groups = [
   {
-    id: 1,
-    shotType: "Hook Close-Up",
-    duration: 4,
-    promptVisual: "Hyperrealistic commercial close-up of product with studio bokeh lighting, 8k resolution",
-    promptVideo: "Slow cinematic zoom in on product texture, hands gently unboxing with dynamic motion blur",
-    voiceover: "Stop scrolling! Ini rahasia kenapa produk ini lagi viral banget!",
-    imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"
-  },
-  {
-    id: 2,
-    shotType: "Action Demo",
-    duration: 6,
-    promptVisual: "Indonesian female creator demonstrating product in aesthetic room, natural sunlight, 4k",
-    promptVideo: "Medium camera pan showing creator testing key features with enthusiastic expression",
-    voiceover: "Lihat hasilnya yang bener-bener instan dan worth it banget!",
-    imageUrl: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400"
+    name: "Kelompok 1",
+    brutalState: { product: null, model: null, location: null, prompt: "" },
+    scenes: [{ id: 1, shotType: "Scene 1", duration: 6, aspectRatio: "9:16", promptVideo: "", voiceover: "", imageUrl: null }]
   }
 ];
 
-let uploadedImages = { product: null, model: null, location: null };
-
 document.addEventListener("DOMContentLoaded", () => {
-  renderScenes();
-  setupImageUploads();
-  setupEventListeners();
   loadSavedState();
+  setupModeTabs();
+  setupGroupManager();
+  setupBrutalUploads();
+  setupEventListeners();
 });
 
+function setupModeTabs() {
+  const tabBrutal = document.getElementById("mode-tab-brutal");
+  const tabStoryboard = document.getElementById("mode-tab-storyboard");
+  const secBrutal = document.getElementById("section-brutal-mode");
+  const secStoryboard = document.getElementById("section-storyboard-mode");
+
+  tabBrutal?.addEventListener("click", () => {
+    currentMode = "brutal";
+    tabBrutal.className = "touch-btn py-1.5 rounded-lg text-[10px] font-black transition flex items-center justify-center gap-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow";
+    tabStoryboard.className = "touch-btn py-1.5 rounded-lg text-[10px] font-extrabold text-slate-400 hover:text-white transition flex items-center justify-center gap-1";
+    secBrutal?.classList.remove("hidden");
+    secStoryboard?.classList.add("hidden");
+    saveState();
+  });
+
+  tabStoryboard?.addEventListener("click", () => {
+    currentMode = "storyboard";
+    tabStoryboard.className = "touch-btn py-1.5 rounded-lg text-[10px] font-black transition flex items-center justify-center gap-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow";
+    tabBrutal.className = "touch-btn py-1.5 rounded-lg text-[10px] font-extrabold text-slate-400 hover:text-white transition flex items-center justify-center gap-1";
+    secStoryboard?.classList.remove("hidden");
+    secBrutal?.classList.add("hidden");
+    renderScenes();
+    saveState();
+  });
+}
+
+function setupGroupManager() {
+  document.getElementById("btn-add-group")?.addEventListener("click", () => {
+    const newIdx = groups.length + 1;
+    groups.push({
+      name: "Kelompok " + newIdx,
+      brutalState: { product: null, model: null, location: null, prompt: "" },
+      scenes: [{ id: 1, shotType: "Scene 1", duration: 6, aspectRatio: "9:16", promptVideo: "", voiceover: "", imageUrl: null }]
+    });
+    activeGroupIndex = groups.length - 1;
+    renderGroupPills();
+    updateActiveGroupView();
+    saveState();
+  });
+
+  document.getElementById("btn-delete-group")?.addEventListener("click", () => {
+    if (groups.length <= 1) {
+      alert("Minimal harus ada 1 kelompok!");
+      return;
+    }
+    if (confirm("Hapus " + groups[activeGroupIndex].name + "?")) {
+      groups.splice(activeGroupIndex, 1);
+      if (activeGroupIndex >= groups.length) activeGroupIndex = groups.length - 1;
+      renderGroupPills();
+      updateActiveGroupView();
+      saveState();
+    }
+  });
+}
+
+function renderGroupPills() {
+  const container = document.getElementById("group-pills-container");
+  if (!container) return;
+
+  container.innerHTML = groups.map((g, idx) => {
+    const isActive = idx === activeGroupIndex;
+    return "<button onclick=\"switchGroup(" + idx + ")\" class=\"touch-btn px-2.5 py-1 rounded-lg text-[9.5px] font-extrabold whitespace-nowrap border transition flex items-center gap-1 " + 
+      (isActive ? "bg-gradient-to-r from-orange-500 to-amber-600 text-white border-orange-400 shadow-md" : "bg-slate-900 text-slate-400 border-slate-800 hover:text-white") + "\">" +
+      "<i class=\"fa-solid fa-folder text-[8px]\"></i>" + g.name +
+    "</button>";
+  }).join("");
+}
+
+window.switchGroup = function(idx) {
+  if (groups[idx]) {
+    activeGroupIndex = idx;
+    renderGroupPills();
+    updateActiveGroupView();
+    saveState();
+  }
+};
+
+function updateActiveGroupView() {
+  updateBrutalThumbnails();
+  renderScenes();
+}
+
+function setupBrutalUploads() {
+  ["product", "model", "location"].forEach(key => {
+    const fileInput = document.getElementById("ext-file-" + key);
+
+    if (fileInput) {
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          groups[activeGroupIndex].brutalState[key] = evt.target.result;
+          updateBrutalThumbnails();
+          saveState();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  });
+
+  const promptInput = document.getElementById("ext-brutal-prompt");
+  if (promptInput) {
+    promptInput.addEventListener("input", (e) => {
+      groups[activeGroupIndex].brutalState.prompt = e.target.value;
+      saveState();
+    });
+  }
+
+  document.getElementById("btn-save-brutal-preset")?.addEventListener("click", () => {
+    saveState();
+    alert("💾 Data " + groups[activeGroupIndex].name + " tersimpan!");
+  });
+}
+
+function updateBrutalThumbnails() {
+  const currentBrutal = groups[activeGroupIndex]?.brutalState || {};
+  ["product", "model", "location"].forEach(key => {
+    const thumb = document.getElementById("ext-thumb-" + key);
+    const placeholder = document.getElementById("ext-placeholder-" + key);
+    const val = currentBrutal[key];
+
+    if (val) {
+      if (thumb) { thumb.src = val; thumb.classList.remove("hidden"); }
+      if (placeholder) placeholder.classList.add("hidden");
+    } else {
+      if (thumb) { thumb.src = ""; thumb.classList.add("hidden"); }
+      if (placeholder) placeholder.classList.remove("hidden");
+    }
+  });
+
+  const promptInput = document.getElementById("ext-brutal-prompt");
+  if (promptInput) {
+    promptInput.value = currentBrutal.prompt || "";
+  }
+}
+
 function setupEventListeners() {
-  document.getElementById("btn-add-scene").addEventListener("click", () => {
-    const dur = parseInt(document.getElementById("ext-duration").value) || 6;
-    scenes.push({
-      id: scenes.length + 1,
-      shotType: "Close-Up",
-      duration: dur,
-      promptVisual: "Cinematic commercial shot of product in aesthetic setting, 8k",
-      promptVideo: "Smooth camera motion showing product benefit and satisfaction",
-      voiceover: "Klik keranjang kuning sekarang mumpung diskon spesial!",
-      imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"
+  document.getElementById("btn-add-scene")?.addEventListener("click", () => {
+    const currentScenes = groups[activeGroupIndex].scenes;
+    currentScenes.push({
+      id: currentScenes.length + 1,
+      shotType: "Scene " + (currentScenes.length + 1),
+      duration: 6,
+      aspectRatio: "9:16",
+      promptVideo: "",
+      voiceover: "",
+      imageUrl: null
     });
     renderScenes();
     saveState();
   });
 
-  document.getElementById("btn-ext-generate-brutal").addEventListener("click", handleBrutalGeneration);
-  document.getElementById("btn-save-all-json").addEventListener("click", savePromptsJson);
-  document.getElementById("btn-download-all-zip").addEventListener("click", downloadAllAssets);
-  document.getElementById("btn-inject-flow-tab").addEventListener("click", injectToActiveFlowTab);
-  document.getElementById("btn-copy-all-prompts").addEventListener("click", copyAllPromptsText);
-  document.getElementById("btn-sync-from-web").addEventListener("click", syncFromAffiliateGoWeb);
-}
+  document.getElementById("btn-save-all-json")?.addEventListener("click", saveAllJson);
+  document.getElementById("btn-copy-all-prompts")?.addEventListener("click", copyAllPromptsText);
 
-async function syncFromAffiliateGoWeb() {
-  try {
-    const res = await fetch("https://affiliatego.vercel.app/api/storyboards");
-    const list = await res.json();
-    if (Array.isArray(list) && list.length > 0) {
-      const latest = list[0];
-      if (latest.scenes && latest.scenes.length > 0) {
-        scenes = latest.scenes.map((s, idx) => ({
-          id: idx + 1,
-          shotType: s.shotType || ("Scene " + (idx + 1)),
-          duration: s.durationSeconds || 4,
-          promptVisual: s.prompt || "",
-          promptVideo: s.visualDescription || s.prompt || "",
-          voiceover: s.voiceover || "",
-          imageUrl: s.imageUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"
-        }));
-        if (latest.scenes[0] && latest.scenes[0].imageUrl) {
-          uploadedImages.product = latest.scenes[0].imageUrl;
-          const thumb = document.getElementById("ext-thumb-product");
-          const ph = document.getElementById("ext-placeholder-product");
-          if (thumb) { thumb.src = latest.scenes[0].imageUrl; thumb.classList.remove("hidden"); }
-          if (ph) ph.classList.add("hidden");
+  document.getElementById("btn-reset-cache-all")?.addEventListener("click", () => {
+    if (confirm("Reset semua data dan kosongkan preset?")) {
+      groups = [
+        {
+          name: "Kelompok 1",
+          brutalState: { product: null, model: null, location: null, prompt: "" },
+          scenes: [{ id: 1, shotType: "Scene 1", duration: 6, aspectRatio: "9:16", promptVideo: "", voiceover: "", imageUrl: null }]
         }
-        renderScenes();
-        saveState();
-        alert("✅ Berhasil menyinkronkan Scene 1..N dan Gambar dari Web AffiliateGo!");
-        return;
-      }
+      ];
+      activeGroupIndex = 0;
+      saveState();
+      renderGroupPills();
+      updateActiveGroupView();
+      alert("✨ Data telah dikosongkan!");
     }
-    alert("Belum ada data storyboard tersimpan di AffiliateGo.");
-  } catch(e) {
-    alert("Gagal terhubung ke AffiliateGo.");
-  }
-}
+  });
 
-function setupImageUploads() {
-  ['product', 'model', 'location'].forEach(key => {
-    const box = document.getElementById('box-' + key);
-    const fileInput = document.getElementById('ext-file-' + key);
-    if (!box || !fileInput) return;
+  document.getElementById("btn-inject-brutal-single")?.addEventListener("click", () => {
+    sendBrutalSingleToTab();
+  });
 
-    box.addEventListener('click', (e) => {
-      if (e.target.id !== 'btn-crop-' + key) fileInput.click();
-    });
+  document.getElementById("btn-inject-brutal-all-groups")?.addEventListener("click", () => {
+    const intervalSec = parseInt(document.getElementById("select-interval-brutal")?.value) || 10;
+    sendBrutalAllGroupsToTab(intervalSec);
+  });
 
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const base64 = evt.target.result;
-        uploadedImages[key] = base64;
-
-        const thumb = document.getElementById('ext-thumb-' + key);
-        const placeholder = document.getElementById('ext-placeholder-' + key);
-        const cropBtn = document.getElementById('btn-crop-' + key);
-        if (thumb) { thumb.src = base64; thumb.classList.remove('hidden'); }
-        if (placeholder) { placeholder.classList.add('hidden'); }
-        if (cropBtn) { cropBtn.classList.remove('hidden'); }
-
-        saveState();
-      };
-      reader.readAsDataURL(file);
-    });
+  document.getElementById("btn-run-storyboard-all-groups")?.addEventListener("click", () => {
+    const intervalSec = parseInt(document.getElementById("select-interval-seq")?.value) || 10;
+    sendStoryboardAllGroupsToTab(intervalSec);
   });
 }
 
@@ -125,222 +209,230 @@ function renderScenes() {
   const container = document.getElementById("ext-scenes-container");
   if (!container) return;
 
-  container.innerHTML = scenes.map((sc, idx) => `
-    <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-orange-500/30 space-y-2.5 transition shadow">
-      <div class="flex items-center justify-between border-b border-slate-800/80 pb-1.5">
-        <div class="flex items-center gap-1.5">
-          <span class="px-2 py-0.5 rounded-lg bg-orange-500/20 text-orange-400 text-[10px] font-black font-mono border border-orange-500/30">
-            SCENE ${idx + 1}
-          </span>
-          <input type="text" value="${sc.shotType}" onchange="updateSceneField(${idx}, 'shotType', this.value)" class="bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5 text-[10px] text-amber-300 font-mono w-32 focus:outline-none focus:border-amber-400 truncate">
-          <span class="text-[9px] text-slate-400 font-mono">${sc.duration}s</span>
-        </div>
-        <div class="flex items-center gap-1">
-          <button onclick="downloadSingleImage('${sc.imageUrl}', ${idx + 1})" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-[9px] flex items-center justify-center" title="Save Gambar Scene ${idx + 1}">
-            <i class="fa-solid fa-download"></i>
-          </button>
-          <button onclick="deleteScene(${idx})" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-rose-600 text-slate-400 hover:text-white text-[9px] flex items-center justify-center" title="Hapus Scene">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        </div>
-      </div>
+  const currentScenes = groups[activeGroupIndex]?.scenes || [];
 
-      <div class="grid grid-cols-12 gap-2">
-        <div class="col-span-4 relative aspect-[9/16] rounded-xl overflow-hidden bg-black border border-slate-800">
-          <img src="${sc.imageUrl}" class="w-full h-full object-cover" alt="Visual Preview">
-        </div>
-        <div class="col-span-8 space-y-1.5">
-          <div>
-            <span class="text-[8px] font-bold text-amber-400 uppercase font-mono">Prompt Video Motion:</span>
-            <input type="text" value="${sc.promptVideo || ''}" onchange="updateSceneField(${idx}, 'promptVideo', this.value)" class="w-full bg-slate-950 border border-slate-800 focus:border-amber-400 rounded-lg px-1.5 py-1 text-[9px] text-white focus:outline-none truncate">
-          </div>
-          <div>
-            <span class="text-[8px] font-bold text-emerald-400 uppercase font-mono">Voiceover / Narasi:</span>
-            <input type="text" value="${sc.voiceover || ''}" onchange="updateSceneField(${idx}, 'voiceover', this.value)" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-400 rounded-lg px-1.5 py-1 text-[9px] text-white focus:outline-none truncate">
-          </div>
-        </div>
-      </div>
-    </div>
-  `).join("");
+  container.innerHTML = currentScenes.map((sc, idx) => {
+    return "<div class=\"p-2.5 rounded-xl bg-slate-900/95 border border-slate-800 space-y-2 transition shadow\">" +
+      "<div class=\"flex items-center justify-between border-b border-slate-800 pb-1.5\">" +
+        "<div class=\"flex items-center gap-1.5\">" +
+          "<span class=\"px-2 py-0.5 rounded-md bg-orange-500/20 text-orange-400 text-[9.5px] font-black font-mono border border-orange-500/40\">" +
+            "SCENE " + (idx + 1) +
+          "</span>" +
+          "<input type=\"text\" value=\"" + (sc.shotType || ("Scene " + (idx+1))) + "\" onchange=\"updateSceneField(" + idx + ", \x27shotType\x27, this.value)\" class=\"bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5 text-[9px] text-amber-300 font-mono w-24 focus:outline-none focus:border-amber-400 truncate\">" +
+        "</div>" +
+        "<div class=\"flex items-center gap-1\">" +
+          "<button onclick=\"runSingleScene(" + idx + ")\" class=\"touch-btn px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-black text-[9px] font-extrabold border border-amber-500/40 shadow\">" +
+            "<i class=\"fa-solid fa-play mr-0.5\"></i>Run" +
+          "</button>" +
+          "<button onclick=\"deleteScene(" + idx + ")\" class=\"touch-btn w-5 h-5 rounded bg-slate-800 hover:bg-rose-600 text-slate-400 hover:text-white text-[9px] flex items-center justify-center shadow\">" +
+            "<i class=\"fa-solid fa-trash\"></i>" +
+          "</button>" +
+        "</div>" +
+      "</div>" +
+
+      "<div class=\"grid grid-cols-12 gap-2 items-stretch\">" +
+        "<label for=\"scene-file-input-" + idx + "\" class=\"touch-btn col-span-5 relative aspect-[9/16] rounded-lg overflow-hidden bg-black border border-dashed border-slate-700 hover:border-orange-500 flex flex-col items-center justify-center cursor-pointer group shadow\">" +
+          (sc.imageUrl ? ("<img src=\"" + sc.imageUrl + "\" class=\"w-full h-full object-cover rounded-lg\">") : ("<div class=\"p-1 text-center text-slate-500 group-hover:text-amber-400\"><i class=\"fa-solid fa-image text-base mb-0.5\"></i><div class=\"text-[8px] font-bold\">+ Foto</div></div>")) +
+          "<input type=\"file\" id=\"scene-file-input-" + idx + "\" accept=\"image/*\" class=\"hidden\" onchange=\"handleScenePhotoSelected(" + idx + ", this)\">" +
+        "</label>" +
+
+        "<div class=\"col-span-7 bg-slate-950/80 border border-slate-800/90 rounded-lg p-2 flex flex-col justify-between space-y-1.5\">" +
+          "<div>" +
+            "<span class=\"text-[8px] font-bold text-amber-400 font-mono uppercase\">Durasi:</span>" +
+            "<select onchange=\"updateSceneField(" + idx + ", \x27duration\x27, this.value)\" class=\"w-full bg-slate-900 border border-slate-800 rounded px-1.5 py-0.5 text-[9px] text-white outline-none mt-0.5\">" +
+              "<option value=\"4\"" + (sc.duration == 4 ? " selected" : "") + ">4 Detik</option>" +
+              "<option value=\"6\"" + (sc.duration == 6 ? " selected" : "") + ">6 Detik</option>" +
+              "<option value=\"8\"" + (sc.duration == 8 ? " selected" : "") + ">8 Detik</option>" +
+              "<option value=\"10\"" + (sc.duration == 10 ? " selected" : "") + ">10 Detik</option>" +
+            "</select>" +
+          "</div>" +
+          "<div>" +
+            "<span class=\"text-[8px] font-bold text-amber-400 font-mono uppercase\">Ukuran:</span>" +
+            "<select onchange=\"updateSceneField(" + idx + ", \x27aspectRatio\x27, this.value)\" class=\"w-full bg-slate-900 border border-slate-800 rounded px-1.5 py-0.5 text-[9px] text-white outline-none mt-0.5\">" +
+              "<option value=\"9:16\"" + (sc.aspectRatio === "9:16" ? " selected" : "") + ">9:16 (TikTok)</option>" +
+              "<option value=\"1:1\"" + (sc.aspectRatio === "1:1" ? " selected" : "") + ">1:1 (Square)</option>" +
+              "<option value=\"16:9\"" + (sc.aspectRatio === "16:9" ? " selected" : "") + ">16:9 (Landscape)</option>" +
+            "</select>" +
+          "</div>" +
+        "</div>" +
+      "</div>" +
+
+      "<div class=\"space-y-0.5\">" +
+        "<span class=\"text-[8.5px] font-bold text-amber-400 font-mono uppercase\">Prompt Video:</span>" +
+        "<textarea onchange=\"updateSceneField(" + idx + ", \x27promptVideo\x27, this.value)\" placeholder=\"Ketik prompt motion di sini...\" class=\"w-full bg-slate-950 border border-slate-800 focus:border-amber-400 rounded-lg p-2 text-[9.5px] text-white placeholder-slate-600 focus:outline-none h-14 leading-relaxed resize-none\">" + (sc.promptVideo || "") + "</textarea>" +
+      "</div>" +
+
+      "<div class=\"space-y-0.5\">" +
+        "<span class=\"text-[8.5px] font-bold text-emerald-400 font-mono uppercase\">Voiceover:</span>" +
+        "<input type=\"text\" value=\"" + (sc.voiceover || "") + "\" onchange=\"updateSceneField(" + idx + ", \x27voiceover\x27, this.value)\" placeholder=\"Tulis narasi suara...\" class=\"w-full bg-slate-950 border border-slate-800 focus:border-emerald-400 rounded-lg px-2 py-1 text-[9.5px] text-white placeholder-slate-600 focus:outline-none truncate\">" +
+      "</div>" +
+    "</div>";
+  }).join("");
 }
 
 window.updateSceneField = function(idx, field, value) {
-  if (scenes[idx]) {
-    scenes[idx][field] = value;
+  const currentScenes = groups[activeGroupIndex]?.scenes;
+  if (currentScenes && currentScenes[idx]) {
+    currentScenes[idx][field] = value;
     saveState();
   }
 };
 
 window.deleteScene = function(idx) {
-  if (scenes.length <= 1) return;
-  scenes.splice(idx, 1);
+  const currentScenes = groups[activeGroupIndex]?.scenes;
+  if (!currentScenes || currentScenes.length <= 1) return;
+  currentScenes.splice(idx, 1);
   renderScenes();
   saveState();
 };
 
-window.downloadSingleImage = function(url, sceneNum) {
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'FlowAI-Scene-' + sceneNum + '.jpg';
-  a.target = '_blank';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-};
-
-async function handleBrutalGeneration() {
-  const title = document.getElementById("ext-product-title").value.trim() || "Produk Affiliate";
-  const usp = document.getElementById("ext-product-usp").value.trim() || "Kualitas terbaik dan viral";
-  const modelType = document.getElementById("ext-ai-model").value;
-  const dur = parseInt(document.getElementById("ext-duration").value) || 6;
-
-  const btn = document.getElementById("btn-ext-generate-brutal");
-  const btnText = document.getElementById("btn-ext-gen-text");
-
-  btn.disabled = true;
-  btnText.innerText = "Merancang (" + modelType + ")...";
-
-  try {
-    const res = await fetch("https://affiliatego.vercel.app/api/generate-storyboard-ai", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        productTitle: title,
-        usp: usp,
-        numScenes: scenes.length,
-        duration: dur * scenes.length
-      })
-    });
-
-    const data = await res.json();
-    if (data && data.scenes && data.scenes.length > 0) {
-      scenes = data.scenes.map((sc, idx) => ({
-        id: idx + 1,
-        shotType: sc.shotType || ("Scene " + (idx + 1)),
-        duration: dur,
-        promptVisual: sc.prompt,
-        promptVideo: sc.visualDescription,
-        voiceover: sc.voiceover,
-        imageUrl: sc.imageUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400"
-      }));
-      renderScenes();
-      saveState();
-    }
-  } catch (err) {
-    scenes.forEach((sc) => {
-      sc.duration = dur;
-      sc.promptVideo = "Cinematic " + sc.shotType + " of " + title + ", " + usp + ", 4k 60fps [" + modelType + "]";
-    });
+window.handleScenePhotoSelected = function(idx, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    groups[activeGroupIndex].scenes[idx].imageUrl = e.target.result;
     renderScenes();
     saveState();
-  } finally {
-    btn.disabled = false;
-    btnText.innerText = "Generate Brutal Video di Flow AI";
-  }
+  };
+  reader.readAsDataURL(file);
+};
+
+function sendSafeTabMessage(payload, callback) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (!tabs || !tabs[0] || !tabs[0].id) {
+      alert("⚠️ Silakan buka tab website Flow AI.");
+      return;
+    }
+
+    const tabId = tabs[0].id;
+    chrome.tabs.sendMessage(tabId, payload, (response) => {
+      if (chrome.runtime.lastError) {
+        chrome.scripting.executeScript({
+          target: { tabId: tabId },
+          files: ["content.js"]
+        }, () => {
+          setTimeout(() => {
+            chrome.tabs.sendMessage(tabId, payload, () => {
+              if (callback) callback();
+            });
+          }, 300);
+        });
+      } else {
+        if (callback) callback();
+      }
+    });
+  });
 }
 
-function savePromptsJson() {
-  const data = {
-    app: "Flow Ai Extension",
-    product: document.getElementById("ext-product-title")?.value || "",
-    usp: document.getElementById("ext-product-usp")?.value || "",
-    duration: document.getElementById("ext-duration")?.value || 6,
-    scenes: scenes
-  };
+window.runSingleScene = function(idx) {
+  const sc = groups[activeGroupIndex].scenes[idx];
+  if (!sc) return;
 
+  sendSafeTabMessage({
+    action: "FLOW_AI_RUN_SINGLE_SCENE",
+    data: {
+      sceneIndex: idx,
+      imageUrl: sc.imageUrl,
+      prompt: sc.promptVideo,
+      duration: sc.duration,
+      aspectRatio: sc.aspectRatio || "9:16"
+    }
+  }, () => {
+    alert("🚀 Scene " + (idx+1) + " (" + groups[activeGroupIndex].name + ") terinjeksi ke Flow AI!");
+  });
+};
+
+function sendBrutalSingleToTab() {
+  const brutalState = groups[activeGroupIndex].brutalState;
+  const promptText = brutalState.prompt || "Generate high quality cinematic commercial video 4k 60fps";
+  const images = [brutalState.product, brutalState.model, brutalState.location].filter(Boolean);
+
+  sendSafeTabMessage({
+    action: "FLOW_AI_RUN_BRUTAL",
+    data: {
+      images: images,
+      productImg: brutalState.product,
+      modelImg: brutalState.model,
+      locationImg: brutalState.location,
+      prompt: promptText,
+      autoLoop: false
+    }
+  }, () => {
+    alert("🔥 Foto & Prompt " + groups[activeGroupIndex].name + " Terinjeksi ke Flow AI!");
+  });
+}
+
+function sendBrutalAllGroupsToTab(intervalSec) {
+  sendSafeTabMessage({
+    action: "FLOW_AI_RUN_ALL_GROUPS_BRUTAL",
+    data: {
+      groups: groups,
+      intervalSeconds: intervalSec
+    }
+  }, () => {
+    alert("🚀 Auto Generate Semua Kelompok dimulai dengan jeda " + intervalSec + "s!");
+  });
+}
+
+function sendStoryboardAllGroupsToTab(intervalSec) {
+  sendSafeTabMessage({
+    action: "FLOW_AI_RUN_ALL_GROUPS_STORYBOARD",
+    data: {
+      groups: groups,
+      intervalSeconds: intervalSec
+    }
+  }, () => {
+    alert("🚀 Auto Sequence Semua Kelompok dimulai dengan jeda " + intervalSec + "s!");
+  });
+}
+
+function saveAllJson() {
+  const data = {
+    app: "Flow AI Master Studio",
+    version: "15.0",
+    activeGroupIndex: activeGroupIndex,
+    groups: groups
+  };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "FlowAI-Prompts.json";
+  a.download = "FlowAI-Master-Data.json";
   a.click();
 }
 
 function copyAllPromptsText() {
-  const text = scenes.map((sc, i) => "[Scene " + (i+1) + " (" + sc.duration + "s)]: " + sc.promptVideo + "\nNarasi: \"" + sc.voiceover + "\"").join("\n\n");
+  let text = "";
+  const currentGroup = groups[activeGroupIndex];
+  if (currentMode === "brutal") {
+    text = "[" + currentGroup.name + "]: " + (currentGroup.brutalState.prompt || "");
+  } else {
+    text = currentGroup.scenes.map((s, i) => "[" + currentGroup.name + " - Scene " + (i+1) + " (" + s.duration + "s)]: " + (s.promptVideo || "") + "\nNarasi: \"" + (s.voiceover || "") + "\"").join("\n\n");
+  }
   navigator.clipboard.writeText(text);
-  alert("Semua Prompt Scene berhasil disalin ke Clipboard!");
-}
-
-function downloadAllAssets() {
-  savePromptsJson();
-  scenes.forEach((sc, idx) => {
-    setTimeout(() => {
-      window.downloadSingleImage(sc.imageUrl, idx + 1);
-    }, idx * 300);
-  });
-}
-
-function injectToActiveFlowTab() {
-  const fullScript = scenes.map((sc, i) => "[Scene " + (i+1) + " (" + sc.duration + "s)]: " + sc.promptVideo).join("\n");
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (!tabs || !tabs[0]) return;
-    chrome.scripting.executeScript({
-      target: { tabId: tabs[0].id },
-      func: (text) => {
-        const promptSelectors = [
-          'textarea[placeholder*="prompt" i]',
-          'textarea[placeholder*="describe" i]',
-          'textarea[placeholder*="video" i]',
-          'textarea[aria-label*="prompt" i]',
-          'textarea[aria-label*="describe" i]',
-          '[contenteditable="true"][role="textbox"]',
-          'div[contenteditable="true"]',
-          'textarea:not([type="search"]):not([placeholder*="search" i]):not([placeholder*="cari" i])'
-        ];
-        let target = null;
-        for (const s of promptSelectors) {
-          const els = Array.from(document.querySelectorAll(s)).filter(el => {
-            const ph = (el.getAttribute('placeholder') || '').toLowerCase();
-            const aria = (el.getAttribute('aria-label') || '').toLowerCase();
-            return !ph.includes('search') && !ph.includes('cari') && !aria.includes('search');
-          });
-          if (els.length > 0) { target = els[0]; break; }
-        }
-        if (target) {
-          target.focus();
-          if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
-            target.value = text;
-            target.dispatchEvent(new Event('input', { bubbles: true }));
-            target.dispatchEvent(new Event('change', { bubbles: true }));
-          } else {
-            target.innerText = text;
-            target.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: text }));
-          }
-          alert('✅ Prompt berhasil di-inject ke chat prompt Flow AI!');
-        } else {
-          navigator.clipboard.writeText(text);
-          alert('📋 Prompt disalin ke clipboard! Silakan paste langsung ke Flow AI.');
-        }
-      },
-      args: [fullScript]
-    });
-  });
+  alert("📋 Prompt " + currentGroup.name + " berhasil disalin!");
 }
 
 function saveState() {
   const state = {
-    title: document.getElementById("ext-product-title")?.value || "",
-    usp: document.getElementById("ext-product-usp")?.value || "",
-    duration: document.getElementById("ext-duration")?.value || "6",
-    model: document.getElementById("ext-ai-model")?.value || "omni-flash",
-    scenes: scenes,
-    images: uploadedImages
+    currentMode: currentMode,
+    activeGroupIndex: activeGroupIndex,
+    groups: groups
   };
-  chrome.storage?.local?.set({ "flow_ai_state_v4": state });
+  chrome.storage?.local?.set({ "flow_ai_master_v13_state": state });
 }
 
 function loadSavedState() {
-  chrome.storage?.local?.get(["flow_ai_state_v4"], (res) => {
-    if (res && res.flow_ai_state_v4) {
-      const st = res.flow_ai_state_v4;
-      if (st.title) document.getElementById("ext-product-title").value = st.title;
-      if (st.usp) document.getElementById("ext-product-usp").value = st.usp;
-      if (st.duration) document.getElementById("ext-duration").value = st.duration;
-      if (st.model) document.getElementById("ext-ai-model").value = st.model;
-      if (st.scenes && st.scenes.length > 0) {
-        scenes = st.scenes;
-        renderScenes();
+  chrome.storage?.local?.get(["flow_ai_master_v13_state"], (res) => {
+    if (res && res.flow_ai_master_v13_state) {
+      const st = res.flow_ai_master_v13_state;
+      if (st.currentMode) currentMode = st.currentMode;
+      if (st.groups && Array.isArray(st.groups) && st.groups.length > 0) {
+        groups = st.groups;
+        activeGroupIndex = Math.min(st.activeGroupIndex || 0, groups.length - 1);
       }
     }
+    renderGroupPills();
+    updateActiveGroupView();
   });
 }

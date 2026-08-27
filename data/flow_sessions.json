@@ -10,5 +10,16 @@
     "notes": "Akun Google utama untuk Flow AI Video Generator",
     "lastUsed": "2026-08-25T17:13:37.948Z",
     "createdAt": "2026-08-25T17:13:37.948Z"
+  },
+  {
+    "id": "flow-acc-1787678649451",
+    "email": "miftahulkhairim1@gmail.com",
+    "password": "",
+    "cookie": "",
+    "label": "Akun Google 2",
+    "quotaStatus": "ready",
+    "isActive": false,
+    "notes": "",
+    "createdAt": "2026-08-25T17:24:09.452Z"
   }
 ]
