@@ -1378,11 +1378,13 @@ Format response WAJIB berupa JSON valid murni dengan struktur spesifik berikut:
 
 // Vision AI Auto-Analyzer with Multimodal Google Gemini Vision
 app.post('/api/analyze-uploaded-visuals', async (req, res) => {
-  const { productImgBase64, modelImgBase64, locationImgBase64, currentTitle, targetType } = req.body;
+  const { productImgBase64, modelImgBase64, locationImgBase64, currentTitle, targetType, geminiApiKey } = req.body;
 
-  const keyToUse = process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'YOUR_GEMINI_API_KEY'
-    ? process.env.GEMINI_API_KEY
-    : (readJson(DB_SETTINGS).geminiApiKey || 'AIzaSyC5n4K5LAJEZM7IZbhenCUvQt18k-nd3Aw');
+  if (geminiApiKey && geminiApiKey.trim()) {
+    saveCustomApiKey(geminiApiKey.trim());
+  }
+
+  const keyToUse = (geminiApiKey && geminiApiKey.trim()) || getActiveGeminiKey();
 
   const hasImage = (productImgBase64 && productImgBase64.includes('base64,')) ||
                    (modelImgBase64 && modelImgBase64.includes('base64,')) ||

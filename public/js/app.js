@@ -1146,6 +1146,7 @@ async function triggerTargetVisionAnalysis(targetType) {
   }
 
   const currentTitle = document.getElementById("sb-product-title")?.value.trim() || "";
+  const directGeminiKey = (document.getElementById("feature-gemini-api-key") ? document.getElementById("feature-gemini-api-key").value.trim() : "") || localStorage.getItem("direct_gemini_api_key") || "";
 
   try {
     const res = await fetch("/api/analyze-uploaded-visuals", {
@@ -1156,7 +1157,8 @@ async function triggerTargetVisionAnalysis(targetType) {
         modelImgBase64: uploadedImages.model || null,
         locationImgBase64: uploadedImages.location || null,
         currentTitle: currentTitle,
-        targetType: targetType
+        targetType: targetType,
+        geminiApiKey: directGeminiKey
       })
     });
 
