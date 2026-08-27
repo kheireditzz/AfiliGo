@@ -1399,6 +1399,60 @@ async function generateStoryboardWithAI() {
   }
 }
 
+async function generateImageForSceneDirectly(sceneIdx) {
+  const scene = currentStoryboard.scenes[sceneIdx];
+  if (!scene) return;
+
+  const btn = document.getElementById(`btn-render-scene-${sceneIdx}`);
+  const promptInput = document.getElementById(`scene-prompt-input-${sceneIdx}`);
+  const promptText = (promptInput ? promptInput.value : scene.prompt) || scene.prompt;
+
+  if (!promptText) {
+    showToastNotification("warning", "Prompt Kosong", "Harap isi instruksi prompt visual terlebih dahulu.");
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-xs"></i> <span>Sedang Render Gemini...</span>`;
+  }
+
+  showToastNotification("info", "Memproses Gambar 9:16", `Menghubungkan ke Google Gemini Native Image untuk Scene ${sceneIdx + 1}...`);
+
+  try {
+    const res = await fetch("/api/generate-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: promptText })
+    });
+
+    const data = await res.json();
+
+    if (res.status === 429 || data.isQuotaLimit) {
+      showToastNotification("warning", "Batas Kuota Gemini", data.message || "Batas kuota gratis Gemini Image hari ini telah tercapai. Silakan coba beberapa saat lagi atau ganti API Key di Pengaturan.");
+      return;
+    }
+
+    if (!res.ok || !data.imageUrl) {
+      throw new Error(data.message || "Gagal membuat gambar dengan Google Gemini.");
+    }
+
+    scene.imageUrl = data.imageUrl;
+    scene.imagesList = [data.imageUrl];
+    renderStoryboardPreview();
+    triggerAutoSave();
+    showToastNotification("success", "Gambar 9:16 Berhasil!", `Visual Scene ${sceneIdx + 1} berhasil di-render oleh Google Gemini.`);
+  } catch (err) {
+    console.error("Direct Image Render Error:", err);
+    showToastNotification("error", "Gagal Render", err.message || "Kendala saat memproses gambar.");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fa-solid fa-image text-xs"></i> <span>Generate Gambar 9:16</span>`;
+    }
+  }
+}
+
 function selectScenePhoto(sceneIdx, photoIdx) {
   const scene = currentStoryboard.scenes[sceneIdx];
   if (!scene) return;
@@ -1461,92 +1515,79 @@ function renderStoryboardPreview() {
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
-          <!-- Left: 1 Single Image Split into 4 Panels (9:16 Vertical Strip) -->
+          <!-- Left: Frame 9:16 Vertical Smartphone Frame -->
           <div class="md:col-span-5 w-full space-y-2">
-            <div class="relative w-full rounded-2xl overflow-hidden bg-slate-950 aspect-[9/16] max-h-80 border-2 border-slate-700/90 shadow-2xl flex items-center justify-center mx-auto group">
+            <div class="relative w-full rounded-2xl overflow-hidden bg-slate-950 aspect-[9/16] max-h-[380px] border-2 ${hasGeneratedImage ? 'border-amber-500/80 shadow-[0_0_20px_rgba(245,158,11,0.2)]' : 'border-slate-800'} shadow-2xl flex items-center justify-center mx-auto group">
               ${hasGeneratedImage ? `
-                <img id="scene-img-${idx}" src="${safeImageUrl}" class="w-full h-full object-cover" alt="Scene Visual Strip">
-                <div class="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-black/85 text-[9px] font-mono text-cyan-300 border border-cyan-500/40 shadow-lg flex items-center gap-1.5 backdrop-blur-md">
-                  <i class="fa-solid fa-sparkles text-cyan-400 text-[8px]"></i> GEMINI AI IMAGE
+                <img id="scene-img-${idx}" src="${safeImageUrl}" class="w-full h-full object-cover" alt="Scene Visual 9:16">
+                <div class="absolute top-2 left-2 px-2.5 py-1 rounded-lg bg-black/85 text-[10px] font-mono text-amber-300 border border-amber-500/40 shadow-lg flex items-center gap-1.5 backdrop-blur-md">
+                  <i class="fa-solid fa-sparkles text-amber-400 text-[9px]"></i> 9:16 AI IMAGE
                 </div>
                 <div class="absolute inset-x-2 bottom-2 p-1.5 rounded-xl bg-black/90 border border-white/15 shadow-2xl flex items-center gap-1.5 z-10 backdrop-blur-md">
-                  <select id="select-ratio-${idx}" class="flex-1 bg-slate-900 border border-slate-700 text-amber-300 rounded-lg px-2 py-1 text-[9px] font-mono focus:outline-none focus:border-orange-500">
-                    <option value="9:16" selected>9:16 (Vertikal)</option>
-                    <option value="1:1">1:1 (Persegi)</option>
-                    <option value="16:9">16:9 (Landscape)</option>
-                    <option value="4:5">4:5 (Portrait)</option>
-                  </select>
-                  <button onclick="downloadSceneWithCustomSize('${safeImageUrl}', document.getElementById('select-ratio-${idx}').value, ${idx + 1})" class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] shadow flex items-center gap-1 transition flex-shrink-0" title="Unduh Lembar Storyboard">
+                  <button onclick="generateImageForSceneDirectly(${idx})" class="flex-1 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-[10px] font-mono transition flex items-center justify-center gap-1 border border-slate-700">
+                    <i class="fa-solid fa-rotate text-[9px] text-amber-400"></i> Render Ulang
+                  </button>
+                  <button onclick="downloadSceneWithCustomSize('${safeImageUrl}', '9:16', ${idx + 1})" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] font-display shadow flex items-center gap-1 transition flex-shrink-0">
                     <i class="fa-solid fa-download text-[9px]"></i>
                     <span>Unduh</span>
                   </button>
                 </div>
               ` : `
-                <div class="p-4 text-center space-y-2">
-                  <div class="w-10 h-10 rounded-full bg-slate-900 border border-cyan-500/30 flex items-center justify-center mx-auto text-cyan-400">
-                    <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+                <div class="p-4 text-center space-y-3 w-full">
+                  <div class="w-12 h-12 rounded-2xl bg-amber-950/40 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400 shadow-inner">
+                    <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
                   </div>
-                  <p class="text-xs font-bold text-slate-300 font-display">Prompt Siap Di-Render</p>
-                  <p class="text-[10px] text-slate-500 leading-tight">Gunakan Gemini Image atau salin prompt di bawah ke AI Image Generator pilihan Anda.</p>
+                  <div>
+                    <p class="text-xs font-bold text-slate-200 font-display">Format 9:16 Vertikal</p>
+                    <p class="text-[10px] text-slate-400 leading-tight mt-0.5">Siap render gambar untuk Scene ${idx + 1}</p>
+                  </div>
+                  <button id="btn-render-scene-${idx}" onclick="generateImageForSceneDirectly(${idx})" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 hover:opacity-90 active:scale-95 text-white font-bold text-xs font-display shadow-lg shadow-orange-950/50 flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-image text-xs"></i>
+                    <span>Generate Gambar 9:16</span>
+                  </button>
                 </div>
               `}
             </div>
 
-            <div class="p-2.5 rounded-xl bg-black/60 border border-slate-800 text-[10px] text-slate-400 text-center font-mono">
-              <i class="fa-solid fa-circle-info text-amber-400"></i> ${hasGeneratedImage ? 'Gambar asli hasil render Google Gemini AI.' : 'Hanya gambar asli dari API Key Gemini yang akan ditampilkan.'}
+            <div class="p-2 rounded-xl bg-black/60 border border-slate-800 text-[10px] text-slate-400 text-center font-mono flex items-center justify-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <span>Rasio Asli 9:16 (TikTok / Reels / Shopee)</span>
             </div>
           </div>
 
-          <!-- Right: 4 Sequential Sub-Panels + Voiceover + Video Prompt -->
+          <!-- Right: Prompt, Video & Voiceover Detail -->
           <div class="md:col-span-7 space-y-3">
-            <!-- 4 Continuous Action Sub-Panels List -->
-            <div class="space-y-1.5">
-              <span class="text-[10px] font-bold text-amber-300 font-mono flex items-center gap-1.5 uppercase">
-                <i class="fa-solid fa-layer-group text-orange-400"></i> 4 Bagian Aksi dalam 1 Gambar:
-              </span>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                ${panels.map(p => `
-                  <div class="p-2 rounded-xl bg-slate-900/90 border border-slate-800/90 space-y-0.5">
-                    <div class="flex items-center gap-1.5 text-[10px] font-bold text-cyan-300 font-mono">
-                      <span class="w-4 h-4 rounded-full bg-cyan-950 border border-cyan-500/50 flex items-center justify-center text-[9px] text-cyan-400 font-bold">${p.num}</span>
-                      <span>${p.title}</span>
-                    </div>
-                    <p class="text-[10px] text-slate-300 leading-snug">${p.desc}</p>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-
             <!-- Visual Strip Prompt -->
-            <div class="p-2.5 rounded-2xl bg-orange-950/20 border border-orange-500/30 space-y-1.5">
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1.5">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-bold text-amber-300 font-display flex items-center gap-1.5">
-                  <i class="fa-solid fa-sparkles text-orange-400"></i> Prompt 1 Gambar 4-Panel AI
+                  <i class="fa-solid fa-sparkles text-orange-400"></i> Prompt Visual Gambar (9:16)
                 </span>
                 <button onclick="copyPromptText('${encodedPrompt}')" class="text-[9px] text-slate-400 hover:text-amber-300 transition flex items-center gap-1 font-mono">
                   <i class="fa-solid fa-copy text-[8px]"></i> Salin Prompt
                 </button>
               </div>
-              <textarea id="scene-prompt-input-${idx}" rows="2" oninput="updateScenePrompt(${idx}, this.value)" class="w-full bg-slate-950/90 border border-slate-800 focus:border-amber-400 rounded-xl p-2 text-[10px] text-amber-200 font-mono focus:outline-none leading-relaxed transition" placeholder="Instruksi prompt gambar 4 panel...">${scene.prompt || ""}</textarea>
+              <textarea id="scene-prompt-input-${idx}" rows="3" oninput="updateScenePrompt(${idx}, this.value)" class="w-full bg-slate-950/90 border border-slate-800 focus:border-amber-400 rounded-xl p-2.5 text-[11px] text-amber-200 font-mono focus:outline-none leading-relaxed transition" placeholder="Instruksi prompt gambar...">${scene.prompt || ""}</textarea>
             </div>
 
             <!-- Video Prompt -->
-            <div class="space-y-0.5">
+            <div class="space-y-1">
               <span class="text-[9px] font-bold text-slate-400 uppercase font-mono flex items-center gap-1">
-                <i class="fa-solid fa-video text-cyan-400"></i> Prompt Video Generator (Kling / Flow / Veo)
+                <i class="fa-solid fa-video text-cyan-400"></i> Prompt Video Generator (Kling / Veo)
               </span>
               <input type="text" value="${scene.videoPrompt || scene.visualDescription || ''}" oninput="updateSceneVisualDesc(${idx}, this.value)" class="w-full bg-slate-950/80 border border-slate-800/80 focus:border-cyan-500 rounded-xl px-2.5 py-1.5 text-[11px] text-white placeholder-slate-500 focus:outline-none transition font-mono" placeholder="Prompt video AI generator...">
             </div>
 
             <!-- Voiceover Script -->
-            <div class="space-y-0.5">
+            <div class="space-y-1">
               <span class="text-[9px] font-bold text-slate-400 uppercase font-mono flex items-center gap-1">
-                <i class="fa-solid fa-microphone text-orange-400"></i> Naskah Voiceover (10 Detik)
+                <i class="fa-solid fa-microphone text-orange-400"></i> Naskah Voiceover Audio (${scene.durationSeconds || 5} Detik)
               </span>
-              <textarea rows="2" oninput="updateSceneVoiceover(${idx}, this.value)" class="w-full bg-slate-950/80 border border-slate-800/80 focus:border-amber-500 rounded-xl p-2 text-[11px] text-white placeholder-slate-500 focus:outline-none leading-relaxed transition" placeholder="Tuliskan naskah audio yang diucapkan...">${scene.voiceover || ''}</textarea>
+              <textarea rows="2" oninput="updateSceneVoiceover(${idx}, this.value)" class="w-full bg-slate-950/80 border border-slate-800/80 focus:border-amber-500 rounded-xl p-2.5 text-[11px] text-white placeholder-slate-500 focus:outline-none leading-relaxed transition" placeholder="Tuliskan naskah audio...">${scene.voiceover || ''}</textarea>
             </div>
           </div>
         </div>
+      </div>
       </div>
     `;
   }).join("");
