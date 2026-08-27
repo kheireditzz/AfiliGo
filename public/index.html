@@ -653,7 +653,9 @@
                   <span class="text-xs font-bold text-amber-300 font-display flex items-center gap-1.5">
                     <i class="fa-solid fa-cloud-arrow-up text-orange-400"></i> Upload & Crop Foto
                   </span>
-                  <span class="text-[10px] text-slate-400 font-mono">Klik foto untuk crop</span>
+                  <button type="button" onclick="openMediaGalleryModal('all')" class="text-[10px] text-amber-400 hover:text-amber-300 font-mono flex items-center gap-1 bg-slate-900 px-2 py-0.5 rounded-lg border border-amber-500/30">
+                    <i class="fa-solid fa-images text-[9px]"></i> Buka Galeri
+                  </button>
                 </div>
                 
                 <div class="grid grid-cols-3 gap-2 text-center">
@@ -667,6 +669,9 @@
                       </div>
                       <span id="btn-crop-product" onclick="event.stopPropagation(); reCropImage('product')" class="hidden absolute top-1 right-1 px-1.5 py-0.5 rounded-md bg-black/85 text-[9px] font-bold text-amber-300 border border-white/20 shadow"><i class="fa-solid fa-crop"></i></span>
                     </div>
+                    <div class="flex gap-1 justify-center">
+                      <button type="button" onclick="openMediaGalleryModal('product')" class="text-[9px] font-bold text-slate-400 hover:text-amber-300 bg-slate-900/90 px-1.5 py-0.5 rounded border border-slate-800 flex items-center gap-1" title="Pilih dari Galeri"><i class="fa-solid fa-images text-[8px]"></i> Galeri</button>
+                    </div>
                     <input type="file" id="file-input-product" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'product')">
                   </div>
 
@@ -679,6 +684,9 @@
                       </div>
                       <span id="btn-crop-model" onclick="event.stopPropagation(); reCropImage('model')" class="hidden absolute top-1 right-1 px-1.5 py-0.5 rounded-md bg-black/85 text-[9px] font-bold text-amber-300 border border-white/20 shadow"><i class="fa-solid fa-crop"></i></span>
                     </div>
+                    <div class="flex gap-1 justify-center">
+                      <button type="button" onclick="openMediaGalleryModal('model')" class="text-[9px] font-bold text-slate-400 hover:text-amber-300 bg-slate-900/90 px-1.5 py-0.5 rounded border border-slate-800 flex items-center gap-1" title="Pilih dari Galeri"><i class="fa-solid fa-images text-[8px]"></i> Galeri</button>
+                    </div>
                     <input type="file" id="file-input-model" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'model')">
                   </div>
 
@@ -690,6 +698,9 @@
                         <div class="text-[9px] font-bold text-slate-300">Foto Tempat</div>
                       </div>
                       <span id="btn-crop-location" onclick="event.stopPropagation(); reCropImage('location')" class="hidden absolute top-1 right-1 px-1.5 py-0.5 rounded-md bg-black/85 text-[9px] font-bold text-amber-300 border border-white/20 shadow"><i class="fa-solid fa-crop"></i></span>
+                    </div>
+                    <div class="flex gap-1 justify-center">
+                      <button type="button" onclick="openMediaGalleryModal('location')" class="text-[9px] font-bold text-slate-400 hover:text-amber-300 bg-slate-900/90 px-1.5 py-0.5 rounded border border-slate-800 flex items-center gap-1" title="Pilih dari Galeri"><i class="fa-solid fa-images text-[8px]"></i> Galeri</button>
                     </div>
                     <input type="file" id="file-input-location" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'location')">
                   </div>
@@ -1728,6 +1739,86 @@
         </button>
       </div>
 
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL RIWAYAT STORYBOARD DENGAN FITUR HAPUS -->
+  <!-- ========================================================== -->
+  <div id="history-modal" class="fixed inset-0 z-[10000] bg-black/80 hidden items-center justify-center p-3 sm:p-4">
+    <div class="w-full max-w-lg bg-[#0c101d] border border-orange-500/40 rounded-3xl p-5 sm:p-6 shadow-2xl shadow-black relative text-white space-y-4 max-h-[85vh] flex flex-col">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white text-xs shadow-md shadow-orange-500/20">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
+          <div>
+            <h3 id="history-modal-title" class="font-extrabold text-sm font-display text-white">Riwayat Storyboard AI</h3>
+            <p id="history-count-label" class="text-[10px] text-amber-300 font-mono">0 tersimpan</p>
+          </div>
+        </div>
+        <button onclick="closeHistoryModal()" class="w-7 h-7 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- History List -->
+      <div id="history-modal-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex justify-between items-center pt-2 flex-shrink-0 border-t border-slate-800">
+        <button onclick="clearAllStoryboardHistory()" class="px-3 py-1.5 rounded-xl bg-rose-950/80 hover:bg-rose-900 border border-rose-500/40 text-rose-300 font-bold text-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-trash-can text-xs"></i>
+          <span>Hapus Semua</span>
+        </button>
+        <button onclick="closeHistoryModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL GALERI GAMBAR TERSIMPAN (AMBIL TANPA UPLOAD ULANG) -->
+  <!-- ========================================================== -->
+  <div id="media-gallery-modal" class="fixed inset-0 z-[10000] bg-black/80 hidden items-center justify-center p-3 sm:p-4">
+    <div class="w-full max-w-xl bg-[#0c101d] border border-amber-500/40 rounded-3xl p-5 sm:p-6 shadow-2xl shadow-black relative text-white space-y-4 max-h-[85vh] flex flex-col">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white text-xs shadow-md shadow-orange-500/20">
+            <i class="fa-solid fa-images"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm font-display text-white">Galeri Foto Tersimpan</h3>
+            <p id="gallery-target-label" class="text-[10px] text-amber-300 font-mono">Pilih foto untuk dimasukkan</p>
+          </div>
+        </div>
+        <button onclick="closeMediaGalleryModal()" class="w-7 h-7 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Gallery Grid -->
+      <div id="media-gallery-grid" class="flex-1 overflow-y-auto grid grid-cols-3 sm:grid-cols-4 gap-2.5 p-1 custom-scrollbar">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex justify-between items-center pt-2 flex-shrink-0 border-t border-slate-800">
+        <button onclick="clearMediaGallery()" class="px-3 py-1.5 rounded-xl bg-rose-950/80 hover:bg-rose-900 border border-rose-500/40 text-rose-300 font-bold text-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-trash-can text-xs"></i>
+          <span>Bersihkan Galeri</span>
+        </button>
+        <button onclick="closeMediaGalleryModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition">
+          Tutup
+        </button>
+      </div>
     </div>
   </div>
 

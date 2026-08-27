@@ -1131,6 +1131,7 @@ function applyCrop() {
   }
 
   const targetJustUploaded = currentCropTarget;
+  saveImageToGallery(croppedDataUrl, targetJustUploaded);
   closeCropperModal();
   triggerTargetVisionAnalysis(targetJustUploaded);
   triggerAutoSave();
@@ -2053,105 +2054,51 @@ function useInStandalone(encodedPrompt) {
 }
 
 function openHistoryModal(type) {
-  currentActiveHistoryType = type;
+  currentActiveHistoryType = type || "storyboards";
   const modal = document.getElementById("history-modal");
+  if (!modal) return;
   modal.classList.remove("hidden");
   modal.classList.add("flex");
-  renderHistoryItems(type);
+  renderHistoryItems(currentActiveHistoryType);
 }
+
 function closeHistoryModal() {
   const modal = document.getElementById("history-modal");
+  if (!modal) return;
   modal.classList.add("hidden");
   modal.classList.remove("flex");
 }
+
 function renderHistoryItems(type) {
   const titleEl = document.getElementById("history-modal-title");
   const listEl = document.getElementById("history-modal-list");
   const countLabel = document.getElementById("history-count-label");
+  if (!listEl) return;
 
   if (type === "storyboards") {
-    titleEl.innerText = "Riwayat Storyboard AI";
-    countLabel.innerText = storyboardsCache.length + " Storyboard tersimpan";
+    if (titleEl) titleEl.innerText = "Riwayat Storyboard AI";
+    if (countLabel) countLabel.innerText = storyboardsCache.length + " Storyboard tersimpan";
     if (storyboardsCache.length === 0) {
       listEl.innerHTML = "<div class=\"text-center py-10 text-slate-500 text-xs\">Belum ada riwayat storyboard.</div>";
       return;
     }
     listEl.innerHTML = storyboardsCache.map(sb => {
-      const coverImg = (sb.scenes && sb.scenes[0] && sb.scenes[0].imageUrl) ? sb.scenes[0].imageUrl : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200";
-      return "<div class=\"p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 hover:border-orange-500/40 transition\">" +
-        "<div class=\"flex items-center gap-2.5 min-w-0 cursor-pointer\" onclick=\"viewHistoryItem(storyboard,  + sb.id + )\">" +
-          "<img src=\"" + coverImg + "\" class=\"w-10 h-10 rounded-xl object-cover border border-slate-700 flex-shrink-0\" onerror=\"this.src=https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200\">" +
-          "<div class=\"min-w-0 truncate\">" +
-            "<h4 class=\"font-bold text-white text-xs truncate hover:text-amber-300 transition\">" + sb.title + "</h4>" +
-            "<p class=\"text-[10px] text-slate-400 font-mono\">" + (sb.scenes ? sb.scenes.length : 0) + " Scenes &bull; " + (sb.totalDuration || 15) + "s</p>" +
-          "</div>" +
-        "</div>" +
-        "<div class=\"flex items-center gap-1.5 flex-shrink-0\">" +
-          "<button onclick=\"viewHistoryItem(storyboard,  + sb.id + )\" class=\"px-2.5 py-1 rounded-lg bg-orange-600/20 hover:bg-orange-600 text-amber-300 hover:text-white text-xs font-bold transition\">Lihat</button>" +
-          "<button onclick=\"deleteHistoryItem(storyboard,  + sb.id + )\" class=\"p-1.5 rounded-lg bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white text-xs transition\"><i class=\"fa-solid fa-trash\"></i></button>" +
-        "</div>" +
-      "</div>";
+      const coverImg = (sb.scenes && sb.scenes[0] && sb.scenes[0].imageUrl) ? sb.scenes[0].imageUrl : "https://img.icons8.com/color/96/film-reel.png";
+      const escapedId = "'" + sb.id + "'";
+      return `<div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 hover:border-orange-500/40 transition">
+        <div class="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1" onclick="viewHistoryItem('storyboard', ${escapedId})">
+          <img src="${coverImg}" class="w-10 h-10 rounded-xl object-cover border border-slate-700 flex-shrink-0" onerror="this.src='https://img.icons8.com/color/96/film-reel.png'">
+          <div class="min-w-0 truncate">
+            <h4 class="font-bold text-white text-xs truncate hover:text-amber-300 transition">${sb.title || 'Storyboard AI'}</h4>
+            <p class="text-[10px] text-slate-400 font-mono">${sb.scenes ? sb.scenes.length : 0} Scenes &bull; ${sb.totalDuration || 10}s</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <button onclick="viewHistoryItem('storyboard', ${escapedId})" class="px-2.5 py-1 rounded-lg bg-orange-600/20 hover:bg-orange-600 text-amber-300 hover:text-white text-xs font-bold transition">Buka</button>
+          <button onclick="deleteHistoryItem('storyboard', ${escapedId})" class="p-1.5 rounded-lg bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white text-xs transition" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>`;
     }).join("");
-  } else if (type === "products") {
-    titleEl.innerText = "Riwayat Database Produk";
-    countLabel.innerText = productsCache.length + " Produk tersimpan";
-    if (productsCache.length === 0) {
-      listEl.innerHTML = "<div class=\"text-center py-10 text-slate-500 text-xs\">Belum ada riwayat produk.</div>";
-      return;
-    }
-    listEl.innerHTML = productsCache.map(p => 
-      "<div class=\"p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 hover:border-emerald-500/40 transition\">" +
-        "<div class=\"min-w-0 truncate cursor-pointer\" onclick=\"viewHistoryItem(product,  + p.id + )\">" +
-          "<h4 class=\"font-bold text-white text-xs truncate hover:text-emerald-300 transition\">" + p.title + "</h4>" +
-          "<p class=\"text-[10px] text-slate-400 font-mono\">Rp " + Number(p.price).toLocaleString("id-ID") + " &bull; Komisi " + p.commissionRate + "%</p>" +
-        "</div>" +
-        "<div class=\"flex items-center gap-1.5 flex-shrink-0\">" +
-          "<button onclick=\"viewHistoryItem(product,  + p.id + )\" class=\"px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-bold transition\">Pilih</button>" +
-          "<button onclick=\"deleteHistoryItem(product,  + p.id + )\" class=\"p-1.5 rounded-lg bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white text-xs transition\"><i class=\"fa-solid fa-trash\"></i></button>" +
-        "</div>" +
-      "</div>"
-    ).join("");
-  } else if (type === "prompts") {
-    titleEl.innerText = "Riwayat Prompt Library";
-    countLabel.innerText = promptsCache.length + " Prompt tersimpan";
-    if (promptsCache.length === 0) {
-      listEl.innerHTML = "<div class=\"text-center py-10 text-slate-500 text-xs\">Belum ada riwayat prompt.</div>";
-      return;
-    }
-    listEl.innerHTML = promptsCache.map(p => 
-      "<div class=\"p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 hover:border-amber-500/40 transition\">" +
-        "<div class=\"min-w-0 truncate cursor-pointer\" onclick=\"viewHistoryItem(prompt,  + p.id + )\">" +
-          "<h4 class=\"font-bold text-white text-xs truncate hover:text-amber-300 transition\">" + p.title + "</h4>" +
-          "<p class=\"text-[10px] text-slate-400 font-mono truncate\">" + p.prompt + "</p>" +
-        "</div>" +
-        "<div class=\"flex items-center gap-1.5 flex-shrink-0\">" +
-          "<button onclick=\"viewHistoryItem(prompt,  + p.id + )\" class=\"px-2.5 py-1 rounded-lg bg-amber-600/20 hover:bg-amber-600 text-amber-300 hover:text-white text-xs font-bold transition\">Salin</button>" +
-          "<button onclick=\"deleteHistoryItem(prompt,  + p.id + )\" class=\"p-1.5 rounded-lg bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white text-xs transition\"><i class=\"fa-solid fa-trash\"></i></button>" +
-        "</div>" +
-      "</div>"
-    ).join("");
-  } else if (type === "standalone_renders") {
-    titleEl.innerText = "Riwayat Render Studio Foto";
-    countLabel.innerText = standaloneRendersCache.length + " Render tersimpan";
-    if (standaloneRendersCache.length === 0) {
-      listEl.innerHTML = "<div class=\"text-center py-10 text-slate-500 text-xs\">Belum ada riwayat render foto.</div>";
-      return;
-    }
-    listEl.innerHTML = standaloneRendersCache.map((r, idx) => 
-      "<div class=\"p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 hover:border-amber-500/40 transition\">" +
-        "<div class=\"flex items-center gap-2.5 min-w-0 cursor-pointer\" onclick=\"viewHistoryItem(render, " + idx + ")\">" +
-          "<img src=\"" + r.imageUrl + "\" class=\"w-10 h-10 rounded-xl object-cover border border-slate-700 flex-shrink-0\">" +
-          "<div class=\"min-w-0 truncate\">" +
-            "<h4 class=\"font-bold text-white text-xs truncate hover:text-amber-300 transition\">" + r.prompt + "</h4>" +
-            "<p class=\"text-[10px] text-slate-400 font-mono\">" + (r.time || "Baru saja") + "</p>" +
-          "</div>" +
-        "</div>" +
-        "<div class=\"flex items-center gap-1.5 flex-shrink-0\">" +
-          "<button onclick=\"downloadImageDirectly( + r.imageUrl + , render- + (idx + 1) + .jpg)\" class=\"p-1.5 rounded-lg bg-orange-600/20 hover:bg-orange-600 text-amber-300 hover:text-white text-xs transition\"><i class=\"fa-solid fa-download\"></i></button>" +
-          "<button onclick=\"deleteHistoryItem(render, " + idx + ")\" class=\"p-1.5 rounded-lg bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white text-xs transition\"><i class=\"fa-solid fa-trash\"></i></button>" +
-        "</div>" +
-      "</div>"
-    ).join("");
   }
 }
 
@@ -2159,37 +2106,169 @@ function viewHistoryItem(type, id) {
   closeHistoryModal();
   if (type === "storyboard") {
     loadAndEditStoryboard(id);
-  } else if (type === "product") {
-    useProductInStoryboard(id);
-  } else if (type === "prompt") {
-    const p = promptsCache.find(item => item.id === id);
-    if (p) copyPromptText(encodeURIComponent(p.prompt));
-  } else if (type === "render") {
-    const r = standaloneRendersCache[id];
-    if (r) {
-      selectMenu("ai-photo-generator");
-      document.getElementById("standalone-prompt").value = r.prompt;
-    }
   }
 }
 
 async function deleteHistoryItem(type, id) {
-  if (!confirm("Hapus item ini dari riwayat?")) return;
+  if (!confirm("Yakin ingin menghapus storyboard ini dari riwayat?")) return;
   if (type === "storyboard") {
     await deleteStoryboard(id);
     renderHistoryItems("storyboards");
-  } else if (type === "product") {
-    await deleteProduct(id);
-    renderHistoryItems("products");
-  } else if (type === "prompt") {
-    await fetch("/api/prompts/" + id, { method: "DELETE" });
-    await loadPrompts();
-    renderHistoryItems("prompts");
-  } else if (type === "render") {
-    standaloneRendersCache.splice(id, 1);
-    localStorage.setItem("affiliate_ai_renders_history", JSON.stringify(standaloneRendersCache));
-    renderHistoryItems("standalone_renders");
+    showToastNotification("success", "Terhapus", "Storyboard berhasil dihapus dari riwayat.");
   }
+}
+
+async function clearAllStoryboardHistory() {
+  if (storyboardsCache.length === 0) {
+    showToastNotification("info", "Kosong", "Tidak ada riwayat storyboard untuk dihapus.");
+    return;
+  }
+  if (!confirm("PERINGATAN: Hapus SEMUA riwayat storyboard yang tersimpan?")) return;
+  try {
+    for (const sb of storyboardsCache) {
+      await fetch("/api/storyboards/" + sb.id, { method: "DELETE" }).catch(() => {});
+    }
+    storyboardsCache = [];
+    localStorage.removeItem("affiliate_ai_current_storyboard");
+    renderHistoryItems("storyboards");
+    renderStoryboardsList();
+    showToastNotification("success", "Bersih", "Semua riwayat storyboard berhasil dihapus.");
+  } catch (e) {
+    console.error("Clear all history error:", e);
+  }
+}
+
+// ==========================================================
+// MEDIA GALLERY STORAGE SYSTEM (TANPA UPLOAD ULANG)
+// ==========================================================
+let currentGalleryTarget = 'all';
+
+function getSavedMediaGallery() {
+  try {
+    return JSON.parse(localStorage.getItem('affiliate_ai_saved_media_gallery')) || [];
+  } catch(e) {
+    return [];
+  }
+}
+
+function saveImageToGallery(imgDataUrl, category) {
+  if (!imgDataUrl || !imgDataUrl.startsWith('data:image')) return;
+  try {
+    let gallery = getSavedMediaGallery();
+    // Cegah duplikasi
+    const exists = gallery.some(item => item.url === imgDataUrl);
+    if (!exists) {
+      gallery.unshift({
+        id: 'media_' + Date.now(),
+        url: imgDataUrl,
+        category: category || 'general',
+        timestamp: new Date().toLocaleDateString('id-ID')
+      });
+      // Simpan max 30 foto terakhir
+      if (gallery.length > 30) gallery = gallery.slice(0, 30);
+      localStorage.setItem('affiliate_ai_saved_media_gallery', JSON.stringify(gallery));
+    }
+  } catch(e) {
+    console.warn("Storage full for media gallery:", e);
+  }
+}
+
+function openMediaGalleryModal(targetSlot) {
+  currentGalleryTarget = targetSlot || 'all';
+  const modal = document.getElementById('media-gallery-modal');
+  const label = document.getElementById('gallery-target-label');
+  if (!modal) return;
+
+  const targetNames = {
+    product: 'Pilih untuk Foto Produk',
+    model: 'Pilih untuk Foto Model',
+    location: 'Pilih untuk Foto Tempat',
+    all: 'Klik foto untuk langsung dipakai'
+  };
+  if (label) label.innerText = targetNames[currentGalleryTarget] || 'Pilih foto tersimpan';
+
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  renderMediaGalleryGrid();
+}
+
+function closeMediaGalleryModal() {
+  const modal = document.getElementById('media-gallery-modal');
+  if (!modal) return;
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+}
+
+function renderMediaGalleryGrid() {
+  const grid = document.getElementById('media-gallery-grid');
+  if (!grid) return;
+  const gallery = getSavedMediaGallery();
+
+  if (gallery.length === 0) {
+    grid.innerHTML = '<div class="col-span-full py-12 text-center text-slate-500 text-xs">Belum ada foto tersimpan. Foto yang Anda upload akan otomatis masuk ke sini agar tidak perlu upload ulang.</div>';
+    return;
+  }
+
+  grid.innerHTML = gallery.map((item, idx) => `
+    <div class="relative group rounded-2xl overflow-hidden aspect-square border border-slate-700 bg-slate-900 shadow hover:border-amber-400 transition cursor-pointer" onclick="selectImageFromGallery('${item.id}')">
+      <img src="${item.url}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+      <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-1.5">
+        <span class="px-2 py-1 rounded-lg bg-orange-600 text-white font-bold text-[10px] shadow">Pakai</span>
+      </div>
+      <button onclick="event.stopPropagation(); deleteGalleryImage('${item.id}')" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-lg bg-black/80 hover:bg-rose-600 text-slate-300 hover:text-white flex items-center justify-center text-[10px] transition shadow" title="Hapus Foto">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+      <span class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/75 text-[8px] font-mono text-amber-300 border border-white/10 uppercase">${item.category}</span>
+    </div>
+  `).join('');
+}
+
+function selectImageFromGallery(mediaId) {
+  const gallery = getSavedMediaGallery();
+  const item = gallery.find(g => g.id === mediaId);
+  if (!item) return;
+
+  const target = (currentGalleryTarget && currentGalleryTarget !== 'all') ? currentGalleryTarget : (item.category || 'product');
+  
+  uploadedImages[target] = item.url;
+  rawImages[target] = item.url;
+
+  const thumb = document.getElementById("img-thumb-" + target);
+  const placeholder = document.getElementById("placeholder-" + target);
+  const cropBtn = document.getElementById("btn-crop-" + target);
+  const badge = document.getElementById("badge-has-" + target);
+
+  if (thumb) {
+    thumb.src = item.url;
+    thumb.classList.remove("hidden");
+  }
+  if (placeholder) placeholder.classList.add("hidden");
+  if (cropBtn) cropBtn.classList.remove("hidden");
+  if (badge) {
+    badge.classList.remove("bg-slate-800", "text-slate-500");
+    badge.classList.add("bg-emerald-950/80", "text-emerald-300", "border-emerald-500/50");
+    badge.innerHTML = "<i class=\"fa-solid fa-check text-[8px]\"></i> " + (target.charAt(0).toUpperCase() + target.slice(1)) + " Ready";
+  }
+
+  closeMediaGalleryModal();
+  triggerTargetVisionAnalysis(target);
+  triggerAutoSave();
+  showToastNotification("success", "Foto Terpasang", `Foto dari galeri berhasil dipasang ke slot ${target.toUpperCase()} tanpa perlu upload ulang.`);
+}
+
+function deleteGalleryImage(mediaId) {
+  let gallery = getSavedMediaGallery();
+  gallery = gallery.filter(g => g.id !== mediaId);
+  localStorage.setItem('affiliate_ai_saved_media_gallery', JSON.stringify(gallery));
+  renderMediaGalleryGrid();
+  showToastNotification("info", "Foto Dihapus", "Foto berhasil dihapus dari galeri.");
+}
+
+function clearMediaGallery() {
+  if (!confirm("Hapus semua foto yang tersimpan di galeri?")) return;
+  localStorage.removeItem('affiliate_ai_saved_media_gallery');
+  renderMediaGalleryGrid();
+  showToastNotification("success", "Galeri Bersih", "Seluruh foto di galeri telah dibersihkan.");
 }
 
 async function loadSettings() {
