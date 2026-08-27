@@ -1474,6 +1474,7 @@ function renderStoryboardPreview() {
     return;
   }
 
+  container.innerHTML = currentStoryboard.scenes.map((scene, idx) => {
     const encodedPrompt = encodeURIComponent(scene.prompt || "");
     const encodedVideoPrompt = encodeURIComponent(scene.videoPrompt || scene.visualDescription || "");
     const isConnected = idx > 0;
