@@ -1177,7 +1177,7 @@ async function triggerTargetVisionAnalysis(targetType) {
           uspEl.classList.add("ring-2", "ring-emerald-400/50", "border-emerald-400");
           setTimeout(() => uspEl.classList.remove("ring-2", "ring-emerald-400/50", "border-emerald-400"), 4000);
         }
-        showToastNotification("success", "Produk Terdeteksi!", `Nama & USP terisi: "${data.suggestedTitle || 'Produk'}"`);
+        showToastNotification("success", "Produk Terdeteksi!", `Gemini Vision mendeteksi: "${data.suggestedTitle || 'Produk'}"`);
       }
 
       if (targetType === "model" || (!targetType && uploadedImages.model)) {
@@ -1205,10 +1205,14 @@ async function triggerTargetVisionAnalysis(targetType) {
         setTimeout(() => badge.classList.add("hidden"), 3000);
       }
       triggerAutoSave();
+    } else {
+      if (badge) badge.classList.add("hidden");
+      showToastNotification("warning", "Analisa Visual", "Silakan klik ikon API Key di atas kanan untuk memastikan Google API Key Anda sudah aktif.");
     }
   } catch (err) {
     console.error("Target vision analysis error:", err);
     if (badge) badge.classList.add("hidden");
+    showToastNotification("warning", "Vision AI Offline", "Pastikan koneksi internet stabil & Google API Key sudah disimpan.");
   }
 }
 
