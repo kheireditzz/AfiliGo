@@ -1145,17 +1145,17 @@ async function triggerTargetVisionAnalysis(targetType) {
     badge.classList.remove("hidden");
   }
 
-  const currentTitle = document.getElementById("sb-product-title")?.value.trim() || "";
-  const directGeminiKey = (document.getElementById("feature-gemini-api-key") ? document.getElementById("feature-gemini-api-key").value.trim() : "") || localStorage.getItem("direct_gemini_api_key") || "";
+  const targetImage = uploadedImages[targetType];
+  if (!targetImage) return;
 
   try {
     const res = await fetch("/api/analyze-uploaded-visuals", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        productImgBase64: uploadedImages.product || null,
-        modelImgBase64: uploadedImages.model || null,
-        locationImgBase64: uploadedImages.location || null,
+        productImgBase64: targetType === "product" ? targetImage : (uploadedImages.product || null),
+        modelImgBase64: targetType === "model" ? targetImage : (uploadedImages.model || null),
+        locationImgBase64: targetType === "location" ? targetImage : (uploadedImages.location || null),
         currentTitle: currentTitle,
         targetType: targetType,
         geminiApiKey: directGeminiKey
