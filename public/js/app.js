@@ -1341,6 +1341,8 @@ async function generateStoryboardWithAI() {
   renderStoryboardSkeletonLoading(numScenes);
 
   try {
+    const directGeminiKey = (document.getElementById("feature-gemini-api-key") ? document.getElementById("feature-gemini-api-key").value.trim() : "") || localStorage.getItem("direct_gemini_api_key") || "";
+
     const res = await fetch("/api/generate-storyboard-ai", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1353,7 +1355,8 @@ async function generateStoryboardWithAI() {
         promptsPerScene, 
         duration, 
         platform,
-        gridLayout
+        gridLayout,
+        geminiApiKey: directGeminiKey
       })
     });
 
@@ -2191,6 +2194,12 @@ async function deleteHistoryItem(type, id) {
 
 async function loadSettings() {
   try {
+    const localKey = localStorage.getItem("direct_gemini_api_key") || "";
+    const directInput = document.getElementById("feature-gemini-api-key");
+    if (directInput && localKey) {
+      directInput.value = localKey;
+    }
+
     const res = await fetch("/api/settings");
     const settings = await res.json();
     const geminiInput = document.getElementById("setting-gemini-key");
@@ -2199,6 +2208,10 @@ async function loadSettings() {
       geminiInput.placeholder = settings.geminiApiKey;
       if (!geminiInput.value) geminiInput.value = settings.geminiApiKey;
     }
+    if (directInput && !directInput.value && settings.geminiApiKey) {
+      directInput.value = settings.geminiApiKey;
+      localStorage.setItem("direct_gemini_api_key", settings.geminiApiKey);
+    }
     if (hfInput && settings.huggingFaceKey) {
       hfInput.placeholder = settings.huggingFaceKey;
       if (!hfInput.value) hfInput.value = settings.huggingFaceKey;
@@ -2206,9 +2219,50 @@ async function loadSettings() {
   } catch (err) { console.error("Error loading settings:", err); }
 }
 
+let saveDirectKeyDebounce = null;
+function saveDirectApiKey(keyValue) {
+  const cleanKey = keyValue.trim();
+  localStorage.setItem("direct_gemini_api_key", cleanKey);
+  
+  const badge = document.getElementById("autosave-status-badge");
+  if (badge) {
+    badge.classList.remove("hidden");
+    setTimeout(() => { badge.classList.add("hidden"); }, 2000);
+  }
+
+  clearTimeout(saveDirectKeyDebounce);
+  saveDirectKeyDebounce = setTimeout(async () => {
+    try {
+      await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ geminiApiKey: cleanKey })
+      });
+      activeUserHasApiKey = !!cleanKey;
+      loadGeminiKeysPool();
+    } catch (e) {
+      console.warn("Direct key background sync error:", e);
+    }
+  }, 800);
+}
+
+function toggleDirectApiKeyVisibility() {
+  const input = document.getElementById("feature-gemini-api-key");
+  const eye = document.getElementById("eye-icon-direct-key");
+  if (!input) return;
+  if (input.type === "password") {
+    input.type = "text";
+    if (eye) { eye.classList.remove("fa-eye"); eye.classList.add("fa-eye-slash"); }
+  } else {
+    input.type = "password";
+    if (eye) { eye.classList.remove("fa-eye-slash"); eye.classList.add("fa-eye"); }
+  }
+}
+
 async function saveSettings() {
-  const geminiApiKey = document.getElementById("setting-gemini-key").value.trim();
-  const huggingFaceKey = document.getElementById("setting-hf-key").value.trim();
+  const directInput = document.getElementById("feature-gemini-api-key");
+  const geminiApiKey = (directInput ? directInput.value.trim() : "") || (document.getElementById("setting-gemini-key") ? document.getElementById("setting-gemini-key").value.trim() : "");
+  const huggingFaceKey = document.getElementById("setting-hf-key") ? document.getElementById("setting-hf-key").value.trim() : "";
   try {
     const res = await fetch("/api/settings", {
       method: "POST",

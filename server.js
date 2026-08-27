@@ -1783,8 +1783,13 @@ const handleGenerateStoryboard = async (req, res) => {
     promptsPerScene = 1,
     duration = 10,
     platform = 'TikTok / Reels / Shopee Video (9:16)',
-    gridLayout = '4_grid_2x2'
+    gridLayout = '4_grid_2x2',
+    geminiApiKey = ''
   } = req.body;
+
+  if (geminiApiKey && geminiApiKey.trim()) {
+    saveCustomApiKey(geminiApiKey.trim());
+  }
 
   const targetSceneCount = parseInt(numScenes) || 2;
   const targetDuration = parseInt(duration) || 10;

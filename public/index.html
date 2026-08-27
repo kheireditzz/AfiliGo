@@ -548,11 +548,7 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <button id="header-btn-settings" onclick="selectMenu('settings')" class="w-9 h-9 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-amber-300 shadow transition" title="Pengaturan API & Akun">
-          <i class="fa-solid fa-sliders text-sm"></i>
-        </button>
-
-        <button id="header-btn-create" onclick="selectMenu('storyboard-creator')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow-md shadow-orange-600/30 transition">
+        <button id="header-btn-create" onclick="selectMenu('storyboard-creator')" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow-md shadow-orange-600/30 transition">
           <i class="fa-solid fa-wand-magic-sparkles text-[11px]"></i>
           <span>Storyboard AI</span>
         </button>
@@ -605,11 +601,6 @@
         </div>
 
         <div class="pt-4 border-t border-slate-800/80 space-y-3">
-          <button onclick="selectMenu('settings')" id="nav-settings" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 font-semibold text-xs transition">
-            <i class="fa-solid fa-sliders w-4 text-center text-orange-400 text-sm"></i>
-            <span>Pengaturan API & Akun</span>
-          </button>
-
           <button onclick="handleLogout()" class="w-full py-2.5 rounded-xl bg-slate-850 hover:bg-rose-950/50 border border-slate-800 hover:border-rose-500/50 text-slate-400 hover:text-rose-300 font-bold text-xs transition flex items-center justify-center gap-2">
             <i class="fa-solid fa-arrow-right-from-bracket text-xs text-rose-400"></i>
             <span>Logout</span>
@@ -625,17 +616,27 @@
         <!-- ============================================== -->
         <div id="tab-storyboard-creator" class="tab-content space-y-2">
           
-          <div class="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-1 pt-0 mb-1">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-2 pt-0 mb-1">
             <h2 class="text-base sm:text-lg font-bold text-white font-display flex items-center gap-2">
               <i class="fa-solid fa-clapperboard text-orange-400 text-sm"></i>
-              Storyboard Studio
+              <span>Storyboard Studio</span>
             </h2>
             
-            <div class="flex items-center gap-2">
+            <!-- API KEY INPUT LANGSUNG DI POJOK KANAN ATAS FITUR -->
+            <div class="flex items-center gap-2 flex-1 sm:flex-initial justify-end">
+              <div class="relative flex items-center max-w-[220px] sm:max-w-[260px] w-full">
+                <i class="fa-solid fa-key absolute left-2.5 text-amber-400 text-xs pointer-events-none"></i>
+                <input type="password" id="feature-gemini-api-key" placeholder="Isi Gemini API Key..." oninput="saveDirectApiKey(this.value)" class="w-full bg-slate-950 border border-orange-500/50 rounded-xl pl-7 pr-7 py-1.5 text-xs text-white placeholder-slate-500 font-mono focus:border-amber-400 focus:outline-none shadow-inner" title="Gemini API Key tersimpan otomatis di browser">
+                <button type="button" onclick="toggleDirectApiKeyVisibility()" class="absolute right-2 text-slate-400 hover:text-amber-300 text-xs">
+                  <i id="eye-icon-direct-key" class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+
               <span id="autosave-status-badge" class="hidden text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                <i class="fa-solid fa-check text-emerald-400"></i> Otomatis Tersimpan
+                <i class="fa-solid fa-check text-emerald-400"></i> Tersimpan
               </span>
-              <button onclick="openHistoryModal('storyboards')" class="w-8 h-8 rounded-xl bg-slate-900/90 hover:bg-orange-600/30 text-amber-300 border border-orange-500/30 flex items-center justify-center transition active:scale-95 shadow" title="Riwayat Storyboard">
+              
+              <button onclick="openHistoryModal('storyboards')" class="w-8 h-8 rounded-xl bg-slate-900/90 hover:bg-orange-600/30 text-amber-300 border border-orange-500/30 flex items-center justify-center transition active:scale-95 shadow flex-shrink-0" title="Riwayat Storyboard">
                 <i class="fa-solid fa-clock-rotate-left text-xs"></i>
               </button>
             </div>
