@@ -590,95 +590,20 @@
             </div>
           </div>
 
-          <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 font-mono">Control Center</div>
+          <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 font-mono">AI Studio Navigation</div>
           
           <div class="space-y-1.5">
-            <button onclick="selectMenu('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 font-semibold text-xs transition">
-              <i class="fa-solid fa-chart-pie w-4 text-center text-amber-400 text-sm"></i>
-              <span>Dashboard Utama</span>
-            </button>
-
-            <button onclick="selectMenu('storyboard-creator')" id="nav-storyboard-creator" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 font-semibold text-xs transition">
+            <button onclick="selectMenu('storyboard-creator')" id="nav-storyboard-creator" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-orange-950/60 text-amber-300 border border-orange-500/40 font-bold text-xs transition shadow-sm">
               <i class="fa-solid fa-clapperboard w-4 text-center text-orange-400 text-sm"></i>
-              <span>AI Storyboard & Foto</span>
+              <span>AI Storyboard Studio</span>
             </button>
 
             <button onclick="selectMenu('storyboard-list')" id="nav-storyboard-list" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 font-semibold text-xs transition">
               <i class="fa-solid fa-film w-4 text-center text-amber-300 text-sm"></i>
-              <span>Galeri Storyboard</span>
-            </button>
-
-            <!-- AI CHAT GATEWAY (GEMINI 2.5 PRO / FLASH - PER-USER API KEY) -->
-            <button onclick="selectMenu('gemini-chat')" id="nav-gemini-chat" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 font-semibold text-xs transition">
-              <div class="flex items-center gap-3">
-                <i class="fa-solid fa-comments w-4 text-center text-cyan-400 text-sm"></i>
-                <span class="font-bold">Gemini AI Gateway</span>
-              </div>
-              <span class="px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 text-[8px] font-mono font-bold border border-cyan-500/30">
-                2.5 PRO
-              </span>
-            </button>
-
-            <!-- VIP LOCKED FEATURE: Database Produk -->
-            <button onclick="checkAndOpenVipMenu('product-db')" id="nav-product-db" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 font-semibold text-xs transition">
-              <div class="flex items-center gap-3">
-                <i class="fa-solid fa-boxes-stacked w-4 text-center text-emerald-400 text-sm"></i>
-                <span>Database Produk</span>
-              </div>
-              <span id="lock-badge-product-db" class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[9px] font-black font-mono border border-amber-500/30 flex items-center gap-1">
-                <i class="fa-solid fa-lock text-[8px]"></i> VIP
-              </span>
-            </button>
-
-            <!-- VIP LOCKED FEATURE: Prompt Library -->
-            <button onclick="checkAndOpenVipMenu('prompt-library')" id="nav-prompt-library" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 font-semibold text-xs transition">
-              <div class="flex items-center gap-3">
-                <i class="fa-solid fa-book-bookmark w-4 text-center text-orange-400 text-sm"></i>
-                <span>Prompt Library</span>
-              </div>
-              <span id="lock-badge-prompt-library" class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[9px] font-black font-mono border border-amber-500/30 flex items-center gap-1">
-                <i class="fa-solid fa-lock text-[8px]"></i> VIP
-              </span>
-            </button>
-
-            <!-- VIP LOCKED FEATURE: Studio Foto AI -->
-            <button onclick="checkAndOpenVipMenu('ai-photo-generator')" id="nav-ai-photo-generator" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 font-semibold text-xs transition">
-              <div class="flex items-center gap-3">
-                <i class="fa-solid fa-camera-retro w-4 text-center text-amber-400 text-sm"></i>
-                <span>Studio Foto AI</span>
-              </div>
-              <span id="lock-badge-ai-photo-generator" class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[9px] font-black font-mono border border-amber-500/30 flex items-center gap-1">
-                <i class="fa-solid fa-lock text-[8px]"></i> VIP
-              </span>
+              <span>Riwayat Storyboard</span>
             </button>
           </div>
 
-          <!-- VIP Upgrade Banner in Drawer -->
-          <div id="drawer-vip-card" class="p-3.5 rounded-2xl bg-gradient-to-r from-amber-950/70 via-orange-950/50 to-slate-900 border border-amber-500/40 space-y-2.5 shadow">
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] font-black uppercase text-amber-300 font-display flex items-center gap-1">
-                <i class="fa-solid fa-crown text-amber-400"></i> Akun VIP Pro
-              </span>
-              <span id="drawer-vip-badge" class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[9px] font-extrabold font-mono border border-amber-500/40">Rp 25.000</span>
-            </div>
-
-            <!-- Dynamic 30-Day Realtime Countdown Timer Bar (Hidden until VIP activated) -->
-            <div id="vip-countdown-container" class="hidden p-2.5 rounded-xl bg-black/80 border border-amber-500/30 space-y-1">
-              <div class="flex items-center justify-between text-[9px] font-mono">
-                <span class="text-amber-400 font-bold flex items-center gap-1"><i class="fa-solid fa-stopwatch"></i> Sisa Masa Aktif:</span>
-                <span id="vip-timer-days-badge" class="text-emerald-400 font-black">30 Hari</span>
-              </div>
-              <div id="vip-timer-clock" class="text-xs font-black text-amber-300 font-mono text-center tracking-wider pt-0.5">
-                29h 23j 59m 59d
-              </div>
-            </div>
-
-            <p id="drawer-vip-desc" class="text-[10px] text-slate-300 leading-relaxed">Buka semua fitur Studio Foto AI, Database Produk & Prompt Library tanpa batas selama 30 Hari.</p>
-            
-            <button onclick="openVipPaymentModal()" id="btn-drawer-upgrade-vip" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-extrabold text-[11px] font-display shadow flex items-center justify-center gap-1.5 transition">
-              <i class="fa-solid fa-qrcode text-[10px]"></i>
-              <span>Upgrade VIP (Rp 25.000)</span>
-            </button>
           </div>
         </div>
 
