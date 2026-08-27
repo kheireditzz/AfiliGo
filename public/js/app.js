@@ -1314,7 +1314,8 @@ async function generateStoryboardWithAI() {
   const numScenes = document.getElementById("sb-scene-count").value;
   const promptsPerScene = document.getElementById("sb-prompt-count").value;
   const duration = document.getElementById("sb-duration-select").value;
-  const platform = document.getElementById("sb-platform").value;
+  const platform = document.getElementById("sb-platform") ? document.getElementById("sb-platform").value : "TikTok / Reels (9:16)";
+  const gridLayout = document.getElementById("sb-grid-layout") ? document.getElementById("sb-grid-layout").value : "4_grid_2x2";
 
   if (!title) {
     const productInput = document.getElementById("input-product-name") || document.getElementById("sb-product-title");
@@ -1340,7 +1341,6 @@ async function generateStoryboardWithAI() {
   renderStoryboardSkeletonLoading(numScenes);
 
   try {
-    // Generate Storyboard with Antigravity / Gemini 2.5 Pro (Runs until completed)
     const res = await fetch("/api/generate-storyboard-ai", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1352,7 +1352,8 @@ async function generateStoryboardWithAI() {
         numScenes, 
         promptsPerScene, 
         duration, 
-        platform 
+        platform,
+        gridLayout
       })
     });
 

@@ -1782,7 +1782,8 @@ const handleGenerateStoryboard = async (req, res) => {
     numScenes = 2, 
     promptsPerScene = 1,
     duration = 10,
-    platform = 'TikTok / Reels / Shopee Video (9:16)'
+    platform = 'TikTok / Reels / Shopee Video (9:16)',
+    gridLayout = '4_grid_2x2'
   } = req.body;
 
   const targetSceneCount = parseInt(numScenes) || 2;
@@ -1793,23 +1794,53 @@ const handleGenerateStoryboard = async (req, res) => {
   const locationText = locationSetting || 'Modern Minimalist Aesthetic Room with warm soft ambient lighting';
   const uspText = usp || 'Desain ergonomis elegan, build quality premium, performa tinggi tahan lama, cocok untuk gaya hidup modern.';
 
-  const promptForGemini = `Kamu adalah AI Director & Lead Prompt Engineer profesional untuk iklan affiliate video pendek (${platform}).
+  let layoutInstruction = '';
+  let layoutExample = '';
+
+  if (gridLayout === '4_grid_2x2') {
+    layoutInstruction = `1 (SATU) prompt gambar AI (aspect ratio 9:16 vertical) yang merupakan 1 LEMBAR GAMBAR GRID 2x2 (TERBAGI 4 KOTAK PANEL):
+- Kotak 1: Atas Kiri (Top-Left)
+- Kotak 2: Atas Kanan (Top-Right)
+- Kotak 3: Bawah Kiri (Bottom-Left)
+- Kotak 4: Bawah Kanan (Bottom-Right)
+Dipisahkan oleh garis batas putih tipis dan rapi, menampilkan urutan aksi berkesinambungan dengan karakter talent (${modelText}) dan latar (${locationText}) yang 100% konsisten identik.`;
+
+    layoutExample = `A single 9:16 vertical commercial storyboard sheet in a 2x2 grid matrix layout (4 panels) separated by crisp thin white border lines labeled 1, 2, 3, 4:
+- Panel 1 (Top-Left): ${modelText} in ${locationText} facing the camera with an intriguing hook expression
+- Panel 2 (Top-Right): ${modelText} in ${locationText} actively walking and holding ${productTitle}
+- Panel 3 (Bottom-Left): ${modelText} showing extreme close-up detail of ${productTitle} with ${uspText}
+- Panel 4 (Bottom-Right): ${modelText} giving a confident smile and pointing towards the shopping checkout cart
+Style: Ultra-sharp commercial advertising photography, 8k UHD resolution, studio soft lighting, consistent character face and outfit across all 4 grid panels, cinematic film still, --ar 9:16`;
+  } else if (gridLayout === '6_grid_2x3') {
+    layoutInstruction = `1 (SATU) prompt gambar AI (aspect ratio 9:16 vertical) berupa 1 LEMBAR GRID 2 KOLOM x 3 BARIS (TOTAL 6 PANEL):
+- Baris 1: Kotak 1 (Atas Kiri), Kotak 2 (Atas Kanan)
+- Baris 2: Kotak 3 (Tengah Kiri), Kotak 4 (Tengah Kanan)
+- Baris 3: Kotak 5 (Bawah Kiri), Kotak 6 (Bawah Kanan)
+Semua panel konsisten dengan talent (${modelText}) dan lokasi (${locationText}).`;
+
+    layoutExample = `A single 9:16 vertical commercial storyboard contact sheet in a 2x3 grid matrix (6 panels) separated by clean white border lines labeled 1 to 6 showing sequential progressive action of identical talent (${modelText}) in (${locationText}) with (${productTitle}), 8k photorealistic, --ar 9:16`;
+  } else if (gridLayout === '8_grid_2x4') {
+    layoutInstruction = `1 (SATU) prompt gambar AI (aspect ratio 9:16 vertical) berupa 1 LEMBAR GRID 2 KOLOM x 4 BARIS (TOTAL 8 PANEL GRID):
+Panel 1-2 di baris teratas, Panel 3-4 di baris kedua, Panel 5-6 di baris ketiga, Panel 7-8 di baris paling bawah.
+Semua panel konsisten dengan talent (${modelText}) dan lokasi (${locationText}).`;
+
+    layoutExample = `A single 9:16 vertical commercial storyboard contact sheet in a 2x4 grid matrix (8 panels) separated by clean white border lines labeled 1 to 8 showing sequential progressive action of identical talent (${modelText}) in (${locationText}) with (${productTitle}), 8k photorealistic, --ar 9:16`;
+  } else {
+    layoutInstruction = `1 (SATU) prompt gambar tunggal beresolusi tinggi (Single Shot 9:16) memperlihatkan talent (${modelText}) dengan produk (${productTitle}) di (${locationText}).`;
+    layoutExample = `Commercial product photography of ${modelText} holding ${productTitle} in ${locationText}, highlighting ${uspText}, 8k photorealistic, sharp focus, --ar 9:16`;
+  }
+
+  const promptForGemini = `Kamu adalah AI Director & Lead Prompt Engineer profesional untuk video iklan affiliate pendek (${platform}).
 Tugasmu adalah membuat naskah storyboard sebanyak ${targetSceneCount} Scene untuk produk: ${productTitle} (${uspText}).
 Setting & Karakter:
 - Karakter/Talent: ${modelText}
 - Lokasi: ${locationText}
 
-ATURAN STRUKTUR PROMPT GAMBAR (STORYBOARD MULTI-PANEL 9:16):
-Setiap scene HARUS memiliki 1 (SATU) prompt gambar AI (aspect ratio 9:16 vertical) yang merupakan 1 LEMBAR GAMBAR TERBAGI MENJADI 4 PANEL HORIZONTAL BERTINGKAT (susun dari atas ke bawah: Panel 1, Panel 2, Panel 3, Panel 4).
-Karakter, pakaian/outfit, wajah, pencahayaan, dan latar tempat HARUS 100% IDENTIK & KONSISTEN di semua panel.
+ATURAN STRUKTUR PROMPT GAMBAR:
+${layoutInstruction}
 
-Format Prompt Gambar Wajib:
-"A single 9:16 vertical commercial storyboard sheet divided into 4 horizontal stacked panels from top to bottom separated by thin clean borders labeled 1, 2, 3, 4, showing sequential action of identical talent (${modelText}) in (${locationText}):
-- Panel 1 (Hook Action): [Aksi 1: Karakter melakukan apa dengan ekspresi menarik]
-- Panel 2 (Movement): [Aksi 2: Karakter bergerak/berjalan]
-- Panel 3 (Product Showcase): [Aksi 3: Karakter memperlihatkan ${productTitle} dengan antusias]
-- Panel 4 (Call to Action / Transition): [Aksi 4: Karakter berpose mengajak checkout atau tersenyum ke kamera]
-Style: High-end commercial photography, photorealistic 8k, consistent lighting, clean grid layout, cinematic film still, --ar 9:16"
+Contoh Format Prompt Gambar yang Dihasilkan:
+"${layoutExample}"
 
 KEMBALIKAN OUTPUT DALAM FORMAT JSON BERIKUT:
 {
@@ -1821,13 +1852,13 @@ KEMBALIKAN OUTPUT DALAM FORMAT JSON BERIKUT:
   "scenes": [
     {
       "sceneNumber": 1,
-      "shotType": "Scene 1: Hook & Pengenalan Produk",
+      "shotType": "Scene 1: Hook & Pengenalan",
       "durationSeconds": ${perSceneDuration},
       "aspectRatio": "9:16",
       "voiceover": "Naskah audio yang diucapkan talent dalam Bahasa Indonesia",
-      "visualDescription": "Deskripsi visual urutan 4 panel",
+      "visualDescription": "Deskripsi aksi per panel grid",
       "videoPrompt": "Cinematic commercial video prompt for Kling / Veo, 9:16 vertical",
-      "prompt": "A single 9:16 vertical commercial storyboard sheet divided into 4 horizontal stacked panels from top to bottom separated by thin clean borders labeled 1, 2, 3, 4, showing sequential action of identical talent (${modelText}) in (${locationText}): Panel 1 (...), Panel 2 (...), Panel 3 (...), Panel 4 (...), photorealistic 8k, --ar 9:16"
+      "prompt": "${layoutExample.replace(/"/g, "'")}"
     }
   ]
 }`;
@@ -1836,19 +1867,14 @@ KEMBALIKAN OUTPUT DALAM FORMAT JSON BERIKUT:
     const aiResult = await callGeminiPro(promptForGemini);
     if (aiResult && aiResult.scenes && Array.isArray(aiResult.scenes) && aiResult.scenes.length > 0) {
       const processedScenes = aiResult.scenes.slice(0, targetSceneCount).map((sc, idx) => {
-        const fullPrompt = sc.prompt || `A single 9:16 vertical commercial storyboard sheet divided into 4 horizontal stacked panels from top to bottom separated by thin clean borders labeled 1, 2, 3, 4, showing sequential continuous action of identical character (${modelText}) in (${locationText}):
-- Panel 1: ${modelText} engaging with problem in ${locationText}
-- Panel 2: ${modelText} discovering ${productTitle}
-- Panel 3: ${modelText} demonstrating key benefit of ${uspText}
-- Panel 4: ${modelText} happily holding ${productTitle} with bright smile
-Style: High-end commercial photography, photorealistic 8k, consistent character face and outfit, clean storyboard sheet layout, --ar 9:16`;
+        const fullPrompt = sc.prompt || layoutExample;
 
         return {
           sceneNumber: idx + 1,
           shotType: sc.shotType || `Scene ${idx + 1}`,
           durationSeconds: sc.durationSeconds || perSceneDuration,
           aspectRatio: '9:16',
-          visualDescription: sc.visualDescription || `Lembar storyboard 4-panel aksi untuk Scene ${idx + 1}`,
+          visualDescription: sc.visualDescription || `Lembar storyboard grid aksi untuk Scene ${idx + 1}`,
           voiceover: sc.voiceover || `Dapatkan ${productTitle} sekarang dengan ${uspText}!`,
           prompt: fullPrompt,
           videoPrompt: sc.videoPrompt || `Commercial video shot of ${productTitle} in ${locationText}, 9:16 vertical`,
@@ -1867,7 +1893,7 @@ Style: High-end commercial photography, photorealistic 8k, consistent character 
         hook: aiResult.hook || `Stop scrolling! Ini alasan kenapa kamu wajib punya ${productTitle}!`,
         cta: aiResult.cta || 'Klik keranjang kuning sekarang mumpung diskon spesial!',
         scenes: processedScenes,
-        poweredBy: 'Google Gemini Pro 4-Panel Continuous Storyboard Director'
+        poweredBy: 'Google Gemini Pro Grid Storyboard Director'
       });
     }
   } catch (geminiError) {
@@ -1877,25 +1903,18 @@ Style: High-end commercial photography, photorealistic 8k, consistent character 
   // Dynamic Fallback Multi-Panel Storyboard Prompt
   const fallbackScenes = [];
   for (let i = 1; i <= targetSceneCount; i++) {
-    const storyboardPrompt = `A single 9:16 vertical commercial storyboard sheet divided into 4 horizontal stacked panels from top to bottom separated by thin clean borders labeled 1, 2, 3, 4, showing sequential continuous action of identical talent (${modelText}) in (${locationText}):
-- Panel 1: ${modelText} starting scene in ${locationText}, noticing need for ${productTitle}
-- Panel 2: ${modelText} walking and presenting ${productTitle} to camera
-- Panel 3: ${modelText} showcasing premium detail of ${uspText}
-- Panel 4: ${modelText} posing with ${productTitle} inviting viewers to shop
-Style: Ultra-realistic commercial advertising photography, 8k resolution, consistent lighting, identical character outfit, sharp focus, --ar 9:16`;
-
     fallbackScenes.push({
       sceneNumber: i,
       shotType: i === 1 ? `Scene 1: Hook & Penemuan ${productTitle}` : `Scene ${i}: Pembuktian Keunggulan & Call to Action`,
       durationSeconds: perSceneDuration,
       aspectRatio: '9:16',
-      visualDescription: `Lembar storyboard 4-panel vertikal ${productTitle} di ${locationText}.`,
+      visualDescription: `Lembar storyboard grid 9:16 ${productTitle} di ${locationText}.`,
       voiceover: i === 1 
         ? `Lagi cari ${productTitle} dengan ${uspText}? Ini pilihan terbaik buat kamu!` 
         : `Yuk langsung checkout ${productTitle} sekarang juga di keranjang kuning mumpung lagi promo!`,
-      prompt: storyboardPrompt,
+      prompt: layoutExample,
       videoPrompt: `Smooth commercial camera shot of ${modelText} with ${productTitle} in ${locationText}, 9:16 vertical, ${perSceneDuration}s`,
-      promptsList: [storyboardPrompt],
+      promptsList: [layoutExample],
       imagesList: [],
       imageUrl: ""
     });
