@@ -953,11 +953,13 @@
                 <textarea id="sb-product-usp" rows="2" placeholder="Baterai tahan 36 jam, peredam bising hening total..." class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500 leading-relaxed"></textarea>
               </div>
 
-              <!-- 5. SCENE, PROMPT & DURASI -->
+              <!-- 5. SCENE, PROMPT & DURASI DENGAN IKON JELAS -->
               <div class="grid grid-cols-3 gap-2">
                 <div>
-                  <label class="block text-[11px] font-bold text-slate-300 mb-1">Jumlah Scene</label>
-                  <select id="sb-scene-count" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:border-orange-500">
+                  <label class="block text-[11px] font-bold text-amber-300 mb-1 flex items-center gap-1">
+                    <i class="fa-solid fa-clapperboard text-orange-400"></i> Scene
+                  </label>
+                  <select id="sb-scene-count" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:border-orange-500 font-medium">
                     <option value="2">2 Scene</option>
                     <option value="3">3 Scene</option>
                     <option value="4" selected>4 Scene</option>
@@ -966,16 +968,20 @@
                   </select>
                 </div>
                 <div>
-                  <label class="block text-[11px] font-bold text-slate-300 mb-1">Prompt / Scene</label>
-                  <select id="sb-prompt-count" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:border-orange-500">
+                  <label class="block text-[11px] font-bold text-cyan-300 mb-1 flex items-center gap-1">
+                    <i class="fa-solid fa-wand-magic text-cyan-400"></i> Prompt
+                  </label>
+                  <select id="sb-prompt-count" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:border-orange-500 font-medium">
                     <option value="1" selected>1 Prompt</option>
                     <option value="2">2 Variasi</option>
                     <option value="3">3 Variasi</option>
                   </select>
                 </div>
                 <div>
-                  <label class="block text-[11px] font-bold text-slate-300 mb-1">Durasi Video</label>
-                  <select id="sb-duration-select" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:border-orange-500">
+                  <label class="block text-[11px] font-bold text-emerald-300 mb-1 flex items-center gap-1">
+                    <i class="fa-solid fa-stopwatch text-emerald-400"></i> Durasi
+                  </label>
+                  <select id="sb-duration-select" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:border-orange-500 font-medium">
                     <option value="8">8 Detik</option>
                     <option value="10">10 Detik</option>
                     <option value="15" selected>15 Detik</option>
@@ -986,26 +992,28 @@
                 </div>
               </div>
 
-              <!-- 6. PILIHAN LAYOUT GRID STORYBOARD (JUMLAH GAMBAR / PANEL) -->
+              <!-- 6. PILIHAN LAYOUT GRID STORYBOARD & FORMAT UKURAN / RASIO -->
               <div class="grid grid-cols-2 gap-2">
                 <div>
                   <label class="block text-[11px] font-bold text-amber-300 mb-1 flex items-center gap-1">
-                    <i class="fa-solid fa-table-cells-large text-orange-400"></i> Layout Panel Grid
+                    <i class="fa-solid fa-table-cells-large text-orange-400"></i> Panel Grid
                   </label>
                   <select id="sb-grid-layout" class="w-full bg-slate-950 border border-amber-500/40 rounded-xl px-2 py-2 text-xs text-amber-200 focus:outline-none focus:border-orange-500 font-medium">
-                    <option value="4_grid_2x2" selected>4 Panel Grid (2x2 Matrix)</option>
-                    <option value="6_grid_2x3">6 Panel Grid (2x3 Matrix)</option>
-                    <option value="8_grid_2x4">8 Panel Grid (2x4 Matrix)</option>
+                    <option value="4_grid_2x2" selected>4 Panel (2x2 Matrix)</option>
+                    <option value="6_grid_2x3">6 Panel (2x3 Matrix)</option>
+                    <option value="8_grid_2x4">8 Panel (2x4 Matrix)</option>
                     <option value="1_single">1 Panel (Single Shot)</option>
                   </select>
                 </div>
                 <div>
-                  <label class="block text-[11px] font-bold text-slate-300 mb-1">Format Platform</label>
-                  <select id="sb-platform" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:border-orange-500">
-                    <option value="TikTok / Reels (9:16)" selected>TikTok/Reels (9:16)</option>
-                    <option value="YouTube Shorts (9:16)">Shorts (9:16)</option>
-                    <option value="Landscape HD (16:9)">Landscape (16:9)</option>
-                    <option value="Square Feed (1:1)">Square (1:1)</option>
+                  <label class="block text-[11px] font-bold text-purple-300 mb-1 flex items-center gap-1">
+                    <i class="fa-solid fa-mobile-screen text-purple-400"></i> Ukuran Rasio
+                  </label>
+                  <select id="sb-platform" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:border-orange-500 font-medium">
+                    <option value="TikTok / Reels (9:16)" selected>9:16 (TikTok/Reels)</option>
+                    <option value="YouTube Shorts (9:16)">9:16 (Shorts)</option>
+                    <option value="Landscape HD (16:9)">16:9 (Landscape HD)</option>
+                    <option value="Square Feed (1:1)">1:1 (Persegi)</option>
                   </select>
                 </div>
               </div>
