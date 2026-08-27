@@ -1,0 +1,9 @@
+{
+  "appId": "com.afiligo.app",
+  "appName": "AfiliGo",
+  "webDir": "public",
+  "server": {
+    "url": "https://affiliatego.vercel.app",
+    "cleartext": true
+  }
+}
