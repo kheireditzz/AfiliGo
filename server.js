@@ -1796,6 +1796,7 @@ const handleGenerateStoryboard = async (req, res) => {
 
   let layoutInstruction = '';
   let layoutExample = '';
+  let videoPromptExample = '';
 
   if (gridLayout === '4_grid_2x2') {
     layoutInstruction = `1 (SATU) prompt gambar AI (aspect ratio 9:16 vertical) yang merupakan 1 LEMBAR GAMBAR GRID 2x2 (TERBAGI 4 KOTAK PANEL):
@@ -1811,6 +1812,11 @@ Dipisahkan oleh garis batas putih tipis dan rapi, menampilkan urutan aksi berkes
 - Panel 3 (Bottom-Left): ${modelText} showing extreme close-up detail of ${productTitle} with ${uspText}
 - Panel 4 (Bottom-Right): ${modelText} giving a confident smile and pointing towards the shopping checkout cart
 Style: Ultra-sharp commercial advertising photography, 8k UHD resolution, studio soft lighting, consistent character face and outfit across all 4 grid panels, cinematic film still, --ar 9:16`;
+
+    videoPromptExample = `• Panel 1 (Top-Left): Dynamic push-in camera shot of ${modelText} in ${locationText} reacting with curiosity, 9:16 vertical
+• Panel 2 (Top-Right): Smooth tracking side camera shot of ${modelText} holding ${productTitle} enthusiastically
+• Panel 3 (Bottom-Left): Extreme macro close-up focus pull on ${productTitle} highlighting ${uspText}
+• Panel 4 (Bottom-Right): Eye-level shot of ${modelText} smiling and pointing to the TikTok shopping cart, smooth zoom out`;
   } else if (gridLayout === '6_grid_2x3') {
     layoutInstruction = `1 (SATU) prompt gambar AI (aspect ratio 9:16 vertical) berupa 1 LEMBAR GRID 2 KOLOM x 3 BARIS (TOTAL 6 PANEL):
 - Baris 1: Kotak 1 (Atas Kiri), Kotak 2 (Atas Kanan)
@@ -1819,15 +1825,20 @@ Style: Ultra-sharp commercial advertising photography, 8k UHD resolution, studio
 Semua panel konsisten dengan talent (${modelText}) dan lokasi (${locationText}).`;
 
     layoutExample = `A single 9:16 vertical commercial storyboard contact sheet in a 2x3 grid matrix (6 panels) separated by clean white border lines labeled 1 to 6 showing sequential progressive action of identical talent (${modelText}) in (${locationText}) with (${productTitle}), 8k photorealistic, --ar 9:16`;
+
+    videoPromptExample = `• Panel 1-6 Video Motion: Sequential 6-shot commercial video camera movements highlighting each progressive panel action of ${productTitle}, 9:16 vertical`;
   } else if (gridLayout === '8_grid_2x4') {
     layoutInstruction = `1 (SATU) prompt gambar AI (aspect ratio 9:16 vertical) berupa 1 LEMBAR GRID 2 KOLOM x 4 BARIS (TOTAL 8 PANEL GRID):
 Panel 1-2 di baris teratas, Panel 3-4 di baris kedua, Panel 5-6 di baris ketiga, Panel 7-8 di baris paling bawah.
 Semua panel konsisten dengan talent (${modelText}) dan lokasi (${locationText}).`;
 
     layoutExample = `A single 9:16 vertical commercial storyboard contact sheet in a 2x4 grid matrix (8 panels) separated by clean white border lines labeled 1 to 8 showing sequential progressive action of identical talent (${modelText}) in (${locationText}) with (${productTitle}), 8k photorealistic, --ar 9:16`;
+
+    videoPromptExample = `• Panel 1-8 Video Motion: Fast-paced sequential 8-shot commercial camera flow of ${productTitle}, 9:16 vertical`;
   } else {
     layoutInstruction = `1 (SATU) prompt gambar tunggal beresolusi tinggi (Single Shot 9:16) memperlihatkan talent (${modelText}) dengan produk (${productTitle}) di (${locationText}).`;
     layoutExample = `Commercial product photography of ${modelText} holding ${productTitle} in ${locationText}, highlighting ${uspText}, 8k photorealistic, sharp focus, --ar 9:16`;
+    videoPromptExample = `Smooth cinematic commercial camera pan around ${modelText} showcasing ${productTitle} in ${locationText}, 9:16 vertical`;
   }
 
   const promptForGemini = `Kamu adalah Executive Creative Director & Lead Prompt Engineer kelas dunia untuk video affiliate viral TikTok Shop & Shopee (${platform}).
@@ -1842,12 +1853,15 @@ ATURAN NASKAH VOICEOVER (100% ALAMI SEPERTI MANUSIA / TOP CONTENT CREATOR):
 - JANGAN kaku seperti robot atau brosur formal. Sisipkan jeda nafas, intonasi emosi penasaran di awal (Hook), antusias di tengah, dan ajakan checkout (CTA) yang ramah di akhir.
 - Sesuaikan panjang kata dengan durasi ${perSceneDuration} detik per scene (sekitar 12-18 kata per scene).
 
-ATURAN STRUKTUR PROMPT GAMBAR (100% KONSISTENSI KARAKTER & LOKASI):
-${layoutInstruction}
-- Pastikan dalam setiap prompt bahasa Inggris selalu menyertakan detail fisik talent "${modelText}", produk "${productTitle}", dan atmosfer "${locationText}" secara presisi 8k UHD studio photography.
+ATURAN PROMPT GAMBAR & VIDEO PER PANEL:
+- Prompt Gambar Storyboard: ${layoutInstruction}
+- Prompt Video Generator: HARUS MERINCI PROMPT VIDEO PER PANEL (Panel 1, Panel 2, Panel 3, Panel 4 dst sesuai jumlah panel).
 
 Contoh Format Prompt Gambar yang Dihasilkan:
 "${layoutExample}"
+
+Contoh Format Prompt Video yang Dihasilkan:
+"${videoPromptExample}"
 
 KEMBALIKAN OUTPUT DALAM FORMAT JSON RESMI:
 {
@@ -1864,7 +1878,7 @@ KEMBALIKAN OUTPUT DALAM FORMAT JSON RESMI:
       "aspectRatio": "9:16",
       "voiceover": "Naskah percakapan santai alami Bahasa Indonesia (100% nada manusia)",
       "visualDescription": "Deskripsi aksi per panel grid",
-      "videoPrompt": "Cinematic 8k commercial video motion prompt for Kling AI / Veo / Luma, smooth camera motion, 9:16 vertical",
+      "videoPrompt": "${videoPromptExample.replace(/"/g, "'").replace(/\n/g, "\\n")}",
       "prompt": "${layoutExample.replace(/"/g, "'")}"
     }
   ]
@@ -1875,6 +1889,7 @@ KEMBALIKAN OUTPUT DALAM FORMAT JSON RESMI:
     if (aiResult && aiResult.scenes && Array.isArray(aiResult.scenes) && aiResult.scenes.length > 0) {
       const processedScenes = aiResult.scenes.slice(0, targetSceneCount).map((sc, idx) => {
         const fullPrompt = sc.prompt || layoutExample;
+        const fullVideoPrompt = sc.videoPrompt || videoPromptExample;
 
         return {
           sceneNumber: idx + 1,
@@ -1884,7 +1899,7 @@ KEMBALIKAN OUTPUT DALAM FORMAT JSON RESMI:
           visualDescription: sc.visualDescription || `Lembar storyboard grid aksi untuk Scene ${idx + 1}`,
           voiceover: sc.voiceover || `Dapatkan ${productTitle} sekarang dengan ${uspText}!`,
           prompt: fullPrompt,
-          videoPrompt: sc.videoPrompt || `Commercial video shot of ${productTitle} in ${locationText}, 9:16 vertical`,
+          videoPrompt: fullVideoPrompt,
           promptsList: [fullPrompt],
           imagesList: [],
           imageUrl: ""
@@ -1920,7 +1935,7 @@ KEMBALIKAN OUTPUT DALAM FORMAT JSON RESMI:
         ? `Lagi cari ${productTitle} dengan ${uspText}? Ini pilihan terbaik buat kamu!` 
         : `Yuk langsung checkout ${productTitle} sekarang juga di keranjang kuning mumpung lagi promo!`,
       prompt: layoutExample,
-      videoPrompt: `Smooth commercial camera shot of ${modelText} with ${productTitle} in ${locationText}, 9:16 vertical, ${perSceneDuration}s`,
+      videoPrompt: videoPromptExample,
       promptsList: [layoutExample],
       imagesList: [],
       imageUrl: ""
