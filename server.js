@@ -1451,18 +1451,19 @@ app.post('/api/analyze-uploaded-visuals', async (req, res) => {
 
       parts.push({ text: promptInstructions });
 
-      const visionModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-2.5-flash'];
+      const visionModels = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-flash'];
       for (const vModel of visionModels) {
         try {
           const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/${vModel}:generateContent?key=${keyToUse}`;
           const visionRes = await fetch(visionUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            signal: AbortSignal.timeout(15000),
+            signal: AbortSignal.timeout(6000),
             body: JSON.stringify({
               contents: [{ parts }],
               generationConfig: {
-                temperature: 0.2,
+                temperature: 0.1,
+                maxOutputTokens: 1024,
                 responseMimeType: 'application/json'
               }
             })

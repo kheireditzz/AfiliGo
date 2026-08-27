@@ -1104,13 +1104,13 @@ function applyCrop() {
   if (!activeCropper || !currentCropTarget) return;
 
   const canvas = activeCropper.getCroppedCanvas({
-    maxWidth: 1024,
-    maxHeight: 1024,
+    maxWidth: 512,
+    maxHeight: 512,
     imageSmoothingEnabled: true,
-    imageSmoothingQuality: "high"
+    imageSmoothingQuality: "medium"
   });
 
-  const croppedDataUrl = canvas.toDataURL("image/jpeg", 0.9);
+  const croppedDataUrl = canvas.toDataURL("image/jpeg", 0.7);
   uploadedImages[currentCropTarget] = croppedDataUrl;
 
   const thumb = document.getElementById("img-thumb-" + currentCropTarget);
