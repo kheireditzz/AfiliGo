@@ -1420,8 +1420,8 @@ function renderStoryboardPreview() {
     return;
   }
 
-  container.innerHTML = currentStoryboard.scenes.map((scene, idx) => {
-    const safeImageUrl = scene.imageUrl || (scene.imagesList && scene.imagesList[0]) || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400";
+    const hasGeneratedImage = !!(scene.imageUrl || (scene.imagesList && scene.imagesList[0]));
+    const safeImageUrl = hasGeneratedImage ? (scene.imageUrl || scene.imagesList[0]) : '';
     const encodedPrompt = encodeURIComponent(scene.prompt || "");
     const panels = scene.panels || [
       { num: 1, title: 'Keadaan Awal', desc: 'Karakter memulai aktivitas di lokasi.' },
@@ -1463,27 +1463,37 @@ function renderStoryboardPreview() {
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
           <!-- Left: 1 Single Image Split into 4 Panels (9:16 Vertical Strip) -->
           <div class="md:col-span-5 w-full space-y-2">
-            <div class="relative w-full rounded-2xl overflow-hidden bg-black aspect-[9/16] max-h-80 border-2 border-slate-700/90 shadow-2xl flex items-center justify-center mx-auto group">
-              <img id="scene-img-${idx}" src="${safeImageUrl}" class="w-full h-full object-cover" alt="Scene Visual Strip" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400';">
-              <div class="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-black/85 text-[9px] font-mono text-cyan-300 border border-cyan-500/40 shadow-lg flex items-center gap-1.5 backdrop-blur-md">
-                <i class="fa-solid fa-table-cells-large text-cyan-400 text-[8px]"></i> 1 GAMBAR 4 PANEL AKSI
-              </div>
-              <div class="absolute inset-x-2 bottom-2 p-1.5 rounded-xl bg-black/90 border border-white/15 shadow-2xl flex items-center gap-1.5 z-10 backdrop-blur-md">
-                <select id="select-ratio-${idx}" class="flex-1 bg-slate-900 border border-slate-700 text-amber-300 rounded-lg px-2 py-1 text-[9px] font-mono focus:outline-none focus:border-orange-500">
-                  <option value="9:16" selected>9:16 (Vertikal)</option>
-                  <option value="1:1">1:1 (Persegi)</option>
-                  <option value="16:9">16:9 (Landscape)</option>
-                  <option value="4:5">4:5 (Portrait)</option>
-                </select>
-                <button onclick="downloadSceneWithCustomSize('${safeImageUrl}', document.getElementById('select-ratio-${idx}').value, ${idx + 1})" class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] shadow flex items-center gap-1 transition flex-shrink-0" title="Unduh Lembar Storyboard">
-                  <i class="fa-solid fa-download text-[9px]"></i>
-                  <span>Unduh</span>
-                </button>
-              </div>
+            <div class="relative w-full rounded-2xl overflow-hidden bg-slate-950 aspect-[9/16] max-h-80 border-2 border-slate-700/90 shadow-2xl flex items-center justify-center mx-auto group">
+              ${hasGeneratedImage ? `
+                <img id="scene-img-${idx}" src="${safeImageUrl}" class="w-full h-full object-cover" alt="Scene Visual Strip">
+                <div class="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-black/85 text-[9px] font-mono text-cyan-300 border border-cyan-500/40 shadow-lg flex items-center gap-1.5 backdrop-blur-md">
+                  <i class="fa-solid fa-sparkles text-cyan-400 text-[8px]"></i> GEMINI AI IMAGE
+                </div>
+                <div class="absolute inset-x-2 bottom-2 p-1.5 rounded-xl bg-black/90 border border-white/15 shadow-2xl flex items-center gap-1.5 z-10 backdrop-blur-md">
+                  <select id="select-ratio-${idx}" class="flex-1 bg-slate-900 border border-slate-700 text-amber-300 rounded-lg px-2 py-1 text-[9px] font-mono focus:outline-none focus:border-orange-500">
+                    <option value="9:16" selected>9:16 (Vertikal)</option>
+                    <option value="1:1">1:1 (Persegi)</option>
+                    <option value="16:9">16:9 (Landscape)</option>
+                    <option value="4:5">4:5 (Portrait)</option>
+                  </select>
+                  <button onclick="downloadSceneWithCustomSize('${safeImageUrl}', document.getElementById('select-ratio-${idx}').value, ${idx + 1})" class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-bold text-[10px] shadow flex items-center gap-1 transition flex-shrink-0" title="Unduh Lembar Storyboard">
+                    <i class="fa-solid fa-download text-[9px]"></i>
+                    <span>Unduh</span>
+                  </button>
+                </div>
+              ` : `
+                <div class="p-4 text-center space-y-2">
+                  <div class="w-10 h-10 rounded-full bg-slate-900 border border-cyan-500/30 flex items-center justify-center mx-auto text-cyan-400">
+                    <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+                  </div>
+                  <p class="text-xs font-bold text-slate-300 font-display">Prompt Siap Di-Render</p>
+                  <p class="text-[10px] text-slate-500 leading-tight">Gunakan Gemini Image atau salin prompt di bawah ke AI Image Generator pilihan Anda.</p>
+                </div>
+              `}
             </div>
 
             <div class="p-2.5 rounded-xl bg-black/60 border border-slate-800 text-[10px] text-slate-400 text-center font-mono">
-              <i class="fa-solid fa-circle-info text-amber-400"></i> Lembar gambar di atas terbagi menjadi 4 panel aksi berurutan.
+              <i class="fa-solid fa-circle-info text-amber-400"></i> ${hasGeneratedImage ? 'Gambar asli hasil render Google Gemini AI.' : 'Hanya gambar asli dari API Key Gemini yang akan ditampilkan.'}
             </div>
           </div>
 
