@@ -1830,34 +1830,41 @@ Semua panel konsisten dengan talent (${modelText}) dan lokasi (${locationText}).
     layoutExample = `Commercial product photography of ${modelText} holding ${productTitle} in ${locationText}, highlighting ${uspText}, 8k photorealistic, sharp focus, --ar 9:16`;
   }
 
-  const promptForGemini = `Kamu adalah AI Director & Lead Prompt Engineer profesional untuk video iklan affiliate pendek (${platform}).
-Tugasmu adalah membuat naskah storyboard sebanyak ${targetSceneCount} Scene untuk produk: ${productTitle} (${uspText}).
-Setting & Karakter:
-- Karakter/Talent: ${modelText}
-- Lokasi: ${locationText}
+  const promptForGemini = `Kamu adalah Executive Creative Director & Lead Prompt Engineer kelas dunia untuk video affiliate viral TikTok Shop & Shopee (${platform}).
+Tugasmu adalah merancang Storyboard Masterpiece PERSIS sebanyak ${targetSceneCount} Scene dengan total durasi ${targetDuration} detik (${perSceneDuration} detik per scene) untuk:
+- Produk: ${productTitle}
+- Keunggulan Utama (USP): ${uspText}
+- Model / Talent: ${modelText}
+- Lokasi / Background: ${locationText}
 
-ATURAN STRUKTUR PROMPT GAMBAR:
+ATURAN NASKAH VOICEOVER (100% ALAMI SEPERTI MANUSIA / TOP CONTENT CREATOR):
+- Gunakan bahasa Indonesia percakapan yang sangat luwes, santai, persuasif, dan berenergi positif (seperti creator TikTok papan atas).
+- JANGAN kaku seperti robot atau brosur formal. Sisipkan jeda nafas, intonasi emosi penasaran di awal (Hook), antusias di tengah, dan ajakan checkout (CTA) yang ramah di akhir.
+- Sesuaikan panjang kata dengan durasi ${perSceneDuration} detik per scene (sekitar 12-18 kata per scene).
+
+ATURAN STRUKTUR PROMPT GAMBAR (100% KONSISTENSI KARAKTER & LOKASI):
 ${layoutInstruction}
+- Pastikan dalam setiap prompt bahasa Inggris selalu menyertakan detail fisik talent "${modelText}", produk "${productTitle}", dan atmosfer "${locationText}" secara presisi 8k UHD studio photography.
 
 Contoh Format Prompt Gambar yang Dihasilkan:
 "${layoutExample}"
 
-KEMBALIKAN OUTPUT DALAM FORMAT JSON BERIKUT:
+KEMBALIKAN OUTPUT DALAM FORMAT JSON RESMI:
 {
   "title": "Affiliate: ${productTitle}",
   "platform": "${platform}",
   "totalDuration": ${targetDuration},
-  "hook": "Kalimat hook viral pembuka video",
-  "cta": "Kalimat ajakan checkout di keranjang kuning",
+  "hook": "Kalimat pembuka viral yang memancing rasa penasaran penonton",
+  "cta": "Kalimat penutup persuasif ajakan checkout di keranjang kuning",
   "scenes": [
     {
       "sceneNumber": 1,
       "shotType": "Scene 1: Hook & Pengenalan",
       "durationSeconds": ${perSceneDuration},
       "aspectRatio": "9:16",
-      "voiceover": "Naskah audio yang diucapkan talent dalam Bahasa Indonesia",
+      "voiceover": "Naskah percakapan santai alami Bahasa Indonesia (100% nada manusia)",
       "visualDescription": "Deskripsi aksi per panel grid",
-      "videoPrompt": "Cinematic commercial video prompt for Kling / Veo, 9:16 vertical",
+      "videoPrompt": "Cinematic 8k commercial video motion prompt for Kling AI / Veo / Luma, smooth camera motion, 9:16 vertical",
       "prompt": "${layoutExample.replace(/"/g, "'")}"
     }
   ]
