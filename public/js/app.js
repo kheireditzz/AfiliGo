@@ -1212,11 +1212,91 @@ async function triggerTargetVisionAnalysis(targetType) {
   }
 }
 
+async function analyzeAllUploadedPhotosWithGemini() {
+  const progressBar = document.getElementById("vision-analysis-progress-bar");
+  const statusText = document.getElementById("vision-analysis-status-text");
+  const btn = document.getElementById("btn-analyze-all-photos");
+
+  const hasAnyPhoto = uploadedImages.product || uploadedImages.model || uploadedImages.location;
+  if (!hasAnyPhoto) {
+    showToastNotification("warning", "Belum Ada Foto", "Silakan upload atau pilih minimal 1 foto (Produk, Model, atau Tempat) terlebih dahulu.");
+    return;
+  }
+
+  if (progressBar) progressBar.classList.remove("hidden");
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-[9px]"></i> Menganalisa...';
+  }
+  if (statusText) statusText.innerText = "Google Gemini Vision sedang membaca foto produk, model & tempat...";
+
+  const currentTitle = document.getElementById("sb-product-title")?.value.trim() || "";
+  const directGeminiKey = (document.getElementById("feature-gemini-api-key") ? document.getElementById("feature-gemini-api-key").value.trim() : "") || localStorage.getItem("direct_gemini_api_key") || "";
+
+  try {
+    const res = await fetch("/api/analyze-uploaded-visuals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        productImgBase64: uploadedImages.product || null,
+        modelImgBase64: uploadedImages.model || null,
+        locationImgBase64: uploadedImages.location || null,
+        currentTitle: currentTitle,
+        targetType: "all",
+        geminiApiKey: directGeminiKey
+      })
+    });
+
+    const data = await res.json();
+    if (data && data.success) {
+      const titleEl = document.getElementById("sb-product-title");
+      const uspEl = document.getElementById("sb-product-usp");
+      const modelEl = document.getElementById("sb-model-desc");
+      const locationEl = document.getElementById("sb-location-setting");
+
+      if (titleEl && data.suggestedTitle) {
+        titleEl.value = data.suggestedTitle;
+        titleEl.classList.add("ring-2", "ring-emerald-400", "border-emerald-400");
+        setTimeout(() => titleEl.classList.remove("ring-2", "ring-emerald-400", "border-emerald-400"), 4000);
+      }
+      if (uspEl && data.suggestedUsp) {
+        uspEl.value = data.suggestedUsp;
+        uspEl.classList.add("ring-2", "ring-emerald-400/50", "border-emerald-400");
+        setTimeout(() => uspEl.classList.remove("ring-2", "ring-emerald-400/50", "border-emerald-400"), 4000);
+      }
+      if (modelEl && data.suggestedModel) {
+        modelEl.value = data.suggestedModel;
+        modelEl.classList.add("ring-2", "ring-cyan-400/50", "border-cyan-400");
+        setTimeout(() => modelEl.classList.remove("ring-2", "ring-cyan-400/50", "border-cyan-400"), 4000);
+      }
+      if (locationEl && data.suggestedLocation) {
+        locationEl.value = data.suggestedLocation;
+        locationEl.classList.add("ring-2", "ring-amber-400/50", "border-amber-400");
+        setTimeout(() => locationEl.classList.remove("ring-2", "ring-amber-400/50", "border-amber-400"), 4000);
+      }
+
+      showToastNotification("success", "Analisa Gemini Selesai!", "Nama Produk, USP, Model & Tempat berhasil diisi otomatis.");
+      triggerAutoSave();
+    } else {
+      showToastNotification("error", "Gagal Analisa", "Google Gemini tidak dapat memproses gambar.");
+    }
+  } catch (err) {
+    console.error("Batch vision analysis error:", err);
+    showToastNotification("error", "Kendala Jaringan", err.message || "Gagal menghubungi Gemini Vision.");
+  } finally {
+    if (progressBar) progressBar.classList.add("hidden");
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles text-[9px] text-emerald-400"></i> Analisa Foto Gemini';
+    }
+  }
+}
+
 function renderStoryboardSkeletonLoading(count = 4) {
   const container = document.getElementById("scenes-container");
   if (!container) return;
-
   const num = parseInt(count) || 4;
+
   container.innerHTML = Array.from({ length: num }).map((_, idx) => `
     <div class="rounded-3xl bg-[#0f1424] border border-amber-500/30 p-4 sm:p-6 space-y-4 shadow-2xl animate-pulse">
       <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
