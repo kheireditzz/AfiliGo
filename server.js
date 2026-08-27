@@ -656,17 +656,17 @@ function getGeminiKeyPool() {
 
   // Fallback default key if pool is completely empty
   if (pool.length === 0) {
-    const envKey = (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'YOUR_GEMINI_API_KEY')
-      ? process.env.GEMINI_API_KEY
-      : 'AIzaSyC5n4K5LAJEZM7IZbhenCUvQt18k-nd3Aw';
-    pool.push({
-      id: 'key-builtin-1',
-      key: envKey,
-      label: 'Default Key',
-      isActive: true,
-      status: 'active',
-      addedAt: new Date().toISOString()
-    });
+    const envKey = process.env.GEMINI_API_KEY || '';
+    if (envKey && envKey !== 'YOUR_GEMINI_API_KEY') {
+      pool.push({
+        id: 'key-env-1',
+        key: envKey,
+        label: 'Env API Key',
+        isActive: true,
+        status: 'active',
+        addedAt: new Date().toISOString()
+      });
+    }
   }
 
   return pool;
@@ -674,13 +674,11 @@ function getGeminiKeyPool() {
 
 function getActiveGeminiKey() {
   const pool = getGeminiKeyPool();
-  const validKeyObj = pool.find(k => k.isActive && k.key && k.key.startsWith('AIzaSy')) ||
-                       pool.find(k => k.status === 'active' && k.key && k.key.startsWith('AIzaSy')) ||
-                       pool.find(k => k.key && k.key.startsWith('AIzaSy'));
+  const validKeyObj = pool.find(k => k.isActive && k.key) ||
+                       pool.find(k => k.status === 'active' && k.key) ||
+                       pool.find(k => k.key);
   if (validKeyObj) return validKeyObj.key;
-  return (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.startsWith('AIzaSy'))
-    ? process.env.GEMINI_API_KEY
-    : 'AIzaSyC5n4K5LAJEZM7IZbhenCUvQt18k-nd3Aw';
+  return process.env.GEMINI_API_KEY || '';
 }
 
 function rotateGeminiKeyOnLimit(failedKey) {
