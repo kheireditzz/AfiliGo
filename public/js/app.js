@@ -1218,40 +1218,32 @@ function renderStoryboardSkeletonLoading(count = 4) {
 
   const num = parseInt(count) || 4;
   container.innerHTML = Array.from({ length: num }).map((_, idx) => `
-    <div class="rounded-3xl bg-[#0f121d] border border-slate-800/90 p-3.5 sm:p-4 space-y-3 shadow-xl">
-      <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+    <div class="rounded-3xl bg-[#0f1424] border border-amber-500/30 p-4 sm:p-6 space-y-4 shadow-2xl animate-pulse">
+      <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
         <div class="flex items-center gap-2">
-          <div class="h-5 w-16 skeleton-shimmer-orange rounded-lg"></div>
-          <div class="h-5 w-28 skeleton-shimmer rounded-lg"></div>
+          <div class="h-6 w-20 bg-orange-600/40 rounded-xl"></div>
+          <div class="h-6 w-36 bg-slate-800 rounded-xl"></div>
         </div>
-        <div class="h-5 w-12 skeleton-shimmer rounded-lg"></div>
+        <div class="h-6 w-12 bg-slate-800 rounded-lg"></div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
-        <!-- Visual Skeleton Frame -->
-        <div class="sm:col-span-4 aspect-[9/16] rounded-xl skeleton-shimmer relative overflow-hidden flex items-center justify-center border border-slate-800">
-          <div class="text-center space-y-2 p-2">
-            <div class="w-10 h-10 rounded-full skeleton-shimmer-orange mx-auto"></div>
-            <div class="h-3.5 w-20 skeleton-shimmer rounded mx-auto"></div>
-          </div>
+      <div class="space-y-4">
+        <!-- 1. Prompt Gambar Shimmer -->
+        <div class="p-3.5 rounded-2xl bg-slate-950/90 border border-amber-500/20 space-y-2">
+          <div class="h-4 w-48 bg-amber-500/30 rounded"></div>
+          <div class="h-16 w-full bg-slate-900 rounded-xl"></div>
         </div>
 
-        <!-- Inputs / Prompts Skeleton -->
-        <div class="sm:col-span-8 space-y-2.5">
-          <div class="space-y-1.5">
-            <div class="h-3 w-32 skeleton-shimmer rounded"></div>
-            <div class="h-16 w-full skeleton-shimmer rounded-xl"></div>
-          </div>
+        <!-- 2. Prompt Video Shimmer -->
+        <div class="p-3.5 rounded-2xl bg-slate-950/90 border border-cyan-500/20 space-y-2">
+          <div class="h-4 w-52 bg-cyan-500/30 rounded"></div>
+          <div class="h-12 w-full bg-slate-900 rounded-xl"></div>
+        </div>
 
-          <div class="space-y-1.5">
-            <div class="h-3 w-36 skeleton-shimmer rounded"></div>
-            <div class="h-12 w-full skeleton-shimmer rounded-xl"></div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2 pt-1">
-            <div class="h-8 skeleton-shimmer rounded-xl"></div>
-            <div class="h-8 skeleton-shimmer-orange rounded-xl"></div>
-          </div>
+        <!-- 3. Voiceover Shimmer -->
+        <div class="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-2">
+          <div class="h-4 w-40 bg-slate-700 rounded"></div>
+          <div class="h-12 w-full bg-slate-900 rounded-xl"></div>
         </div>
       </div>
     </div>
@@ -1387,7 +1379,7 @@ async function generateStoryboardWithAI() {
 
     renderStoryboardPreview();
     triggerAutoSave();
-    showToastNotification("success", "Antigravity AI Berhasil!", "Skrip 4 scene, hook, prompt visual & 16 foto siap.");
+    showToastNotification("success", "Storyboard AI Siap!", "Prompt multi-panel 9:16, prompt video motion & voiceover berhasil dirancang.");
   } catch (err) {
     console.error("Generate Storyboard Anomaly/Error:", err);
 
