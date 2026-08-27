@@ -1148,6 +1148,9 @@ async function triggerTargetVisionAnalysis(targetType) {
   const targetImage = uploadedImages[targetType];
   if (!targetImage) return;
 
+  const currentTitle = document.getElementById("sb-product-title")?.value.trim() || "";
+  const directGeminiKey = (document.getElementById("feature-gemini-api-key") ? document.getElementById("feature-gemini-api-key").value.trim() : "") || localStorage.getItem("direct_gemini_api_key") || window.direct_gemini_api_key || "";
+
   try {
     const res = await fetch("/api/analyze-uploaded-visuals", {
       method: "POST",
