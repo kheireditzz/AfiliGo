@@ -439,7 +439,7 @@ function showMainApp() {
     if (drawerAdminName) drawerAdminName.innerText = currentUser.name;
   }
 
-  openTab("dashboard");
+  openTab("storyboard-creator");
 
   // Lightweight staggered initialization for silky-smooth 60fps performance
   setTimeout(() => {

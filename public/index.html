@@ -548,14 +548,13 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <button onclick="openExtensionModal()" class="px-3 py-2 rounded-xl bg-slate-850 hover:bg-slate-800 border border-orange-500/40 text-amber-300 hover:text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow transition" title="Buka & Unduh Flow Ai Extension">
-          <i class="fa-solid fa-puzzle-piece text-orange-400 text-xs animate-pulse"></i>
-          <span class="hidden sm:inline">Flow Ai Extension</span>
+        <button id="header-btn-settings" onclick="selectMenu('settings')" class="w-9 h-9 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-amber-300 shadow transition" title="Pengaturan API & Akun">
+          <i class="fa-solid fa-sliders text-sm"></i>
         </button>
 
-        <button id="header-btn-create" onclick="openTab('storyboard-creator')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow-md shadow-orange-600/30 transition">
-          <i class="fa-solid fa-plus text-[11px]"></i>
-          <span>Buat</span>
+        <button id="header-btn-create" onclick="selectMenu('storyboard-creator')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 active:scale-95 text-white font-extrabold text-xs font-display flex items-center gap-1.5 shadow-md shadow-orange-600/30 transition">
+          <i class="fa-solid fa-wand-magic-sparkles text-[11px]"></i>
+          <span>Storyboard AI</span>
         </button>
       </div>
     </header>
@@ -624,167 +623,9 @@
       <div id="content-scroll-container" class="flex-1 h-full overflow-y-auto px-2 sm:px-4 pt-1 pb-3 space-y-2">
         
         <!-- ============================================== -->
-        <!-- TAB 1: DASHBOARD -->
+        <!-- TAB UTAMA: AI STORYBOARD STUDIO -->
         <!-- ============================================== -->
-        <div id="tab-dashboard" class="tab-content space-y-3">
-
-          <!-- QUICK ACCESS: SAKLAR AKTIVASI TAB MELAYANG DI DASHBOARD -->
-          <div class="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-orange-950/60 via-amber-950/30 to-slate-900/90 border border-orange-500/40 shadow-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div class="flex items-center gap-3.5 min-w-0">
-              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-red-600 p-[1.5px] shadow-lg shadow-orange-600/30 flex-shrink-0">
-                <div class="w-full h-full bg-[#0d111e] rounded-2xl flex items-center justify-center text-amber-400 text-xl">
-                  <i class="fa-solid fa-cloud-bolt"></i>
-                </div>
-              </div>
-              <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                  <h3 class="font-extrabold text-white text-sm sm:text-base font-display">Server Generate</h3>
-                  <span id="dash-floating-status-badge" class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[10px] font-mono font-bold border border-slate-700">OFF</span>
-                </div>
-                <p class="text-xs text-slate-300">Kapsul server AI yang bisa digeser bebas & diselipkan ke tepi layar</p>
-              </div>
-            </div>
-
-            <!-- Saklar Aktivasi Dashboard -->
-            <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-slate-800/80 pt-2.5 sm:pt-0">
-              <span class="text-xs font-bold text-amber-300 font-display">Aktifkan Kapsul</span>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="dashboard-floating-toggle" onchange="directToggleFlowHub(this)" class="sr-only peer">
-                <div class="w-12 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-amber-500 peer-checked:to-orange-600"></div>
-              </label>
-            </div>
-          </div>
-
-          <!-- HERO BANNER -->
-          <div class="rounded-3xl bg-gradient-to-br from-slate-900/90 via-[#0d121f] to-[#0a0d17] p-5 sm:p-7 border border-slate-800/80 shadow-2xl relative overflow-hidden">
-            <div class="absolute -right-12 -top-12 w-64 h-64 bg-orange-500/10 rounded-full opacity-30 pointer-events-none"></div>
-            <div class="max-w-2xl space-y-3 relative z-10">
-              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[11px] font-bold font-display uppercase tracking-wide">
-                <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                <span>Affiliate AI Suite 2.0</span>
-              </div>
-              <h2 class="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white font-display leading-tight tracking-tight">
-                Studio AI Konten Affiliate & Storyboard 8K
-              </h2>
-              <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
-                Rancang alur video viral otomatis dengan foto produk, karakter model, latar lokasi realistis, dan sinkronisasi prompt motion video.
-              </p>
-              <div class="pt-2 flex flex-wrap items-center gap-3">
-                <button onclick="openTab('storyboard-creator')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-95 active:scale-95 text-white font-extrabold text-xs font-display shadow-lg shadow-orange-600/25 flex items-center gap-2 transition">
-                  <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-                  <span>Buat Storyboard Baru</span>
-                </button>
-                <a href="/AffiliateGo-FlowAI-Extension.zip" download="AffiliateGo-FlowAI-Extension.zip" class="px-4 py-2.5 rounded-xl bg-orange-950/70 hover:bg-orange-900 border border-orange-500/40 text-amber-300 hover:text-white font-bold text-xs transition flex items-center gap-2 shadow">
-                  <i class="fa-solid fa-puzzle-piece text-orange-400 text-xs"></i>
-                  <span>Unduh Extension Flow AI</span>
-                </a>
-                <button onclick="openTab('product-db')" class="px-4 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700/80 font-bold text-xs transition flex items-center gap-2">
-                  <i class="fa-solid fa-boxes-stacked text-emerald-400 text-xs"></i>
-                  <span>Database Produk</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- METRIC STAT CARDS -->
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div class="ultra-glass-card rounded-2xl p-4 space-y-1">
-              <div class="flex items-center justify-between text-slate-400">
-                <span class="text-[10px] font-bold uppercase tracking-wider font-mono">Total Produk</span>
-                <span class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs"><i class="fa-solid fa-boxes-stacked"></i></span>
-              </div>
-              <div id="stat-products" class="text-2xl font-extrabold text-white font-display">0</div>
-              <p class="text-[11px] text-slate-500">Tersimpan di Katalog</p>
-            </div>
-
-            <div class="ultra-glass-card rounded-2xl p-4 space-y-1">
-              <div class="flex items-center justify-between text-slate-400">
-                <span class="text-[10px] font-bold uppercase tracking-wider font-mono">Storyboard</span>
-                <span class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs"><i class="fa-solid fa-clapperboard"></i></span>
-              </div>
-              <div id="stat-storyboards" class="text-2xl font-extrabold text-white font-display">0</div>
-              <p class="text-[11px] text-slate-500">Siap Diproduksi</p>
-            </div>
-
-            <div class="ultra-glass-card rounded-2xl p-4 space-y-1">
-              <div class="flex items-center justify-between text-slate-400">
-                <span class="text-[10px] font-bold uppercase tracking-wider font-mono">Scene Foto</span>
-                <span class="w-7 h-7 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center text-xs"><i class="fa-solid fa-camera-retro"></i></span>
-              </div>
-              <div id="stat-scenes" class="text-2xl font-extrabold text-white font-display">0</div>
-              <p class="text-[11px] text-slate-500">Visual Ter-render</p>
-            </div>
-
-            <div class="ultra-glass-card rounded-2xl p-4 space-y-1">
-              <div class="flex items-center justify-between text-slate-400">
-                <span class="text-[10px] font-bold uppercase tracking-wider font-mono">Prompt Master</span>
-                <span class="w-7 h-7 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center text-xs"><i class="fa-solid fa-book-bookmark"></i></span>
-              </div>
-              <div id="stat-prompts" class="text-2xl font-extrabold text-white font-display">0</div>
-              <p class="text-[11px] text-slate-500">Template Prompt</p>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-2">
-            <div class="lg:col-span-2 ultra-glass-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 space-y-2.5">
-              <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
-                <h3 class="font-bold text-white text-sm sm:text-base font-display flex items-center gap-2">
-                  <i class="fa-solid fa-film text-orange-400"></i> Storyboard & Script Terbaru
-                </h3>
-                <button onclick="openTab('storyboard-list')" class="text-xs font-bold text-orange-400 hover:text-orange-300">Semua &rarr;</button>
-              </div>
-              <div id="dashboard-recent-storyboards" class="space-y-2.5">
-                <!-- Rendered via JS -->
-              </div>
-            </div>
-
-            <div class="ultra-glass-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 space-y-2.5">
-              <h3 class="font-bold text-white text-sm sm:text-base font-display flex items-center gap-2">
-                <i class="fa-solid fa-fire text-amber-400"></i> Niche Viral Instan
-              </h3>
-              <div class="space-y-2 pt-1">
-                <button onclick="openQuickGenerator('Skincare & Beauty Glow')" class="w-full p-2.5 rounded-2xl bg-slate-900/80 hover:bg-orange-950/40 border border-slate-800 hover:border-orange-500/50 text-left transition flex items-center justify-between">
-                  <div class="flex items-center gap-2.5">
-                    <span class="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center text-xs"><i class="fa-solid fa-spa"></i></span>
-                    <div>
-                      <div class="text-xs font-bold text-white">Skincare & Beauty</div>
-                      <div class="text-[10px] text-slate-400">Glow aesthetic splash</div>
-                    </div>
-                  </div>
-                  <i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
-                </button>
-
-                <button onclick="openQuickGenerator('Gadget & Tech Gear')" class="w-full p-2.5 rounded-2xl bg-slate-900/80 hover:bg-amber-950/40 border border-slate-800 hover:border-amber-500/50 text-left transition flex items-center justify-between">
-                  <div class="flex items-center gap-2.5">
-                    <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs"><i class="fa-solid fa-headphones"></i></span>
-                    <div>
-                      <div class="text-xs font-bold text-white">Gadget & Elektronik</div>
-                      <div class="text-[10px] text-slate-400">Futuristic studio shot</div>
-                    </div>
-                  </div>
-                  <i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
-                </button>
-
-                <button onclick="openQuickGenerator('Fashion & Streetwear OOTD')" class="w-full p-2.5 rounded-2xl bg-slate-900/80 hover:bg-orange-950/40 border border-slate-800 hover:border-orange-500/50 text-left transition flex items-center justify-between">
-                  <div class="flex items-center gap-2.5">
-                    <span class="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs"><i class="fa-solid fa-shirt"></i></span>
-                    <div>
-                      <div class="text-xs font-bold text-white">Fashion & OOTD</div>
-                      <div class="text-[10px] text-slate-400">UGC mirror selfie</div>
-                    </div>
-                  </div>
-                  <i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- ============================================== -->
-        <!-- TAB 2: AI STORYBOARD & PHOTO CREATOR -->
-        <!-- ============================================== -->
-        <div id="tab-storyboard-creator" class="tab-content hidden space-y-2">
+        <div id="tab-storyboard-creator" class="tab-content space-y-2">
           
           <div class="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-1 pt-0 mb-1">
             <h2 class="text-base sm:text-lg font-bold text-white font-display flex items-center gap-2">
