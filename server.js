@@ -1808,6 +1808,9 @@ Return STRICT JSON formatted with this schema:
 - Panel 4: ${sc.panels?.[3]?.desc || 'Character posing as transition anchor to next scene'}
 Style: Cinematic commercial photography, photorealistic 8k, consistent lighting, clean dividing borders, no watermark, no text, --ar 9:16`;
 
+        const cleanPrompt = fullPrompt.replace(/[^\w\s,.-]/gi, ' ').trim();
+        const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=768&height=1024&seed=${Math.floor(Math.random() * 9000000 + idx * 25000)}&model=flux-realism&nologo=true`;
+
         return {
           sceneNumber: idx + 1,
           shotType: sc.shotType || `Scene ${idx + 1}`,
@@ -1824,8 +1827,8 @@ Style: Cinematic commercial photography, photorealistic 8k, consistent lighting,
             { num: 4, title: 'Aksi Lanjutan', desc: `${modelText} bersiap menuju scene berikutnya.` }
           ],
           promptsList: [fullPrompt],
-          imagesList: [],
-          imageUrl: ""
+          imagesList: [imgUrl],
+          imageUrl: imgUrl
         };
       });
 
