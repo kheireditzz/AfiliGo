@@ -1571,6 +1571,31 @@ function copyEntireScene(idx) {
   });
 }
 
+function copyAllStoryboardPrompts() {
+  if (!currentStoryboard.scenes || currentStoryboard.scenes.length === 0) {
+    showToastNotification("info", "Kosong", "Belum ada skenario storyboard untuk disalin.");
+    return;
+  }
+
+  let text = `🎬 MASTER STORYBOARD PROMPTS: ${currentStoryboard.title || 'Affiliate Video'}\n`;
+  text += `⏱️ Total Durasi: ${currentStoryboard.totalDuration || 10}s | Layout: ${currentStoryboard.platform || '9:16'}\n\n`;
+
+  currentStoryboard.scenes.forEach((sc, idx) => {
+    text += `========================================\n`;
+    text += `SCENE ${idx + 1}: ${sc.shotType || 'Scene ' + (idx + 1)} (${sc.durationSeconds || 5}s)\n`;
+    text += `========================================\n`;
+    text += `🖼️ PROMPT GAMBAR STORYBOARD (9:16):\n${sc.prompt || ''}\n\n`;
+    text += `🎥 PROMPT VIDEO AI (KLING / VEO / LUMA):\n${sc.videoPrompt || sc.visualDescription || ''}\n\n`;
+    text += `🎙️ NASKAH VOICEOVER:\n"${sc.voiceover || ''}"\n\n`;
+  });
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToastNotification("success", "Semua Prompt Tersalin!", "Seluruh prompt gambar, prompt video & naskah berhasil disalin.");
+  }).catch(e => {
+    showToastNotification("error", "Gagal Salin", "Tidak dapat mengakses clipboard.");
+  });
+}
+
 function switchScenePrompt(sceneIdx, promptIdx) {
   const scene = currentStoryboard.scenes[sceneIdx];
   if (scene && scene.promptsList && scene.promptsList[promptIdx]) {
