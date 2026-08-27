@@ -3,7 +3,7 @@
   "appName": "AfiliGo",
   "webDir": "public",
   "server": {
-    "url": "https://affiliatego.vercel.app",
+    "url": "https://affiliate-ai-suite.vercel.app",
     "cleartext": true
   }
 }
